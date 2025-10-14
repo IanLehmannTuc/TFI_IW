@@ -3,14 +3,48 @@ import static org.assertj.core.api.Assertions.*;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import model.Enfermero;
+import mok.RepositorioEnfermeros;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Map;
 
 public class ModuloUrgenciasStepDefinitions {
+
+    private RepositorioEnfermeros repo;
+
+    public ModuloUrgenciasStepDefinitions() {
+        this.repo = new RepositorioEnfermeros();
+        repo.add(new Enfermero(
+                "40-12345678-9",
+                "Maria Celeste",
+                "Sarmiento",
+                "blamberlu@gmail.com",
+                "Licencida")
+        );
+    }
+
     @Given("Que la siguiente enfermera esté registrada:")
     public void queLaSiguienteEnfermeraEstéRegistrada(List<Map<String, String>> lista) {
-        assertThat(true).isTrue();
+
+        List<Enfermero> listaEnfermeros = repo.findAll();
+        int cantEnfermerosEncontados = 0;
+
+        for (Map<String, String> map : lista) {
+            String cuil = map.get("CUIL");
+            String nombre = map.get("Nombre");
+            String apellido = map.get("Apellido");
+            for (Enfermero enfermero : listaEnfermeros) {
+                if(enfermero.getCuil().equals(cuil) &&
+                   enfermero.getNombre().equals(nombre) &&
+                   enfermero.getApellido().equals(apellido)) {
+                    cantEnfermerosEncontados += 1;
+                };
+            };
+        }
+        assertEquals(cantEnfermerosEncontados, lista.size());
     }
 
     @Given("Dado que estan cargados los siguientes pacientes en el sistema:")
