@@ -1,18 +1,22 @@
-package repositorio;
+package mok;
 
 import model.Enfermero;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
-public class RepositorioEnfermeros{
+public class RepositorioEnfermeros {
 
-    private final Map<String, Enfermero> store = new ConcurrentHashMap<>();
+    private final Map<String, Enfermero> store;
+
+    public RepositorioEnfermeros() {
+        this.store = new ConcurrentHashMap<>();
+    }
 
     public List<Enfermero> findAll() {
-        return List.of();
+        return store.values().stream().collect(Collectors.toList());
     }
 
     public Enfermero findByCuil(Enfermero enfermero) {
