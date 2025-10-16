@@ -32,7 +32,6 @@ public final class Cuil {
             );
         }
         
-        // Validar que el prefijo sea válido
         String prefijo = cuilLimpio.substring(0, 2);
         boolean prefijoValido = false;
         for (String p : PREFIJOS_VALIDOS) {
@@ -64,7 +63,6 @@ public final class Cuil {
      */
     private boolean validarDigitoVerificador(String cuil) {
         try {
-            // Remover guiones y obtener los dígitos
             String sinGuiones = cuil.replace("-", "");
             
             // Los primeros 10 dígitos se usan para calcular

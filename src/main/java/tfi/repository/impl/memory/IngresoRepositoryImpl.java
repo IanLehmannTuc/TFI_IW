@@ -32,16 +32,13 @@ public class IngresoRepositoryImpl implements IngresoRepository {
             throw new IllegalArgumentException("El ingreso no puede ser nulo");
         }
         
-        // Asignar timestamp automáticamente si no tiene
         if (ingreso.getFechaHoraIngreso() == null) {
             ingreso.setFechaHoraIngreso(LocalDateTime.now());
         }
         
-        // Generar ID único
         String ingresoId = String.valueOf(idGenerator.incrementAndGet());
         ingreso.setId(ingresoId);
         
-        // Almacenar en el Map
         store.put(ingresoId, ingreso);
         
         return ingreso;
@@ -61,7 +58,6 @@ public class IngresoRepositoryImpl implements IngresoRepository {
             throw new IllegalStateException("No existe un ingreso con el ID: " + ingreso.getId());
         }
         
-        // Actualizar en el Map
         store.put(ingreso.getId(), ingreso);
         
         return ingreso;
@@ -77,7 +73,6 @@ public class IngresoRepositoryImpl implements IngresoRepository {
             throw new IllegalArgumentException("El ingreso debe tener un ID");
         }
         
-        // Remover del Map
         Ingreso removed = store.remove(ingreso.getId());
         
         if (removed == null) {
