@@ -46,7 +46,7 @@ Feature: Modulo de Urgencias
     When Ingresa a urgencias el siguiente paciente:
     |CUIL         |Informe|Nivel de Emergencia|Temperatura|Frecuencia Cardiaca|Frecuencia Respiratoria|Tension Arterial|
     |20-20304050-5|Dengue |Emergencia         |39         |70                 |15                     |120/80          |
-
+    
     Then La cola de atención se encuentra en el siguiente orden
     |20-20304050-5| 
     |27-14141414-9| 
@@ -92,7 +92,27 @@ Feature: Modulo de Urgencias
     |CUIL         |Informe|Nivel de Emergencia|Temperatura|Frecuencia Cardiaca|Frecuencia Respiratoria|Tension Arterial|
     |20-20304050-5|       |Emergencia         |39         |70                 |15                     |120/80          |
 
-    Then Se emite un mensaje de error indicando que el campo faltante es obligatorio
+    Then Se emite un mensaje de error indicando que {campo} faltante es obligatorio
+
+#  Scenario Outline: Error por datos obligatorios faltantes
+#     Given Que estan cargados los siguientes pacientes en el sistema:
+#       |CUIL         |Apellido |Nombre |Obra Social  |
+#       |20-20304050-5|Lehmann  |Ian    |Sancor Salud |
+
+#     When Ingresa a urgencias el siguiente paciente omitiendo datos obligatorios:
+#       |CUIL         |Informe     |Nivel de Emergencia     |Temperatura     |Frecuencia Cardiaca     |Frecuencia Respiratoria     |Tension Arterial  |
+#       |20-20304050-5|<informe>   |<nivelEmergencia>       |<temperatura>   |<frecuenciaCardiaca>    |<frecuenciaRespiratoria>    |<tensionArterial> |
+
+#     Then Se emite un mensaje de error indicando que <campoFaltante> faltante es obligatorio
+
+#     Examples:
+#       | informe | nivelEmergencia | temperatura | frecuenciaCardiaca | frecuenciaRespiratoria | tensionArterial | campoFaltante                |
+#       |         | Emergencia      | 39         | 70                 | 15                     | 120/80          | informe                      |
+#       | Dengue  |                 | 39         | 70                 | 15                     | 120/80          | nivel de emergencia          |
+#       | Dengue  | Emergencia      |            | 70                 | 15                     | 120/80          | temperatura                  |
+#       | Dengue  | Emergencia      | 39         |                    | 15                     | 120/80          | frecuencia cardiaca          |
+#       | Dengue  | Emergencia      | 39         | 70                 |                        | 120/80          | frecuencia respiratoria      |
+#       | Dengue  | Emergencia      | 39         | 70                 | 15                     |                 | tensión arterial             |
 
   Scenario: Error por frecuencia cardíaca negativa
     Given Que estan cargados los siguientes pacientes en el sistema:

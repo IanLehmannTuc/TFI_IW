@@ -4,75 +4,78 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Value Object que representa un Email.
- * Es inmutable y garantiza que el formato sea válido.
+ * Value Object que representa un email válido.
+ * Encapsula las reglas de validación de formato de email.
  */
-public final class Email {
+public class Email {
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
         "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
     );
-    private final String valor;
+    
+    private final String value;
 
     /**
-     * Constructor que crea un nuevo Email.
+     * Constructor privado. Usar el método estático from() para crear instancias.
      * 
-     * @param valor el email en formato válido (ejemplo: usuario@dominio.com)
-     * @throws IllegalArgumentException si el valor es nulo, vacío o tiene formato inválido
+     * @param value El valor del email
      */
-    public Email(String valor) {
-        if (valor == null || valor.trim().isEmpty()) {
+    private Email(String value) {
+        this.value = value;
+    }
+
+    /**
+     * Crea una instancia de Email a partir de un String.
+     * 
+     * @param email El email a validar
+     * @return Una instancia de Email si es válido
+     * @throws IllegalArgumentException Si el email no es válido
+     */
+    public static Email from(String email) {
+        if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("El email no puede ser nulo o vacío");
         }
         
-        String emailLimpio = valor.trim().toLowerCase();
+        String trimmedEmail = email.trim().toLowerCase();
         
-        if (!EMAIL_PATTERN.matcher(emailLimpio).matches()) {
-            throw new IllegalArgumentException(
-                "El email debe tener un formato válido (ejemplo: usuario@dominio.com)"
-            );
+        if (!EMAIL_PATTERN.matcher(trimmedEmail).matches()) {
+            throw new IllegalArgumentException("El email no tiene un formato válido");
         }
         
-        this.valor = emailLimpio;
-    }
-
-    public String getValor() {
-        return valor;
+        return new Email(trimmedEmail);
     }
 
     /**
-     * Retorna el usuario del email (parte antes del @).
+     * Valida si un string tiene formato de email válido sin lanzar excepción.
      * 
-     * @return el usuario (ejemplo: para "usuario@dominio.com" retorna "usuario")
+     * @param email El email a validar
+     * @return true si es válido, false en caso contrario
      */
-    public String getUsuario() {
-        return valor.substring(0, valor.indexOf('@'));
+    public static boolean isValid(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        return EMAIL_PATTERN.matcher(email.trim()).matches();
     }
 
-    /**
-     * Retorna el dominio del email (parte después del @).
-     * 
-     * @return el dominio (ejemplo: para "usuario@dominio.com" retorna "dominio.com")
-     */
-    public String getDominio() {
-        return valor.substring(valor.indexOf('@') + 1);
+    public String getValue() {
+        return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Email)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         Email email = (Email) o;
-        return Objects.equals(valor, email.valor);
+        return Objects.equals(value, email.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(valor);
+        return Objects.hash(value);
     }
 
     @Override
     public String toString() {
-        return valor;
+        return value;
     }
 }
-

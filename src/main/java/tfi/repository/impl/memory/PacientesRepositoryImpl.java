@@ -1,5 +1,6 @@
 package tfi.repository.impl.memory;
 
+import org.springframework.stereotype.Repository;
 import tfi.model.entity.Paciente;
 import tfi.repository.interfaces.PacientesRepository;
 
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Repository
 public class PacientesRepositoryImpl implements PacientesRepository {
 
     private final Map<String, Paciente> store;

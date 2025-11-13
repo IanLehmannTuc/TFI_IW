@@ -1,5 +1,6 @@
 package tfi.repository.impl.memory;
 
+import org.springframework.stereotype.Repository;
 import tfi.model.entity.Ingreso;
 import tfi.repository.interfaces.IngresoRepository;
 
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Repository
 public class IngresoRepositoryImpl implements IngresoRepository {
 
     private final Map<String, Ingreso> store;

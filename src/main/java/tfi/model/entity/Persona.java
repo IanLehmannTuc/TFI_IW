@@ -23,7 +23,7 @@ public class Persona {
         this.cuil = new Cuil(cuil);
         this.nombre = nombre;
         this.apellido = apellido;
-        this.email = email != null ? new Email(email) : null;
+        this.email = email != null ? Email.from(email) : null;
     }
 
     // Métodos para obtener los Value Objects
@@ -61,10 +61,10 @@ public class Persona {
     }
 
     public String getEmail() {
-        return email != null ? email.getValor() : null;
+        return email != null ? email.getValue() : null;
     }
 
     public void setEmail(String email) {
-        this.email = email != null ? new Email(email) : null;
+        this.email = email != null ? Email.from(email) : null;
     }
 }
