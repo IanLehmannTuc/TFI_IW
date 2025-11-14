@@ -1,11 +1,21 @@
 package tfi.model.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * DTO para la solicitud de inicio de sesión.
  * Contiene las credenciales del usuario.
+ * 
+ * NOTA: La validación de formato de email se realiza en el Value Object Email
+ * del dominio, que es la fuente de verdad. Aquí solo validamos que no sea vacío
+ * para fallar rápido.
  */
 public class LoginRequest {
+    
+    @NotBlank(message = "El email es obligatorio")
     private String email;
+    
+    @NotBlank(message = "La contraseña es obligatoria")
     private String password;
 
     /**

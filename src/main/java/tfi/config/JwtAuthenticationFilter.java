@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tfi.model.enums.Autoridad;
@@ -20,6 +22,7 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private final JwtUtil jwtUtil;
 
     /**
@@ -45,32 +48,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         
-        // Obtener el token del header Authorization
         String authHeader = request.getHeader("Authorization");
         
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            // Extraer token (remover prefijo "Bearer ")
             String token = authHeader.substring(7);
             
             try {
-                // Validar token
                 if (jwtUtil.validateToken(token)) {
-                    // Extraer información del usuario del token
                     String email = jwtUtil.getEmailFromToken(token);
                     Autoridad autoridad = jwtUtil.getAutoridadFromToken(token);
                     
-                    // Guardar en el request para que los controllers puedan acceder
                     request.setAttribute("userEmail", email);
                     request.setAttribute("userAutoridad", autoridad);
+                    
+                    logger.debug("Usuario autenticado: {} con autoridad: {}", email, autoridad);
+                } else {
+                    logger.warn("Token JWT inválido recibido desde IP: {}", request.getRemoteAddr());
                 }
             } catch (Exception e) {
-                // Token inválido, expirado o manipulado
-                // Continuar sin autenticar - el controller debe manejar la ausencia de atributos
-                // Log opcional: logger.debug("Token JWT inválido: {}", e.getMessage());
+                logger.warn("Error al procesar token JWT desde IP {}: {}", 
+                    request.getRemoteAddr(), e.getMessage());
             }
         }
         
-        // Continuar con la cadena de filtros
         filterChain.doFilter(request, response);
     }
 
@@ -84,7 +84,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        // No aplicar filtro a endpoints públicos de autenticación
         return path.startsWith("/api/auth/login") || 
                path.startsWith("/api/auth/registro");
     }

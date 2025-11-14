@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import tfi.config.JwtConfig;
 import tfi.model.entity.Usuario;
@@ -28,9 +29,8 @@ public class JwtUtil {
      * 
      * @param jwtConfig Configuración de JWT
      */
-    public JwtUtil(JwtConfig jwtConfig) {
+    public JwtUtil(@NonNull JwtConfig jwtConfig) {
         this.jwtConfig = jwtConfig;
-        // Crear una clave segura HMAC-SHA desde el string de configuración
         this.key = Keys.hmacShaKeyFor(
             jwtConfig.getSecretKey().getBytes(StandardCharsets.UTF_8)
         );
@@ -43,16 +43,16 @@ public class JwtUtil {
      * @param usuario El usuario para el cual generar el token
      * @return El token JWT firmado
      */
-    public String generateToken(Usuario usuario) {
+    public String generateToken(@NonNull Usuario usuario) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationTime());
         
         return Jwts.builder()
-                .subject(usuario.getEmail().getValue())             // Subject: email del usuario (extraer String del VO)
-                .claim("autoridad", usuario.getAutoridad().name())  // Claim custom: rol
-                .issuedAt(now)                                      // Fecha de emisión
-                .expiration(expiryDate)                             // Fecha de expiración
-                .signWith(key)                                      // Firma con clave secreta
+                .subject(usuario.getEmail().getValue())
+                .claim("autoridad", usuario.getAutoridad().name())
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(key)
                 .compact();
     }
 
@@ -63,7 +63,7 @@ public class JwtUtil {
      * @return El email del usuario
      * @throws JwtException Si el token es inválido o expirado
      */
-    public String getEmailFromToken(String token) {
+    public String getEmailFromToken(@NonNull String token) {
         Claims claims = parseToken(token);
         return claims.getSubject();
     }
@@ -75,7 +75,7 @@ public class JwtUtil {
      * @return La autoridad del usuario
      * @throws JwtException Si el token es inválido o expirado
      */
-    public Autoridad getAutoridadFromToken(String token) {
+    public Autoridad getAutoridadFromToken(@NonNull String token) {
         Claims claims = parseToken(token);
         String autoridad = claims.get("autoridad", String.class);
         return Autoridad.valueOf(autoridad);
@@ -87,12 +87,11 @@ public class JwtUtil {
      * @param token El token JWT a validar
      * @return true si el token es válido, false en caso contrario
      */
-    public boolean validateToken(String token) {
+    public boolean validateToken(@NonNull String token) {
         try {
             parseToken(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            // Token inválido, expirado, o manipulado
             return false;
         }
     }
@@ -118,8 +117,12 @@ public class JwtUtil {
      * @param token El token JWT
      * @return La fecha de expiración
      * @throws JwtException Si el token es inválido
+     * @throws IllegalArgumentException Si el token es null
      */
-    public Date getExpirationFromToken(String token) {
+    public Date getExpirationFromToken(@NonNull String token) {
+        if (token == null) {
+            throw new IllegalArgumentException("El token no puede ser nulo");
+        }
         Claims claims = parseToken(token);
         return claims.getExpiration();
     }
@@ -128,9 +131,17 @@ public class JwtUtil {
      * Verifica si un token ha expirado.
      * 
      * @param token El token JWT
-     * @return true si el token ha expirado
+     * @return true si el token ha expirado o es inválido
+     * @throws IllegalArgumentException Si el token es null
      */
-    public boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(@NonNull String token) {
+        if (token == null) {
+            throw new IllegalArgumentException("El token no puede ser nulo");
+        }
+        if (!validateToken(token)) {
+            return true;
+        }
+        
         try {
             Date expiration = getExpirationFromToken(token);
             return expiration.before(new Date());

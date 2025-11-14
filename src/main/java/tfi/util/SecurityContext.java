@@ -1,6 +1,7 @@
 package tfi.util;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.lang.NonNull;
 import tfi.exception.AutenticacionException;
 import tfi.exception.ForbiddenException;
 import tfi.model.dto.UsuarioAutenticado;
@@ -13,7 +14,6 @@ import tfi.model.enums.Autoridad;
  */
 public class SecurityContext {
 
-    // Atributos del request donde se almacena la información del usuario
     private static final String USER_EMAIL_ATTRIBUTE = "userEmail";
     private static final String USER_AUTORIDAD_ATTRIBUTE = "userAutoridad";
 
@@ -31,13 +31,17 @@ public class SecurityContext {
      * @param request El request HTTP actual
      * @return El usuario autenticado
      * @throws AutenticacionException Si no hay usuario autenticado
+     * @throws IllegalArgumentException Si el request es null
      */
-    public static UsuarioAutenticado getUsuarioAutenticado(HttpServletRequest request) {
+    public static UsuarioAutenticado getUsuarioAutenticado(@NonNull HttpServletRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("El request no puede ser nulo");
+        }
         String email = (String) request.getAttribute(USER_EMAIL_ATTRIBUTE);
         Autoridad autoridad = (Autoridad) request.getAttribute(USER_AUTORIDAD_ATTRIBUTE);
         
         if (email == null || autoridad == null) {
-            throw new AutenticacionException("No autenticado. Token JWT requerido.");
+            throw new AutenticacionException(MensajesError.NO_AUTENTICADO);
         }
         
         return new UsuarioAutenticado(email, autoridad);
@@ -49,8 +53,12 @@ public class SecurityContext {
      * 
      * @param request El request HTTP actual
      * @return El usuario autenticado o null si no está autenticado
+     * @throws IllegalArgumentException Si el request es null
      */
-    public static UsuarioAutenticado getUsuarioAutenticadoOrNull(HttpServletRequest request) {
+    public static UsuarioAutenticado getUsuarioAutenticadoOrNull(@NonNull HttpServletRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("El request no puede ser nulo");
+        }
         String email = (String) request.getAttribute(USER_EMAIL_ATTRIBUTE);
         Autoridad autoridad = (Autoridad) request.getAttribute(USER_AUTORIDAD_ATTRIBUTE);
         
@@ -69,13 +77,20 @@ public class SecurityContext {
      * @param autoridadRequerida La autoridad necesaria
      * @throws ForbiddenException Si el usuario no tiene el permiso
      * @throws AutenticacionException Si no hay usuario autenticado
+     * @throws IllegalArgumentException Si el request o la autoridad son null
      */
-    public static void requireAutoridad(HttpServletRequest request, Autoridad autoridadRequerida) {
+    public static void requireAutoridad(@NonNull HttpServletRequest request, @NonNull Autoridad autoridadRequerida) {
+        if (request == null) {
+            throw new IllegalArgumentException("El request no puede ser nulo");
+        }
+        if (autoridadRequerida == null) {
+            throw new IllegalArgumentException("La autoridad requerida no puede ser nula");
+        }
         UsuarioAutenticado usuario = getUsuarioAutenticado(request);
         
         if (usuario.getAutoridad() != autoridadRequerida) {
             throw new ForbiddenException(
-                "No tiene permisos para esta operación. Se requiere: " + autoridadRequerida
+                MensajesError.sinPermisosParaAutoridad(autoridadRequerida.name())
             );
         }
     }
@@ -87,8 +102,15 @@ public class SecurityContext {
      * @param autoridades Las autoridades aceptadas
      * @throws ForbiddenException Si el usuario no tiene ninguna de las autoridades
      * @throws AutenticacionException Si no hay usuario autenticado
+     * @throws IllegalArgumentException Si el request es null o las autoridades están vacías
      */
-    public static void requireAnyAutoridad(HttpServletRequest request, Autoridad... autoridades) {
+    public static void requireAnyAutoridad(@NonNull HttpServletRequest request, Autoridad... autoridades) {
+        if (request == null) {
+            throw new IllegalArgumentException("El request no puede ser nulo");
+        }
+        if (autoridades == null || autoridades.length == 0) {
+            throw new IllegalArgumentException("Debe especificar al menos una autoridad");
+        }
         UsuarioAutenticado usuario = getUsuarioAutenticado(request);
         
         for (Autoridad autoridad : autoridades) {
@@ -97,11 +119,11 @@ public class SecurityContext {
             }
         }
         
-        throw new ForbiddenException(
-            "No tiene permisos para esta operación. Se requiere una de: " + 
-            String.join(", ", java.util.Arrays.stream(autoridades)
+        String autoridadesStr = String.join(", ", java.util.Arrays.stream(autoridades)
                 .map(Enum::name)
-                .toArray(String[]::new))
+                .toArray(String[]::new));
+        throw new ForbiddenException(
+            MensajesError.sinPermisosParaAutoridades(autoridadesStr)
         );
     }
 
@@ -110,8 +132,12 @@ public class SecurityContext {
      * 
      * @param request El request HTTP actual
      * @return true si hay usuario autenticado, false en caso contrario
+     * @throws IllegalArgumentException Si el request es null
      */
-    public static boolean isAuthenticated(HttpServletRequest request) {
+    public static boolean isAuthenticated(@NonNull HttpServletRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("El request no puede ser nulo");
+        }
         return getUsuarioAutenticadoOrNull(request) != null;
     }
 }

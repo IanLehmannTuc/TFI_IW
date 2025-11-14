@@ -33,8 +33,8 @@ public class SecurityConfig {
             new FilterRegistrationBean<>();
         
         registrationBean.setFilter(jwtAuthenticationFilter);
-        registrationBean.addUrlPatterns("/api/*"); // Aplicar a todas las rutas /api/*
-        registrationBean.setOrder(1); // Ejecutar primero en la cadena de filtros
+        registrationBean.addUrlPatterns("/api/*");
+        registrationBean.setOrder(1);
         
         return registrationBean;
     }

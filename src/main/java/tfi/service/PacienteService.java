@@ -4,8 +4,6 @@ import org.springframework.stereotype.Service;
 import tfi.model.entity.Paciente;
 import tfi.repository.interfaces.PacientesRepository;
 
-import java.util.Optional;
-
 @Service
 public class PacienteService {
     

@@ -65,11 +65,9 @@ public final class Cuil {
         try {
             String sinGuiones = cuil.replace("-", "");
             
-            // Los primeros 10 dígitos se usan para calcular
             String base = sinGuiones.substring(0, 10);
             int digitoVerificador = Integer.parseInt(sinGuiones.substring(10, 11));
             
-            // Multiplicadores según algoritmo de CUIL
             int[] multiplicadores = {5, 4, 3, 2, 7, 6, 5, 4, 3, 2};
             int suma = 0;
             
@@ -80,7 +78,6 @@ public final class Cuil {
             int resto = suma % 11;
             int digitoCalculado = 11 - resto;
             
-            // Casos especiales
             if (digitoCalculado == 11) {
                 digitoCalculado = 0;
             } else if (digitoCalculado == 10) {

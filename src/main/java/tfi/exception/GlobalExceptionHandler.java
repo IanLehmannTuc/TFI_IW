@@ -2,9 +2,13 @@ package tfi.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import tfi.model.dto.ErrorResponse;
+
+import java.util.stream.Collectors;
 
 /**
  * Manejador global de excepciones para la aplicación.
@@ -52,6 +56,25 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleForbiddenException(ForbiddenException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+    
+    /**
+     * Maneja errores de validación de Bean Validation.
+     * Se lanza cuando los DTOs no cumplen con las anotaciones de validación.
+     * 
+     * @param ex La excepción de validación
+     * @return 400 Bad Request con mensajes de validación
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        String mensaje = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(", "));
+        
+        ErrorResponse error = new ErrorResponse(mensaje, HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
     
     /**

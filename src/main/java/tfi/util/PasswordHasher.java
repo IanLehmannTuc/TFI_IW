@@ -60,7 +60,6 @@ public class PasswordHasher {
         try {
             return BCrypt.checkpw(plainPassword, hashedPassword);
         } catch (IllegalArgumentException e) {
-            // Hash inválido o corrupto
             return false;
         }
     }

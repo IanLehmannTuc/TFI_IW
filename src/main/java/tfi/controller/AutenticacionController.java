@@ -1,6 +1,7 @@
 package tfi.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +43,7 @@ public class AutenticacionController {
      *         400 Bad Request si los datos son inválidos o el email ya existe
      */
     @PostMapping("/registro")
-    public ResponseEntity<AuthResponse> registrar(@RequestBody RegistroRequest request) {
+    public ResponseEntity<AuthResponse> registrar(@Valid @RequestBody RegistroRequest request) {
         AuthResponse response = autenticacionService.registrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -59,7 +60,7 @@ public class AutenticacionController {
      *         401 Unauthorized si las credenciales son inválidas
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = autenticacionService.login(request);
         return ResponseEntity.ok(response);
     }

@@ -2,7 +2,6 @@ package tfi.repository.interfaces;
 
 import tfi.model.entity.Paciente;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Repositorio para gestionar la persistencia de pacientes.

@@ -26,7 +26,6 @@ public class Persona {
         this.email = email != null ? Email.from(email) : null;
     }
 
-    // Métodos para obtener los Value Objects
     public Cuil getCuilVO() {
         return cuil;
     }
@@ -35,7 +34,6 @@ public class Persona {
         return email;
     }
 
-    // Métodos de compatibilidad que retornan String
     public String getCuil() {
         return cuil != null ? cuil.getValor() : null;
     }
