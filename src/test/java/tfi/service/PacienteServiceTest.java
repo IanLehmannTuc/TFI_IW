@@ -35,21 +35,16 @@ class PacienteServiceTest {
         pacienteService = new PacienteService(pacientesRepository);
     }
 
-    // ========== TESTS DE REGISTRO EXITOSO ==========
-
     @Test
     void registrarDebeCrearPacienteConDatosValidosSinObraSocial() {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         request.setObraSocial(null);
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         when(pacientesRepository.add(any(Paciente.class))).thenAnswer(invocation -> invocation.getArgument(0));
         
-        // Act
         PacienteResponse response = pacienteService.registrar(request);
         
-        // Assert
         assertNotNull(response);
         assertEquals("20-20304050-5", response.getCuil());
         assertEquals("Juan", response.getNombre());
@@ -66,18 +61,14 @@ class PacienteServiceTest {
 
     @Test
     void registrarDebeCrearPacienteConObraSocialValida() {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
-        // Asegurar que el nombre de obra social esté en el request
         request.getObraSocial().getObraSocial().setNombreObraSocial("OSDE");
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         when(pacientesRepository.add(any(Paciente.class))).thenAnswer(invocation -> invocation.getArgument(0));
         
-        // Act
         PacienteResponse response = pacienteService.registrar(request);
         
-        // Assert
         assertNotNull(response);
         assertNotNull(response.getObraSocial());
         assertEquals("12345678", response.getObraSocial().getNumeroAfiliado());
@@ -87,16 +78,13 @@ class PacienteServiceTest {
         verify(pacientesRepository).add(any(Paciente.class));
     }
 
-    // ========== TESTS DE VALIDACIONES ==========
-
     @Test
     void registrarDebeLanzarExcepcionSiCuilYaExiste() {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(true);
         
-        // Act & Assert
+ & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -109,13 +97,12 @@ class PacienteServiceTest {
 
     @Test
     void registrarDebeLanzarExcepcionSiDomicilioCalleEsNula() {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         request.getDomicilio().setCalle(null);
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
-        // Act & Assert
+ & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -127,13 +114,12 @@ class PacienteServiceTest {
 
     @Test
     void registrarDebeLanzarExcepcionSiDomicilioNumeroEsCero() {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         request.getDomicilio().setNumero(0);
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
-        // Act & Assert
+ & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -145,13 +131,12 @@ class PacienteServiceTest {
 
     @Test
     void registrarDebeLanzarExcepcionSiDomicilioLocalidadEsNula() {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         request.getDomicilio().setLocalidad(null);
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
-        // Act & Assert
+ & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -163,13 +148,12 @@ class PacienteServiceTest {
 
     @Test
     void registrarDebeLanzarExcepcionSiNumeroAfiliadoEsNulo() {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         request.getObraSocial().setNumeroAfiliado(null);
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
-        // Act & Assert
+ & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -181,13 +165,12 @@ class PacienteServiceTest {
 
     @Test
     void registrarDebeLanzarExcepcionSiNumeroAfiliadoEsVacio() {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         request.getObraSocial().setNumeroAfiliado("   ");
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
-        // Act & Assert
+ & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -197,20 +180,15 @@ class PacienteServiceTest {
         verify(pacientesRepository, never()).add(any());
     }
 
-    // ========== TESTS DE BUSQUEDA ==========
-
     @Test
     void findByCuilDebeRetornarPacienteSiExiste() {
-        // Arrange
         String cuil = "20-20304050-5";
         Paciente paciente = crearPacienteBasico();
         
         when(pacientesRepository.findByCuil(cuil)).thenReturn(paciente);
         
-        // Act
         Paciente resultado = pacienteService.findByCuil(cuil);
         
-        // Assert
         assertNotNull(resultado);
         assertEquals(cuil, resultado.getCuil());
         verify(pacientesRepository).findByCuil(cuil);
@@ -218,50 +196,39 @@ class PacienteServiceTest {
 
     @Test
     void findByCuilDebeRetornarNullSiNoExiste() {
-        // Arrange
         String cuil = "20-20304050-5";
         
         when(pacientesRepository.findByCuil(cuil)).thenReturn(null);
         
-        // Act
         Paciente resultado = pacienteService.findByCuil(cuil);
         
-        // Assert
         assertNull(resultado);
         verify(pacientesRepository).findByCuil(cuil);
     }
 
     @Test
     void existsByCuilDebeRetornarTrueSiExiste() {
-        // Arrange
         String cuil = "20-20304050-5";
         
         when(pacientesRepository.existsByCuil(cuil)).thenReturn(true);
         
-        // Act
         boolean resultado = pacienteService.existsByCuil(cuil);
         
-        // Assert
         assertTrue(resultado);
         verify(pacientesRepository).existsByCuil(cuil);
     }
 
     @Test
     void existsByCuilDebeRetornarFalseSiNoExiste() {
-        // Arrange
         String cuil = "20-20304050-5";
         
         when(pacientesRepository.existsByCuil(cuil)).thenReturn(false);
         
-        // Act
         boolean resultado = pacienteService.existsByCuil(cuil);
         
-        // Assert
         assertFalse(resultado);
         verify(pacientesRepository).existsByCuil(cuil);
     }
-
-    // ========== MÉTODOS AUXILIARES ==========
 
     private RegistroPacienteRequest crearRequestBasico() {
         RegistroPacienteRequest request = new RegistroPacienteRequest();

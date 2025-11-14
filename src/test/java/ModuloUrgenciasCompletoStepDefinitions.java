@@ -147,10 +147,8 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             String cuil = pacienteData.get("CUIL");
             String nivelStr = pacienteData.get("Nivel de Emergencia").toUpperCase().replace(" ", "_");
 
-            // Buscar paciente, si no existe crear uno nuevo
             Paciente paciente = pacienteService.findByCuil(cuil);
             if (paciente == null) {
-                // Paciente nuevo - obtener nombre y apellido de la tabla o usar valores por defecto
                 String nombre = pacienteData.getOrDefault("Nombre", "Sin Nombre");
                 String apellido = pacienteData.getOrDefault("Apellido", "Sin Apellido");
                 paciente = new Paciente(cuil, nombre, apellido);
@@ -188,7 +186,6 @@ public class ModuloUrgenciasCompletoStepDefinitions {
                 nivelEmergencia
             );
             
-            // Solo registrar si no hubo errores en la creación del ingreso
             this.ingreso = this.urgenciaService.registrarIngreso(this.ingreso);
         } catch (RuntimeException e) {
             ultimoError = e.getMessage();
@@ -329,7 +326,6 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         List<Ingreso> colaAtencion = this.urgenciaService.obtenerColaDeAtencion();
         List<String> cuilesEsperados = dataTable.asList(String.class);
         
-        // Extraer los CUILs de los ingresos en cola
         List<String> cuilesEnCola = colaAtencion.stream()
             .map(ingreso -> ingreso.getPaciente().getCuil())
             .toList();  

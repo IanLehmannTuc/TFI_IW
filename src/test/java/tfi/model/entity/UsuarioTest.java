@@ -14,15 +14,12 @@ class UsuarioTest {
 
     @Test
     void debeCrearUsuarioConDatosValidos() {
-        // Arrange
         Email email = Email.from("medico@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
         Autoridad autoridad = Autoridad.MEDICO;
         
-        // Act
         Usuario usuario = new Usuario(email, passwordHash, autoridad);
         
-        // Assert
         assertNotNull(usuario);
         assertEquals(email, usuario.getEmail());
         assertEquals(passwordHash, usuario.getPasswordHash());
@@ -31,10 +28,9 @@ class UsuarioTest {
 
     @Test
     void debeLanzarExcepcionSiEmailEsNull() {
-        // Arrange
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
         
-        // Act & Assert
+ & Assert
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(null, passwordHash, Autoridad.MEDICO)
@@ -45,10 +41,9 @@ class UsuarioTest {
 
     @Test
     void debeLanzarExcepcionSiPasswordHashEsNull() {
-        // Arrange
         Email email = Email.from("medico@hospital.com");
         
-        // Act & Assert
+ & Assert
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, null, Autoridad.MEDICO)
@@ -59,10 +54,9 @@ class UsuarioTest {
 
     @Test
     void debeLanzarExcepcionSiPasswordHashEsVacio() {
-        // Arrange
         Email email = Email.from("medico@hospital.com");
         
-        // Act & Assert
+ & Assert
         assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, "", Autoridad.MEDICO)
@@ -71,11 +65,10 @@ class UsuarioTest {
 
     @Test
     void debeLanzarExcepcionSiAutoridadEsNull() {
-        // Arrange
         Email email = Email.from("medico@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
         
-        // Act & Assert
+ & Assert
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, passwordHash, null)
@@ -86,54 +79,44 @@ class UsuarioTest {
 
     @Test
     void debeCrearUsuarioConAutoridadMedico() {
-        // Arrange
         Email email = Email.from("medico@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
         
-        // Act
         Usuario usuario = new Usuario(email, passwordHash, Autoridad.MEDICO);
         
-        // Assert
         assertEquals(Autoridad.MEDICO, usuario.getAutoridad());
     }
 
     @Test
     void debeCrearUsuarioConAutoridadEnfermera() {
-        // Arrange
         Email email = Email.from("enfermera@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
         
-        // Act
         Usuario usuario = new Usuario(email, passwordHash, Autoridad.ENFERMERA);
         
-        // Assert
         assertEquals(Autoridad.ENFERMERA, usuario.getAutoridad());
     }
 
     @Test
     void debePermitirActualizarEmail() {
-        // Arrange
         Email emailOriginal = Email.from("medico@hospital.com");
         Usuario usuario = new Usuario(emailOriginal, "hash", Autoridad.MEDICO);
         Email nuevoEmail = Email.from("nuevo@hospital.com");
         
-        // Act
         usuario.setEmail(nuevoEmail);
         
-        // Assert
         assertEquals(nuevoEmail, usuario.getEmail());
     }
 
     @Test
     void setEmailDebeLanzarExcepcionSiEsNull() {
-        // Arrange
         Usuario usuario = new Usuario(
             Email.from("medico@hospital.com"), 
             "hash", 
             Autoridad.MEDICO
         );
         
-        // Act & Assert
+ & Assert
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setEmail(null)
@@ -142,30 +125,26 @@ class UsuarioTest {
 
     @Test
     void debePermitirActualizarPasswordHash() {
-        // Arrange
         Usuario usuario = new Usuario(
             Email.from("medico@hospital.com"), 
             "hashOriginal", 
             Autoridad.MEDICO
         );
         
-        // Act
         usuario.setPasswordHash("nuevoHash");
         
-        // Assert
         assertEquals("nuevoHash", usuario.getPasswordHash());
     }
 
     @Test
     void setPasswordHashDebeLanzarExcepcionSiEsNull() {
-        // Arrange
         Usuario usuario = new Usuario(
             Email.from("medico@hospital.com"), 
             "hash", 
             Autoridad.MEDICO
         );
         
-        // Act & Assert
+ & Assert
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setPasswordHash(null)
@@ -174,14 +153,13 @@ class UsuarioTest {
 
     @Test
     void setPasswordHashDebeLanzarExcepcionSiEsVacio() {
-        // Arrange
         Usuario usuario = new Usuario(
             Email.from("medico@hospital.com"), 
             "hash", 
             Autoridad.MEDICO
         );
         
-        // Act & Assert
+ & Assert
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setPasswordHash("")
@@ -190,30 +168,26 @@ class UsuarioTest {
 
     @Test
     void debePermitirActualizarAutoridad() {
-        // Arrange
         Usuario usuario = new Usuario(
             Email.from("medico@hospital.com"), 
             "hash", 
             Autoridad.MEDICO
         );
         
-        // Act
         usuario.setAutoridad(Autoridad.ENFERMERA);
         
-        // Assert
         assertEquals(Autoridad.ENFERMERA, usuario.getAutoridad());
     }
 
     @Test
     void setAutoridadDebeLanzarExcepcionSiEsNull() {
-        // Arrange
         Usuario usuario = new Usuario(
             Email.from("medico@hospital.com"), 
             "hash", 
             Autoridad.MEDICO
         );
         
-        // Act & Assert
+ & Assert
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setAutoridad(null)
@@ -222,19 +196,17 @@ class UsuarioTest {
 
     @Test
     void dosUsuariosConMismoEmailDebenSerIguales() {
-        // Arrange
         Email email = Email.from("medico@hospital.com");
         Usuario usuario1 = new Usuario(email, "hash1", Autoridad.MEDICO);
         Usuario usuario2 = new Usuario(email, "hash2", Autoridad.ENFERMERA);
         
-        // Act & Assert
+ & Assert
         assertEquals(usuario1, usuario2);
         assertEquals(usuario1.hashCode(), usuario2.hashCode());
     }
 
     @Test
     void dosUsuariosConDiferenteEmailNoDebenSerIguales() {
-        // Arrange
         Usuario usuario1 = new Usuario(
             Email.from("medico1@hospital.com"), 
             "hash", 
@@ -246,23 +218,20 @@ class UsuarioTest {
             Autoridad.MEDICO
         );
         
-        // Act & Assert
+ & Assert
         assertNotEquals(usuario1, usuario2);
     }
 
     @Test
     void toStringNoDebeRevelarPasswordHash() {
-        // Arrange
         Usuario usuario = new Usuario(
             Email.from("medico@hospital.com"), 
             "secretHash", 
             Autoridad.MEDICO
         );
         
-        // Act
         String resultado = usuario.toString();
         
-        // Assert
         assertFalse(resultado.contains("secretHash"));
         assertTrue(resultado.contains("medico@hospital.com"));
         assertTrue(resultado.contains("MEDICO"));

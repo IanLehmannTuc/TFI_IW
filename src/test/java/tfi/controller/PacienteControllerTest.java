@@ -49,19 +49,13 @@ class PacienteControllerTest {
         objectMapper = new ObjectMapper();
     }
 
-    // ========== TESTS DE REGISTRO ==========
-
     @Test
     void registrarDebeRetornar201ConPacienteCreado() throws Exception {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
             PacienteResponse response = crearResponseBasico();
         
         when(pacienteService.registrar(any(RegistroPacienteRequest.class))).thenReturn(response);
         
-        // Act & Assert
-        // Nota: En un test de integración real, se debería configurar el filtro JWT
-        // Aquí simplificamos asumiendo que la autenticación pasa
         mockMvc.perform(post("/api/pacientes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
@@ -80,13 +74,11 @@ class PacienteControllerTest {
 
     @Test
     void registrarDebeRetornar400SiCuilYaExiste() throws Exception {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         
         when(pacienteService.registrar(any(RegistroPacienteRequest.class)))
                 .thenThrow(new PacienteException("Ya existe un paciente con el CUIL especificado"));
         
-        // Act & Assert
         mockMvc.perform(post("/api/pacientes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
@@ -99,11 +91,8 @@ class PacienteControllerTest {
 
     @Test
     void registrarDebeRetornar400SiDatosInvalidos() throws Exception {
-        // Arrange
         RegistroPacienteRequest request = new RegistroPacienteRequest();
-        // Request sin datos requeridos
         
-        // Act & Assert
         mockMvc.perform(post("/api/pacientes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
@@ -114,10 +103,8 @@ class PacienteControllerTest {
 
     @Test
     void registrarDebeRetornar403SiUsuarioNoEsEnfermera() throws Exception {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         
-        // Act & Assert - Usuario con autoridad MEDICO intenta registrar paciente
         mockMvc.perform(post("/api/pacientes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
@@ -126,37 +113,29 @@ class PacienteControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.mensaje").exists());
         
-        // Verificar que el servicio nunca fue llamado
         verify(pacienteService, never()).registrar(any(RegistroPacienteRequest.class));
     }
 
     @Test
     void registrarDebeRetornar401SiUsuarioNoEstaAutenticado() throws Exception {
-        // Arrange
         RegistroPacienteRequest request = crearRequestBasico();
         
-        // Act & Assert - Request sin atributos de usuario autenticado
         mockMvc.perform(post("/api/pacientes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.mensaje").exists());
         
-        // Verificar que el servicio nunca fue llamado
         verify(pacienteService, never()).registrar(any(RegistroPacienteRequest.class));
     }
 
-    // ========== TESTS DE BÚSQUEDA ==========
-
     @Test
     void buscarPorCuilDebeRetornar200ConPaciente() throws Exception {
-        // Arrange
         String cuil = "20-20304050-5";
         Paciente paciente = crearPacienteBasico();
         
         when(pacienteService.findByCuil(cuil)).thenReturn(paciente);
         
-        // Act & Assert
         mockMvc.perform(get("/api/pacientes/{cuil}", cuil)
                 .requestAttr("userEmail", "enfermera@hospital.com")
                 .requestAttr("userAutoridad", Autoridad.ENFERMERA))
@@ -170,12 +149,10 @@ class PacienteControllerTest {
 
     @Test
     void buscarPorCuilDebeRetornar404SiNoExiste() throws Exception {
-        // Arrange
         String cuil = "20-20304050-5";
         
         when(pacienteService.findByCuil(cuil)).thenReturn(null);
         
-        // Act & Assert
         mockMvc.perform(get("/api/pacientes/{cuil}", cuil)
                 .requestAttr("userEmail", "enfermera@hospital.com")
                 .requestAttr("userAutoridad", Autoridad.ENFERMERA))
@@ -183,8 +160,6 @@ class PacienteControllerTest {
         
         verify(pacienteService).findByCuil(cuil);
     }
-
-    // ========== MÉTODOS AUXILIARES ==========
 
     private RegistroPacienteRequest crearRequestBasico() {
         RegistroPacienteRequest request = new RegistroPacienteRequest();

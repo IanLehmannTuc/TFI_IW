@@ -50,7 +50,6 @@ public class PacienteController {
             @Valid @RequestBody RegistroPacienteRequest request,
             HttpServletRequest httpRequest) {
         
-        // Verificar que el usuario esté autenticado y sea enfermera
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERA);
         
         PacienteResponse response = pacienteService.registrar(request);
@@ -75,7 +74,6 @@ public class PacienteController {
             @PathVariable String cuil,
             HttpServletRequest httpRequest) {
         
-        // Verificar que el usuario esté autenticado
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
         var paciente = pacienteService.findByCuil(cuil);
@@ -84,14 +82,12 @@ public class PacienteController {
             return ResponseEntity.notFound().build();
         }
         
-        // Convertir entidad a DTO (simplificado, en producción usar mapper)
         PacienteResponse response = convertirPacienteAResponse(paciente);
         return ResponseEntity.ok(response);
     }
     
     /**
      * Convierte un Paciente a PacienteResponse.
-     * Método auxiliar temporal - en producción usar un mapper como MapStruct.
      */
     private PacienteResponse convertirPacienteAResponse(tfi.model.entity.Paciente paciente) {
         PacienteResponse.DomicilioResponse domicilioResponse = new PacienteResponse.DomicilioResponse(

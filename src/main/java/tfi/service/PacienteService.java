@@ -43,12 +43,10 @@ public class PacienteService {
      * @throws IllegalArgumentException Si el request es null
      */
     public PacienteResponse registrar(@NonNull RegistroPacienteRequest request) {
-        // Validar que el CUIL no esté duplicado
         if (pacientesRepository.existsByCuil(request.getCuil())) {
             throw new PacienteException(MensajesError.CUIL_YA_REGISTRADO);
         }
         
-        // Validar y construir el domicilio
         Domicilio domicilio;
         try {
             domicilio = new Domicilio(
@@ -60,17 +58,13 @@ public class PacienteService {
             throw new PacienteException(e.getMessage());
         }
         
-        // Construir obra social si se especifica (sin validación de existencia)
         Afiliado afiliado = null;
         if (request.getObraSocial() != null) {
-            // Validar que el número de afiliado no sea nulo o vacío
             if (request.getObraSocial().getNumeroAfiliado() == null || 
                 request.getObraSocial().getNumeroAfiliado().trim().isEmpty()) {
                 throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
             }
             
-            // Crear la obra social directamente desde el request
-            // NOTA: La validación de existencia se hará más adelante mediante API externa
             ObraSocial obraSocial = new ObraSocial(
                 request.getObraSocial().getObraSocial().getIdObraSocial(),
                 request.getObraSocial().getObraSocial().getNombreObraSocial() != null 
@@ -81,20 +75,17 @@ public class PacienteService {
             afiliado = new Afiliado(obraSocial, request.getObraSocial().getNumeroAfiliado());
         }
         
-        // Crear el paciente
         Paciente paciente = new Paciente(
             request.getCuil(),
             request.getNombre(),
             request.getApellido(),
-            null, // email opcional
+            null,
             domicilio,
             afiliado
         );
         
-        // Guardar el paciente
         pacientesRepository.add(paciente);
         
-        // Construir la respuesta
         return construirPacienteResponse(paciente);
     }
 
