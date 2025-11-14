@@ -63,5 +63,10 @@ public final class MensajesError {
     public static String sinPermisosParaAutoridades(String autoridades) {
         return SIN_PERMISOS + ". Se requiere una de: " + autoridades;
     }
+    
+    /**
+     * Mensaje cuando el CUIL del paciente ya está registrado.
+     */
+    public static final String CUIL_YA_REGISTRADO = "Ya existe un paciente con el CUIL especificado";
 }
 

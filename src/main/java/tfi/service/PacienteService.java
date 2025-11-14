@@ -1,23 +1,154 @@
 package tfi.service;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import tfi.exception.PacienteException;
+import tfi.model.dto.PacienteResponse;
+import tfi.model.dto.RegistroPacienteRequest;
+import tfi.model.entity.Afiliado;
+import tfi.model.entity.ObraSocial;
 import tfi.model.entity.Paciente;
+import tfi.model.valueObjects.Domicilio;
 import tfi.repository.interfaces.PacientesRepository;
+import tfi.util.MensajesError;
 
+/**
+ * Servicio para gestionar operaciones de registro y consulta de pacientes.
+ * Implementa la lógica de negocio siguiendo principios de arquitectura limpia.
+ */
 @Service
 public class PacienteService {
     
     private final PacientesRepository pacientesRepository;
 
-    public PacienteService(PacientesRepository pacientesRepository) {
+    /**
+     * Constructor con inyección de dependencias
+     * 
+     * @param pacientesRepository Repositorio de pacientes
+     */
+    public PacienteService(@NonNull PacientesRepository pacientesRepository) {
         this.pacientesRepository = pacientesRepository;
     }
 
+    /**
+     * Registra un nuevo paciente en el sistema.
+     * Valida que el CUIL no esté duplicado.
+     * 
+     * NOTA: La validación de obra social se realizará más adelante mediante una API externa.
+     * Por ahora, la obra social es solo un atributo simple.
+     * 
+     * @param request Datos de registro del paciente
+     * @return Respuesta con los datos del paciente registrado
+     * @throws PacienteException Si los datos son inválidos o el CUIL ya existe
+     * @throws IllegalArgumentException Si el request es null
+     */
+    public PacienteResponse registrar(@NonNull RegistroPacienteRequest request) {
+        // Validar que el CUIL no esté duplicado
+        if (pacientesRepository.existsByCuil(request.getCuil())) {
+            throw new PacienteException(MensajesError.CUIL_YA_REGISTRADO);
+        }
+        
+        // Validar y construir el domicilio
+        Domicilio domicilio;
+        try {
+            domicilio = new Domicilio(
+                request.getDomicilio().getCalle(),
+                request.getDomicilio().getNumero(),
+                request.getDomicilio().getLocalidad()
+            );
+        } catch (IllegalArgumentException e) {
+            throw new PacienteException(e.getMessage());
+        }
+        
+        // Construir obra social si se especifica (sin validación de existencia)
+        Afiliado afiliado = null;
+        if (request.getObraSocial() != null) {
+            // Validar que el número de afiliado no sea nulo o vacío
+            if (request.getObraSocial().getNumeroAfiliado() == null || 
+                request.getObraSocial().getNumeroAfiliado().trim().isEmpty()) {
+                throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
+            }
+            
+            // Crear la obra social directamente desde el request
+            // NOTA: La validación de existencia se hará más adelante mediante API externa
+            ObraSocial obraSocial = new ObraSocial(
+                request.getObraSocial().getObraSocial().getIdObraSocial(),
+                request.getObraSocial().getObraSocial().getNombreObraSocial() != null 
+                    ? request.getObraSocial().getObraSocial().getNombreObraSocial()
+                    : "Obra Social " + request.getObraSocial().getObraSocial().getIdObraSocial()
+            );
+            
+            afiliado = new Afiliado(obraSocial, request.getObraSocial().getNumeroAfiliado());
+        }
+        
+        // Crear el paciente
+        Paciente paciente = new Paciente(
+            request.getCuil(),
+            request.getNombre(),
+            request.getApellido(),
+            null, // email opcional
+            domicilio,
+            afiliado
+        );
+        
+        // Guardar el paciente
+        pacientesRepository.add(paciente);
+        
+        // Construir la respuesta
+        return construirPacienteResponse(paciente);
+    }
+
+    /**
+     * Busca un paciente por su CUIL.
+     * 
+     * @param cuil El CUIL del paciente
+     * @return El paciente si existe, null en caso contrario
+     */
     public Paciente findByCuil(String cuil) {
         return pacientesRepository.findByCuil(cuil);
     }
     
+    /**
+     * Verifica si existe un paciente con el CUIL especificado.
+     * 
+     * @param cuil El CUIL a verificar
+     * @return true si existe, false en caso contrario
+     */
     public boolean existsByCuil(String cuil) {
         return pacientesRepository.existsByCuil(cuil);
+    }
+    
+    /**
+     * Construye un PacienteResponse a partir de un Paciente.
+     * 
+     * @param paciente El paciente a convertir
+     * @return El DTO de respuesta
+     */
+    private PacienteResponse construirPacienteResponse(Paciente paciente) {
+        PacienteResponse.DomicilioResponse domicilioResponse = new PacienteResponse.DomicilioResponse(
+            paciente.getDomicilio().getCalle(),
+            paciente.getDomicilio().getNumero(),
+            paciente.getDomicilio().getLocalidad()
+        );
+        
+        PacienteResponse.AfiliadoResponse afiliadoResponse = null;
+        if (paciente.getObraSocial() != null) {
+            PacienteResponse.ObraSocialResponse obraSocialResponse = new PacienteResponse.ObraSocialResponse(
+                paciente.getObraSocial().getObraSocial().getIdObraSocial(),
+                paciente.getObraSocial().getObraSocial().getNombreObraSocial()
+            );
+            afiliadoResponse = new PacienteResponse.AfiliadoResponse(
+                obraSocialResponse,
+                paciente.getObraSocial().getNumeroAfiliado()
+            );
+        }
+        
+        return new PacienteResponse(
+            paciente.getCuil(),
+            paciente.getNombre(),
+            paciente.getApellido(),
+            domicilioResponse,
+            afiliadoResponse
+        );
     }
 }

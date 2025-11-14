@@ -45,6 +45,19 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * Maneja excepciones de pacientes.
+     * Puede contener mensajes específicos sobre validaciones o duplicados.
+     * 
+     * @param ex La excepción de paciente
+     * @return 400 Bad Request con mensaje descriptivo
+     */
+    @ExceptionHandler(PacienteException.class)
+    public ResponseEntity<ErrorResponse> handlePacienteException(PacienteException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
      * Maneja excepciones de permisos insuficientes.
      * Se lanza cuando un usuario autenticado intenta acceder a un recurso
      * para el cual no tiene autoridad.
