@@ -44,10 +44,6 @@ public class ModuloUrgenciasCompletoStepDefinitions {
     private Ingreso ingreso;
     private String ultimoError;
 
-    public ModuloUrgenciasCompletoStepDefinitions() {
-        
-    }
-
     @Before
     public void setup() {
         this.repoEnfermeros = new EnfermeroRepositoryImpl();
@@ -56,22 +52,10 @@ public class ModuloUrgenciasCompletoStepDefinitions {
 
         this.urgenciaService = new UrgenciaService(repoPacientes, repoEnfermeros, repoIngresos);
         this.pacienteService = new PacienteService(repoPacientes);
-
-        this.enfermero = null;
-        this.ultimoError = null;
-        this.ingreso = null;
     }
 
     @After
     public void teardown() {
-        this.repoEnfermeros = null;
-        this.repoPacientes = null;
-        this.repoIngresos = null;
-        this.pacienteService = null;
-        
-        this.enfermero = null;
-        this.ultimoError = null;
-        this.ingreso = null;
         ColaAtencionService.resetInstance();
     }
 

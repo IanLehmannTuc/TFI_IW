@@ -84,7 +84,6 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(true);
         
- & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -102,7 +101,6 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
- & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -119,7 +117,6 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
- & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -136,7 +133,6 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
- & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -153,7 +149,6 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
- & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -170,7 +165,6 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
- & Assert
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)

@@ -30,7 +30,6 @@ class UsuarioTest {
     void debeLanzarExcepcionSiEmailEsNull() {
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
         
- & Assert
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(null, passwordHash, Autoridad.MEDICO)
@@ -43,7 +42,6 @@ class UsuarioTest {
     void debeLanzarExcepcionSiPasswordHashEsNull() {
         Email email = Email.from("medico@hospital.com");
         
- & Assert
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, null, Autoridad.MEDICO)
@@ -56,7 +54,6 @@ class UsuarioTest {
     void debeLanzarExcepcionSiPasswordHashEsVacio() {
         Email email = Email.from("medico@hospital.com");
         
- & Assert
         assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, "", Autoridad.MEDICO)
@@ -68,7 +65,6 @@ class UsuarioTest {
         Email email = Email.from("medico@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
         
- & Assert
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, passwordHash, null)
@@ -116,7 +112,6 @@ class UsuarioTest {
             Autoridad.MEDICO
         );
         
- & Assert
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setEmail(null)
@@ -144,7 +139,6 @@ class UsuarioTest {
             Autoridad.MEDICO
         );
         
- & Assert
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setPasswordHash(null)
@@ -158,8 +152,7 @@ class UsuarioTest {
             "hash", 
             Autoridad.MEDICO
         );
-        
- & Assert
+ 
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setPasswordHash("")
@@ -186,8 +179,7 @@ class UsuarioTest {
             "hash", 
             Autoridad.MEDICO
         );
-        
- & Assert
+ 
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setAutoridad(null)
@@ -200,7 +192,6 @@ class UsuarioTest {
         Usuario usuario1 = new Usuario(email, "hash1", Autoridad.MEDICO);
         Usuario usuario2 = new Usuario(email, "hash2", Autoridad.ENFERMERA);
         
- & Assert
         assertEquals(usuario1, usuario2);
         assertEquals(usuario1.hashCode(), usuario2.hashCode());
     }
@@ -218,7 +209,6 @@ class UsuarioTest {
             Autoridad.MEDICO
         );
         
- & Assert
         assertNotEquals(usuario1, usuario2);
     }
 

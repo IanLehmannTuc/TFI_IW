@@ -102,13 +102,11 @@ class UsuarioRepositoryImplTest {
         );
         repository.add(usuario);
         
- 
         assertTrue(repository.existsByEmail("medico@hospital.com"));
     }
 
     @Test
     void existsByEmailDebeRetornarFalseSiNoExiste() {
- 
         assertFalse(repository.existsByEmail("noexiste@hospital.com"));
     }
 
