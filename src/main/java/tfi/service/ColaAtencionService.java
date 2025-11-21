@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
-
+import org.springframework.stereotype.Service;
 /**
  * Servicio Singleton para gestionar la cola de atención de urgencias.
  * Mantiene una cola de prioridad ordenada automáticamente por:
  * 1. Nivel de emergencia (mayor prioridad primero)
  * 2. Orden de llegada (primero en llegar, primero en atender)
  */
+@Service
 public class ColaAtencionService {
     
     private static ColaAtencionService instancia;
