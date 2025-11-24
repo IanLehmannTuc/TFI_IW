@@ -17,6 +17,7 @@ import tfi.model.entity.Paciente;
 import tfi.model.enums.Autoridad;
 import tfi.model.valueObjects.Domicilio;
 import tfi.service.PacienteService;
+import tfi.model.mapper.PacienteMapper;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -39,10 +40,12 @@ class PacienteControllerTest {
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
+    private PacienteMapper pacienteMapper;
 
     @BeforeEach
     void setUp() {
-        PacienteController controller = new PacienteController(pacienteService);
+        pacienteMapper = new PacienteMapper();
+        PacienteController controller = new PacienteController(pacienteService, pacienteMapper);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new tfi.exception.GlobalExceptionHandler())
                 .build();

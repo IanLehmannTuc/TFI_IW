@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tfi.model.mapper.PacienteMapper;
 import tfi.model.dto.PacienteResponse;
 import tfi.model.dto.RegistroPacienteRequest;
 import tfi.model.enums.Autoridad;
@@ -20,14 +21,17 @@ import tfi.util.SecurityContext;
 public class PacienteController {
     
     private final PacienteService pacienteService;
+    private final PacienteMapper pacienteMapper;
 
     /**
      * Constructor con inyección de dependencias
      * 
      * @param pacienteService Servicio de pacientes
+     * @param pacienteMapper Mapper para convertir Paciente a PacienteResponse
      */
-    public PacienteController(PacienteService pacienteService) {
+    public PacienteController(PacienteService pacienteService, PacienteMapper pacienteMapper) {
         this.pacienteService = pacienteService;
+        this.pacienteMapper = pacienteMapper;
     }
 
     /**
@@ -82,39 +86,8 @@ public class PacienteController {
             return ResponseEntity.notFound().build();
         }
         
-        PacienteResponse response = convertirPacienteAResponse(paciente);
+        PacienteResponse response = pacienteMapper.toResponse(paciente);
         return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * Convierte un Paciente a PacienteResponse.
-     */
-    private PacienteResponse convertirPacienteAResponse(tfi.model.entity.Paciente paciente) {
-        PacienteResponse.DomicilioResponse domicilioResponse = new PacienteResponse.DomicilioResponse(
-            paciente.getDomicilio().getCalle(),
-            paciente.getDomicilio().getNumero(),
-            paciente.getDomicilio().getLocalidad()
-        );
-        
-        PacienteResponse.AfiliadoResponse afiliadoResponse = null;
-        if (paciente.getObraSocial() != null) {
-            PacienteResponse.ObraSocialResponse obraSocialResponse = new PacienteResponse.ObraSocialResponse(
-                paciente.getObraSocial().getObraSocial().getIdObraSocial(),
-                paciente.getObraSocial().getObraSocial().getNombreObraSocial()
-            );
-            afiliadoResponse = new PacienteResponse.AfiliadoResponse(
-                obraSocialResponse,
-                paciente.getObraSocial().getNumeroAfiliado()
-            );
-        }
-        
-        return new PacienteResponse(
-            paciente.getCuil(),
-            paciente.getNombre(),
-            paciente.getApellido(),
-            domicilioResponse,
-            afiliadoResponse
-        );
     }
 }
 

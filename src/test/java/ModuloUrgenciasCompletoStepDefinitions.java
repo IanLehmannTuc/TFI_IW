@@ -27,6 +27,7 @@ import tfi.repository.interfaces.IngresoRepository;
 import tfi.service.PacienteService;
 import tfi.service.ColaAtencionService;
 import tfi.service.UrgenciaService;
+import tfi.model.mapper.PacienteMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,7 +52,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         this.repoIngresos = new IngresoRepositoryImpl();
 
         this.urgenciaService = new UrgenciaService(repoPacientes, repoEnfermeros, repoIngresos);
-        this.pacienteService = new PacienteService(repoPacientes);
+        this.pacienteService = new PacienteService(repoPacientes, new PacienteMapper());
     }
 
     @After

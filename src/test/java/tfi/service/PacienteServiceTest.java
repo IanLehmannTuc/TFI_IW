@@ -12,6 +12,7 @@ import tfi.model.entity.Paciente;
 import tfi.model.valueObjects.Domicilio;
 import tfi.repository.interfaces.PacientesRepository;
 import tfi.util.MensajesError;
+import tfi.model.mapper.PacienteMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,10 +30,12 @@ class PacienteServiceTest {
     private PacientesRepository pacientesRepository;
 
     private PacienteService pacienteService;
+    private PacienteMapper pacienteMapper;
 
     @BeforeEach
     void setUp() {
-        pacienteService = new PacienteService(pacientesRepository);
+        pacienteMapper = new PacienteMapper();
+        pacienteService = new PacienteService(pacientesRepository, pacienteMapper);
     }
 
     @Test
@@ -84,6 +87,7 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(true);
         
+ 
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -101,6 +105,7 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
+ 
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -117,6 +122,7 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
+ 
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -133,6 +139,7 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
+ 
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -149,6 +156,7 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
+ 
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
@@ -165,6 +173,7 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
+ 
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)

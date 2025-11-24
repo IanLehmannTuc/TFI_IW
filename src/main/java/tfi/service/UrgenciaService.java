@@ -5,9 +5,10 @@ import tfi.model.entity.Paciente;
 import tfi.repository.interfaces.PacientesRepository;
 import tfi.repository.interfaces.EnfermeroRepository;
 import tfi.repository.interfaces.IngresoRepository;
-
+import org.springframework.stereotype.Service;
 import java.util.List;
 
+@Service
 public class UrgenciaService {
     private PacientesRepository pacientesRepository;
     private EnfermeroRepository enfermeroRepository;
