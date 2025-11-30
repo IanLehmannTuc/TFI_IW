@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tfi-postgres
+    environment:
+      POSTGRES_DB: tfi
+      POSTGRES_USER: tfi_user
+      POSTGRES_PASSWORD: tfi_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tfi-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tfi_user -d tfi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  tfi-network:
+    driver: bridge
+

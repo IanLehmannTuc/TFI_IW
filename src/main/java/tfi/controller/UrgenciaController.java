@@ -5,21 +5,21 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tfi.model.dto.IngresoResponse;
-import tfi.model.dto.RegistroIngresoRequest;
-import tfi.model.entity.Enfermero;
-import tfi.model.entity.Ingreso;
-import tfi.model.entity.Paciente;
-import tfi.model.enums.Autoridad;
-import tfi.model.valueObjects.FrecuenciaCardiaca;
-import tfi.model.valueObjects.FrecuenciaRespiratoria;
-import tfi.model.valueObjects.Presion;
-import tfi.model.valueObjects.Temperatura;
-import tfi.model.valueObjects.TensionArterial;
-import tfi.model.mapper.IngresoMapper;
-import tfi.repository.interfaces.EnfermeroRepository;
-import tfi.repository.interfaces.PacientesRepository;
-import tfi.service.UrgenciaService;
+import tfi.application.dto.IngresoResponse;
+import tfi.application.dto.RegistroIngresoRequest;
+import tfi.domain.entity.Usuario;
+import tfi.domain.entity.Ingreso;
+import tfi.domain.entity.Paciente;
+import tfi.domain.enums.Autoridad;
+import tfi.domain.valueObject.FrecuenciaCardiaca;
+import tfi.domain.valueObject.FrecuenciaRespiratoria;
+import tfi.domain.valueObject.Presion;
+import tfi.domain.valueObject.Temperatura;
+import tfi.domain.valueObject.TensionArterial;
+import tfi.application.mapper.IngresoMapper;
+import tfi.domain.repository.UsuarioRepository;
+import tfi.domain.repository.PacientesRepository;
+import tfi.application.service.UrgenciaService;
 import tfi.util.SecurityContext;
 
 import java.util.List;
@@ -35,7 +35,7 @@ public class UrgenciaController {
     
     private final UrgenciaService urgenciaService;
     private final PacientesRepository pacientesRepository;
-    private final EnfermeroRepository enfermeroRepository;
+    private final UsuarioRepository usuarioRepository;
     private final IngresoMapper ingresoMapper;
 
     /**
@@ -43,22 +43,22 @@ public class UrgenciaController {
      * 
      * @param urgenciaService Servicio de urgencias
      * @param pacientesRepository Repositorio de pacientes
-     * @param enfermeroRepository Repositorio de enfermeros
+     * @param usuarioRepository Repositorio de usuarios (personal médico)
      * @param ingresoMapper Mapper para convertir Ingreso a IngresoResponse
      */
     public UrgenciaController(UrgenciaService urgenciaService,
                              PacientesRepository pacientesRepository,
-                             EnfermeroRepository enfermeroRepository,
+                             UsuarioRepository usuarioRepository,
                              IngresoMapper ingresoMapper) {
         this.urgenciaService = urgenciaService;
         this.pacientesRepository = pacientesRepository;
-        this.enfermeroRepository = enfermeroRepository;
+        this.usuarioRepository = usuarioRepository;
         this.ingresoMapper = ingresoMapper;
     }
 
     /**
      * Endpoint para registrar un nuevo ingreso a urgencias.
-     * Endpoint protegido - requiere JWT válido y autoridad ENFERMERA.
+     * Endpoint protegido - requiere JWT válido y autoridad ENFERMERO.
      * 
      * POST /api/urgencias
      * Header: Authorization: Bearer <token>
@@ -70,55 +70,17 @@ public class UrgenciaController {
      *         400 Bad Request si los datos son inválidos
      *         404 Not Found si el paciente o enfermero no existen
      *         401 Unauthorized si no hay token o es inválido
-     *         403 Forbidden si el usuario no tiene autoridad ENFERMERA
+     *         403 Forbidden si el usuario no tiene autoridad ENFERMERO
      */
     @PostMapping
     public ResponseEntity<IngresoResponse> registrarIngreso(
             @Valid @RequestBody RegistroIngresoRequest request,
             HttpServletRequest httpRequest) {
         
-        SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERA);
+        SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
-        Paciente paciente = pacientesRepository.findByCuil(request.getPacienteCuil());
-        if (paciente == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .build();
-        }
-        
-        Enfermero enfermero = enfermeroRepository.findByCuil(request.getEnfermeroCuil())
-            .orElse(null);
-        if (enfermero == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .build();
-        }
-        
-        try {
-            Temperatura temperatura = new Temperatura(request.getTemperatura());
-            TensionArterial tensionArterial = new TensionArterial(
-                new Presion(request.getTensionSistolica()),
-                new Presion(request.getTensionDiastolica())
-            );
-            FrecuenciaCardiaca frecuenciaCardiaca = new FrecuenciaCardiaca(request.getFrecuenciaCardiaca());
-            FrecuenciaRespiratoria frecuenciaRespiratoria = new FrecuenciaRespiratoria(request.getFrecuenciaRespiratoria());
-            
-            Ingreso ingreso = new Ingreso(
-                paciente,
-                enfermero,
-                request.getDescripcion(),
-                temperatura,
-                tensionArterial,
-                frecuenciaCardiaca,
-                frecuenciaRespiratoria,
-                request.getNivelEmergencia()
-            );
-            
-            Ingreso ingresoGuardado = urgenciaService.registrarIngreso(ingreso);
-            IngresoResponse response = ingresoMapper.toResponse(ingresoGuardado);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        IngresoResponse ingresoResponse = urgenciaService.registrarIngreso(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ingresoResponse);
     }
 
     /**
@@ -182,7 +144,7 @@ public class UrgenciaController {
 
     /**
      * Endpoint para actualizar un ingreso existente.
-     * Endpoint protegido - requiere JWT válido y autoridad ENFERMERA.
+     * Endpoint protegido - requiere JWT válido y autoridad ENFERMERO.
      * 
      * PUT /api/urgencias/{id}
      * Header: Authorization: Bearer <token>
@@ -195,7 +157,7 @@ public class UrgenciaController {
      *         400 Bad Request si los datos son inválidos
      *         404 Not Found si el ingreso no existe
      *         401 Unauthorized si no hay token o es inválido
-     *         403 Forbidden si el usuario no tiene autoridad ENFERMERA
+     *         403 Forbidden si el usuario no tiene autoridad ENFERMERO
      */
     @PutMapping("/{id}")
     public ResponseEntity<IngresoResponse> actualizarIngreso(
@@ -203,7 +165,7 @@ public class UrgenciaController {
             @Valid @RequestBody RegistroIngresoRequest request,
             HttpServletRequest httpRequest) {
         
-        SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERA);
+        SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
         List<Ingreso> ingresos = urgenciaService.obtenerTodosLosIngresos();
         Ingreso ingresoExistente = ingresos.stream()
@@ -220,7 +182,7 @@ public class UrgenciaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         
-        Enfermero enfermero = enfermeroRepository.findByCuil(request.getEnfermeroCuil())
+        Usuario enfermero = usuarioRepository.findByCuil(request.getEnfermeroCuil())
             .orElse(null);
         if (enfermero == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -260,7 +222,7 @@ public class UrgenciaController {
 
     /**
      * Endpoint para eliminar un ingreso.
-     * Endpoint protegido - requiere JWT válido y autoridad ENFERMERA.
+     * Endpoint protegido - requiere JWT válido y autoridad ENFERMERO.
      * 
      * DELETE /api/urgencias/{id}
      * Header: Authorization: Bearer <token>
@@ -270,14 +232,14 @@ public class UrgenciaController {
      * @return 200 OK si se eliminó correctamente
      *         404 Not Found si el ingreso no existe
      *         401 Unauthorized si no hay token o es inválido
-     *         403 Forbidden si el usuario no tiene autoridad ENFERMERA
+     *         403 Forbidden si el usuario no tiene autoridad ENFERMERO
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarIngreso(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         
-        SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERA);
+        SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
         List<Ingreso> ingresos = urgenciaService.obtenerTodosLosIngresos();
         Ingreso ingreso = ingresos.stream()

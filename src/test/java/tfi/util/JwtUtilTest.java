@@ -4,9 +4,9 @@ import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tfi.config.JwtConfig;
-import tfi.model.entity.Usuario;
-import tfi.model.enums.Autoridad;
-import tfi.model.valueObjects.Email;
+import tfi.domain.entity.Usuario;
+import tfi.domain.enums.Autoridad;
+import tfi.domain.valueObject.Email;
 
 import java.util.Date;
 
@@ -78,13 +78,13 @@ class JwtUtilTest {
         Usuario usuario = new Usuario(
             Email.from("enfermera@hospital.com"),
             "hash",
-            Autoridad.ENFERMERA
+            Autoridad.ENFERMERO
         );
         String token = jwtUtil.generateToken(usuario);
         
         Autoridad autoridad = jwtUtil.getAutoridadFromToken(token);
         
-        assertEquals(Autoridad.ENFERMERA, autoridad);
+        assertEquals(Autoridad.ENFERMERO, autoridad);
     }
 
     @Test
@@ -235,7 +235,7 @@ class JwtUtilTest {
         Usuario usuario = new Usuario(
             Email.from("enfermera@hospital.com"),
             "hash",
-            Autoridad.ENFERMERA
+            Autoridad.ENFERMERO
         );
         
         String token = jwtUtil.generateToken(usuario);
@@ -243,7 +243,7 @@ class JwtUtilTest {
         Autoridad autoridad = jwtUtil.getAutoridadFromToken(token);
         
         assertEquals("enfermera@hospital.com", email);
-        assertEquals(Autoridad.ENFERMERA, autoridad);
+        assertEquals(Autoridad.ENFERMERO, autoridad);
     }
 }
 

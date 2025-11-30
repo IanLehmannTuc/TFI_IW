@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.lang.NonNull;
 import tfi.exception.AutenticacionException;
 import tfi.exception.ForbiddenException;
-import tfi.model.dto.UsuarioAutenticado;
-import tfi.model.enums.Autoridad;
+import tfi.application.dto.UsuarioAutenticado;
+import tfi.domain.enums.Autoridad;
 
 /**
  * Utilidad para acceder al contexto de seguridad de la aplicación.

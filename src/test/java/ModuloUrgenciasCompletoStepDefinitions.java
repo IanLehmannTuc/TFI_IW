@@ -7,27 +7,32 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.datatable.DataTable;
 
-import tfi.model.entity.Enfermero;
-import tfi.model.entity.Paciente;
-import tfi.model.entity.Ingreso;
-import tfi.model.enums.NivelEmergencia;
-import tfi.model.valueObjects.Temperatura;
-import tfi.model.valueObjects.TensionArterial;
-import tfi.model.valueObjects.FrecuenciaCardiaca;
-import tfi.model.valueObjects.FrecuenciaRespiratoria;
-import tfi.model.valueObjects.Presion;
+import tfi.domain.entity.Usuario;
+import tfi.domain.entity.Paciente;
+import tfi.domain.entity.Ingreso;
+import tfi.domain.enums.Autoridad;
+import tfi.domain.enums.NivelEmergencia;
+import tfi.domain.valueObject.Cuil;
+import tfi.domain.valueObject.Email;
+import tfi.domain.valueObject.Temperatura;
+import tfi.domain.valueObject.TensionArterial;
+import tfi.domain.valueObject.FrecuenciaCardiaca;
+import tfi.domain.valueObject.FrecuenciaRespiratoria;
+import tfi.domain.valueObject.Presion;
 
-import tfi.repository.impl.memory.EnfermeroRepositoryImpl;
-import tfi.repository.impl.memory.PacientesRepositoryImpl;
-import tfi.repository.impl.memory.IngresoRepositoryImpl;
-import tfi.repository.interfaces.EnfermeroRepository;
-import tfi.repository.interfaces.PacientesRepository;
-import tfi.repository.interfaces.IngresoRepository;
+import tfi.infrastructure.persistence.repository.memory.UsuarioRepositoryImpl;
+import tfi.infrastructure.persistence.repository.memory.PacientesRepositoryImpl;
+import tfi.infrastructure.persistence.repository.memory.IngresoRepositoryImpl;
+import tfi.domain.repository.UsuarioRepository;
+import tfi.domain.repository.PacientesRepository;
+import tfi.domain.repository.IngresoRepository;
 
-import tfi.service.PacienteService;
-import tfi.service.ColaAtencionService;
-import tfi.service.UrgenciaService;
-import tfi.model.mapper.PacienteMapper;
+import tfi.application.service.PacienteService;
+import tfi.application.service.ColaAtencionService;
+import tfi.application.service.UrgenciaService;
+import tfi.application.mapper.PacienteMapper;
+import tfi.application.mapper.IngresoMapper;
+import tfi.application.dto.RegistroIngresoRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,23 +40,23 @@ import java.util.Map;
 
 public class ModuloUrgenciasCompletoStepDefinitions {
 
-    private EnfermeroRepository repoEnfermeros;
+    private UsuarioRepository repoUsuarios;
     private PacientesRepository repoPacientes;
     private IngresoRepository repoIngresos;
     private UrgenciaService urgenciaService;
     private PacienteService pacienteService;
     
-    private Enfermero enfermero;
+    private Usuario enfermero;
     private Ingreso ingreso;
     private String ultimoError;
 
     @Before
     public void setup() {
-        this.repoEnfermeros = new EnfermeroRepositoryImpl();
+        this.repoUsuarios = new UsuarioRepositoryImpl();
         this.repoPacientes = new PacientesRepositoryImpl();
         this.repoIngresos = new IngresoRepositoryImpl();
 
-        this.urgenciaService = new UrgenciaService(repoPacientes, repoEnfermeros, repoIngresos);
+        this.urgenciaService = new UrgenciaService(repoPacientes, repoUsuarios, repoIngresos, new IngresoMapper());
         this.pacienteService = new PacienteService(repoPacientes, new PacienteMapper());
     }
 
@@ -69,15 +74,17 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         String email = enfermeroData.get("Email");
         String matricula = enfermeroData.get("Matricula");
         
-        Enfermero enfermero = new Enfermero(
-            cuil,
+        Usuario enfermero = new Usuario(
+            Email.from(email),
+            "hash_dummy", 
+            Autoridad.ENFERMERO,
+            new Cuil(cuil),
             nombre,
             apellido,
-            email,
             matricula
         );
         
-        repoEnfermeros.add(enfermero);
+        repoUsuarios.add(enfermero);
         this.enfermero = enfermero;
     }
 
@@ -141,7 +148,6 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             
             String descripcion = pacienteData.get("Informe");
             NivelEmergencia nivelEmergencia = NivelEmergencia.valueOf(nivelStr);
-            LocalDateTime fechaHoraIngreso = LocalDateTime.now();
             Temperatura temperatura = new Temperatura(
                 Double.parseDouble(pacienteData.get("Temperatura"))
             );
@@ -157,21 +163,21 @@ public class ModuloUrgenciasCompletoStepDefinitions {
                 Integer.parseInt(pacienteData.get("Frecuencia Respiratoria"))
             );
             
+            // Crear RegistroIngresoRequest para registrar el ingreso
+            RegistroIngresoRequest request = new RegistroIngresoRequest();
+            request.setPacienteCuil(paciente.getCuil());
+            request.setEnfermeroCuil(this.enfermero.getCuil());
+            request.setDescripcion(descripcion);
+            request.setTemperatura(temperatura.getValor());
+            request.setTensionSistolica(tensionArterial.getPresionSistolica().getValor());
+            request.setTensionDiastolica(tensionArterial.getPresionDiastolica().getValor());
+            request.setFrecuenciaCardiaca(frecuenciaCardiaca.getValor());
+            request.setFrecuenciaRespiratoria(frecuenciaRespiratoria.getValor());
+            request.setNivelEmergencia(nivelEmergencia);
             
-            this.ingreso = new Ingreso(
-                null,
-                paciente,
-                this.enfermero,
-                descripcion,
-                fechaHoraIngreso,
-                temperatura,
-                tensionArterial,
-                frecuenciaCardiaca,
-                frecuenciaRespiratoria,
-                nivelEmergencia
-            );
-            
-            this.ingreso = this.urgenciaService.registrarIngreso(this.ingreso);
+            var ingresoResponse = this.urgenciaService.registrarIngreso(request);
+            // Buscar el ingreso registrado en el repositorio
+            this.ingreso = this.repoIngresos.findById(ingresoResponse.getId()).orElse(null);
         } catch (RuntimeException e) {
             ultimoError = e.getMessage();
         } catch (Exception e) {

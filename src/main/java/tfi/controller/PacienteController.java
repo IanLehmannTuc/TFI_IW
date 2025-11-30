@@ -5,11 +5,11 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tfi.model.mapper.PacienteMapper;
-import tfi.model.dto.PacienteResponse;
-import tfi.model.dto.RegistroPacienteRequest;
-import tfi.model.enums.Autoridad;
-import tfi.service.PacienteService;
+import tfi.application.mapper.PacienteMapper;
+import tfi.application.dto.PacienteResponse;
+import tfi.application.dto.RegistroPacienteRequest;
+import tfi.domain.enums.Autoridad;
+import tfi.application.service.PacienteService;
 import tfi.util.SecurityContext;
 
 /**
@@ -36,7 +36,7 @@ public class PacienteController {
 
     /**
      * Endpoint para crear un nuevo paciente.
-     * Endpoint protegido - requiere JWT válido y autoridad ENFERMERA.
+     * Endpoint protegido - requiere JWT válido y autoridad ENFERMERO.
      * 
      * POST /api/pacientes
      * Header: Authorization: Bearer <token>
@@ -47,14 +47,14 @@ public class PacienteController {
      * @return 201 Created con datos del paciente creado
      *         400 Bad Request si los datos son inválidos o el CUIL ya existe
      *         401 Unauthorized si no hay token o es inválido
-     *         403 Forbidden si el usuario no tiene autoridad ENFERMERA
+     *         403 Forbidden si el usuario no tiene autoridad ENFERMERO
      */
     @PostMapping
     public ResponseEntity<PacienteResponse> crear(
             @Valid @RequestBody RegistroPacienteRequest request,
             HttpServletRequest httpRequest) {
         
-        SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERA);
+        SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
         PacienteResponse response = pacienteService.registrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

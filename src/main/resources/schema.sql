@@ -1,0 +1,97 @@
+-- ============================================
+-- SCRIPT DE CREACIÓN DE TABLAS PARA POSTGRESQL
+-- Sistema de Gestión de Urgencias
+-- ============================================
+
+-- Eliminar tablas si existen (para desarrollo)
+DROP TABLE IF EXISTS ingresos CASCADE;
+DROP TABLE IF EXISTS pacientes CASCADE;
+DROP TABLE IF EXISTS usuarios CASCADE;
+DROP TABLE IF EXISTS obras_sociales CASCADE;
+
+-- ============================================
+-- TABLA: obras_sociales
+-- ============================================
+CREATE TABLE IF NOT EXISTS obras_sociales (
+    id_obra_social SERIAL PRIMARY KEY,
+    nombre_obra_social VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- ============================================
+-- TABLA: usuarios (Personal médico: médicos y enfermeros)
+-- ============================================
+CREATE TABLE IF NOT EXISTS usuarios (
+    email VARCHAR(255) PRIMARY KEY,
+    password_hash VARCHAR(255) NOT NULL,
+    autoridad VARCHAR(50) NOT NULL CHECK (autoridad IN ('MEDICO', 'ENFERMERO')),
+    cuil VARCHAR(15) NOT NULL UNIQUE,
+    nombre VARCHAR(255),
+    apellido VARCHAR(255),
+    matricula VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- ============================================
+-- TABLA: pacientes
+-- ============================================
+CREATE TABLE IF NOT EXISTS pacientes (
+    cuil VARCHAR(15) PRIMARY KEY,
+    nombre VARCHAR(255),
+    apellido VARCHAR(255),
+    email VARCHAR(255),
+    -- Domicilio
+    domicilio_calle VARCHAR(255),
+    domicilio_numero INTEGER,
+    domicilio_localidad VARCHAR(255),
+    -- Obra Social
+    obra_social_id INTEGER REFERENCES obras_sociales(id_obra_social),
+    numero_afiliado VARCHAR(100)
+);
+
+-- ============================================
+-- TABLA: ingresos
+-- ============================================
+CREATE TABLE IF NOT EXISTS ingresos (
+    id VARCHAR(50) PRIMARY KEY,
+    paciente_cuil VARCHAR(15) NOT NULL REFERENCES pacientes(cuil),
+    enfermero_email VARCHAR(255) NOT NULL REFERENCES usuarios(email),
+    doctor_email VARCHAR(255) REFERENCES usuarios(email),
+    descripcion TEXT,
+    informe_doctor TEXT,
+    fecha_hora_ingreso TIMESTAMP NOT NULL,
+    -- Signos vitales
+    temperatura DOUBLE PRECISION,
+    presion_sistolica INTEGER,
+    presion_diastolica INTEGER,
+    frecuencia_cardiaca INTEGER,
+    frecuencia_respiratoria INTEGER,
+    -- Estado y prioridad
+    nivel_emergencia VARCHAR(50) NOT NULL CHECK (nivel_emergencia IN ('CRITICA', 'EMERGENCIA', 'URGENCIA', 'URGENCIA_MENOR', 'SIN_URGENCIA')),
+    estado VARCHAR(50) NOT NULL CHECK (estado IN ('PENDIENTE', 'EN_PROCESO', 'FINALIZADO'))
+);
+
+-- ============================================
+-- ÍNDICES para mejorar el rendimiento
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_ingresos_paciente ON ingresos(paciente_cuil);
+CREATE INDEX IF NOT EXISTS idx_ingresos_enfermero ON ingresos(enfermero_email);
+CREATE INDEX IF NOT EXISTS idx_ingresos_doctor ON ingresos(doctor_email);
+CREATE INDEX IF NOT EXISTS idx_ingresos_fecha ON ingresos(fecha_hora_ingreso);
+CREATE INDEX IF NOT EXISTS idx_ingresos_estado ON ingresos(estado);
+CREATE INDEX IF NOT EXISTS idx_ingresos_nivel ON ingresos(nivel_emergencia);
+CREATE INDEX IF NOT EXISTS idx_pacientes_obra_social ON pacientes(obra_social_id);
+CREATE INDEX IF NOT EXISTS idx_usuarios_cuil ON usuarios(cuil);
+CREATE INDEX IF NOT EXISTS idx_usuarios_matricula ON usuarios(matricula);
+CREATE INDEX IF NOT EXISTS idx_usuarios_autoridad ON usuarios(autoridad);
+
+-- ============================================
+-- DATOS INICIALES (OPCIONAL)
+-- ============================================
+
+-- Insertar algunas obras sociales comunes
+INSERT INTO obras_sociales (nombre_obra_social) VALUES ('OSDE') ON CONFLICT DO NOTHING;
+INSERT INTO obras_sociales (nombre_obra_social) VALUES ('Swiss Medical') ON CONFLICT DO NOTHING;
+INSERT INTO obras_sociales (nombre_obra_social) VALUES ('IOMA') ON CONFLICT DO NOTHING;
+INSERT INTO obras_sociales (nombre_obra_social) VALUES ('PAMI') ON CONFLICT DO NOTHING;
+INSERT INTO obras_sociales (nombre_obra_social) VALUES ('Particular') ON CONFLICT DO NOTHING;
+
+

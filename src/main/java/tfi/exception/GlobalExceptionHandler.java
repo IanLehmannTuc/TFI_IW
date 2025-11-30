@@ -2,11 +2,14 @@ package tfi.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import tfi.model.dto.ErrorResponse;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import tfi.application.dto.ErrorResponse;
 
 import java.util.stream.Collectors;
 
@@ -104,16 +107,93 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * Maneja errores de parsing de JSON.
+     * Se lanza cuando:
+     * - El JSON está malformado (sintaxis incorrecta)
+     * - Un campo no puede ser deserializado (ej: enum con valor inválido)
+     * - Falta el body cuando es requerido
+     * 
+     * @param ex La excepción de lectura de mensaje HTTP
+     * @return 400 Bad Request con mensaje descriptivo
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        String mensaje;
+        
+        // Extraer mensaje más legible del error
+        if (ex.getMessage() != null && ex.getMessage().contains("Required request body is missing")) {
+            mensaje = "El cuerpo de la petición es obligatorio";
+        } else if (ex.getMessage() != null && ex.getMessage().contains("JSON parse error")) {
+            // Intentar extraer el mensaje específico del error de parsing
+            String originalMsg = ex.getMessage();
+            if (originalMsg.contains("Cannot deserialize")) {
+                // Error de deserialización (ej: enum inválido)
+                if (originalMsg.contains("Autoridad")) {
+                    mensaje = "Autoridad inválida. Valores permitidos: MEDICO, ENFERMERO";
+                } else {
+                    mensaje = "Valor inválido en el JSON para uno de los campos";
+                }
+            } else {
+                mensaje = "El formato del JSON es inválido";
+            }
+        } else {
+            mensaje = "Error al procesar el cuerpo de la petición. Verifica el formato JSON";
+        }
+        
+        ErrorResponse error = new ErrorResponse(mensaje, HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
+     * Maneja errores de tipo de argumento incorrecto.
+     * Se lanza cuando un parámetro de URL no puede ser convertido al tipo esperado.
+     * 
+     * @param ex La excepción
+     * @return 400 Bad Request con mensaje descriptivo
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        String mensaje = String.format(
+            "El parámetro '%s' debe ser de tipo %s", 
+            ex.getName(), 
+            ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "válido"
+        );
+        ErrorResponse error = new ErrorResponse(mensaje, HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
+     * Maneja errores de parámetros faltantes.
+     * Se lanza cuando falta un parámetro requerido en la URL.
+     * 
+     * @param ex La excepción
+     * @return 400 Bad Request con mensaje descriptivo
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        String mensaje = String.format("Falta el parámetro requerido: '%s'", ex.getParameterName());
+        ErrorResponse error = new ErrorResponse(mensaje, HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
      * Maneja cualquier otra excepción no capturada específicamente.
-     * Último recurso para errores inesperados.
+     * Último recurso para errores inesperados del servidor.
+     * 
+     * NOTA: Este handler solo debería activarse para errores REALES del servidor
+     * (NullPointer, errores de BD, etc.), no para errores de validación del cliente.
      * 
      * @param ex La excepción
      * @return 500 Internal Server Error
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        // Log del error para debugging (en producción usar un logger apropiado)
+        System.err.println("ERROR NO MANEJADO: " + ex.getClass().getName() + " - " + ex.getMessage());
+        ex.printStackTrace();
+        
         ErrorResponse error = new ErrorResponse(
-            "Error interno del servidor: " + ex.getMessage(), 
+            "Error interno del servidor. Por favor contacta al administrador.", 
             HttpStatus.INTERNAL_SERVER_ERROR.value()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

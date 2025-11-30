@@ -3,12 +3,12 @@ package tfi.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tfi.model.mapper.IngresoMapper;
-import tfi.model.dto.IngresoResponse;
-import tfi.model.entity.Ingreso;
-import tfi.model.enums.Autoridad;
-import tfi.service.ColaAtencionService;
-import tfi.service.UrgenciaService;
+import tfi.application.mapper.IngresoMapper;
+import tfi.application.dto.IngresoResponse;
+import tfi.domain.entity.Ingreso;
+import tfi.domain.enums.Autoridad;
+import tfi.application.service.ColaAtencionService;
+import tfi.application.service.UrgenciaService;
 import tfi.util.SecurityContext;
 
 import java.util.List;

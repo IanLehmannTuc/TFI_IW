@@ -5,11 +5,11 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tfi.model.dto.AuthResponse;
-import tfi.model.dto.LoginRequest;
-import tfi.model.dto.RegistroRequest;
-import tfi.model.dto.UsuarioAutenticado;
-import tfi.service.AutenticacionService;
+import tfi.application.dto.AuthResponse;
+import tfi.application.dto.LoginRequest;
+import tfi.application.dto.RegistroRequest;
+import tfi.application.dto.UsuarioAutenticado;
+import tfi.application.service.AutenticacionService;
 import tfi.util.SecurityContext;
 
 /**

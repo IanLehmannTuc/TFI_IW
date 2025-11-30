@@ -7,8 +7,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import tfi.config.JwtConfig;
-import tfi.model.entity.Usuario;
-import tfi.model.enums.Autoridad;
+import tfi.domain.entity.Usuario;
+import tfi.domain.enums.Autoridad;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;

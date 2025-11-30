@@ -37,7 +37,7 @@ public final class MensajesError {
     /**
      * Mensaje cuando no se especifica una autoridad.
      */
-    public static final String AUTORIDAD_REQUERIDA = "Debe especificar una autoridad (MEDICO o ENFERMERA)";
+    public static final String AUTORIDAD_REQUERIDA = "Debe especificar una autoridad (MEDICO o ENFERMERO)";
     
     /**
      * Mensaje base para errores de permisos.

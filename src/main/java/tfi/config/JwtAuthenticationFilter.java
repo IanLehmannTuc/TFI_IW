@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import tfi.model.enums.Autoridad;
+import tfi.domain.enums.Autoridad;
 import tfi.util.JwtUtil;
 
 import java.io.IOException;
