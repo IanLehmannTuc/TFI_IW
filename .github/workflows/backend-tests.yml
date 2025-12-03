@@ -2,83 +2,18 @@ name: Backend Tests
 
 on:
   pull_request:
-    branches:
-      - main
-      - master
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-tests.yml'
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   test:
-    name: Ejecutar Tests del Backend
     runs-on: ubuntu-latest
-    
-    defaults:
-      run:
-        working-directory: ./backend
-    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-      
-      - name: Configurar Java 22
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '22'
           distribution: 'temurin'
-          cache: 'maven'
-      
-      - name: Validar Maven Wrapper
-        run: |
-          chmod +x mvnw
-          ./mvnw --version
-      
-      - name: Descargar dependencias
-        run: ./mvnw dependency:resolve
-      
-      - name: Compilar proyecto
-        run: ./mvnw clean compile
-      
-      - name: Ejecutar tests unitarios y de integración
-        run: ./mvnw test
-      
-      - name: Generar reporte de tests
-        if: always()
-        run: |
-          echo "## 📊 Resultados de Tests" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f target/surefire-reports/TEST-*.xml ]; then
-            echo "### Tests ejecutados exitosamente" >> $GITHUB_STEP_SUMMARY
-            echo "Los reportes están disponibles en target/surefire-reports/" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "### ⚠️ No se encontraron reportes de tests" >> $GITHUB_STEP_SUMMARY
-          fi
-      
-      - name: Subir reportes de tests (si existen)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-reports
-          path: |
-            target/surefire-reports/
-            target/cucumber-reports/
-          retention-days: 7
-          if-no-files-found: ignore
-      
-      - name: Mostrar resumen de resultados
-        if: always()
-        run: |
-          echo "=========================================="
-          echo "Resumen de ejecución de tests"
-          echo "=========================================="
-          if [ -d target/surefire-reports ]; then
-            echo "Reportes generados en: target/surefire-reports/"
-            ls -la target/surefire-reports/ || true
-          fi
-          if [ -d target/cucumber-reports ]; then
-            echo "Reportes de Cucumber generados en: target/cucumber-reports/"
-            ls -la target/cucumber-reports/ || true
-          fi
-
+      - name: Ejecutar tests
+        working-directory: ./backend
+        run: ./mvnw clean test
