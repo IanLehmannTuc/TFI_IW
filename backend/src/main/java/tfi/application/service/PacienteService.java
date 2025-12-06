@@ -1,5 +1,7 @@
 package tfi.application.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import tfi.exception.PacienteException;
@@ -114,5 +116,102 @@ public class PacienteService {
      */
     public boolean existsByCuil(String cuil) {
         return pacientesRepository.existsByCuil(cuil);
+    }
+    
+    /**
+     * Obtiene todos los pacientes con paginación.
+     * 
+     * @param pageable información de paginación (página, tamaño, ordenamiento)
+     * @return página de pacientes con metadatos de paginación
+     */
+    public Page<Paciente> findAll(Pageable pageable) {
+        return pacientesRepository.findAll(pageable);
+    }
+    
+    /**
+     * Actualiza los datos de un paciente existente.
+     * Valida que el paciente exista antes de actualizar.
+     * 
+     * @param cuil El CUIL del paciente a actualizar
+     * @param dto Datos actualizados del paciente
+     * @return Respuesta con los datos del paciente actualizado
+     * @throws PacienteException Si el paciente no existe o los datos son inválidos
+     */
+    public PacienteResponse actualizar(@NonNull String cuil, @NonNull RegistroPacienteRequest dto) {
+        if (cuil == null || cuil.trim().isEmpty()) {
+            throw new PacienteException("El CUIL no puede ser nulo o vacío");
+        }
+        
+        // Verificar que el paciente existe
+        Paciente pacienteExistente = pacientesRepository.findByCuil(cuil)
+            .orElseThrow(() -> new PacienteException("No existe un paciente con el CUIL: " + cuil));
+        
+        // Validar que el CUIL del DTO coincida con el del path
+        if (!cuil.equals(dto.getCuil())) {
+            throw new PacienteException("El CUIL en el body debe coincidir con el CUIL en la URL");
+        }
+        
+        Domicilio domicilio;
+        try {
+            domicilio = new Domicilio(
+                dto.getDomicilio().getCalle(),
+                dto.getDomicilio().getNumero(),
+                dto.getDomicilio().getLocalidad()
+            );
+        } catch (IllegalArgumentException e) {
+            throw new PacienteException(e.getMessage());
+        }
+        
+        Afiliado afiliado = null;
+        if (dto.getObraSocial() != null) {
+            if (dto.getObraSocial().getNumeroAfiliado() == null || 
+                dto.getObraSocial().getNumeroAfiliado().trim().isEmpty()) {
+                throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
+            }
+            
+            ObraSocial obraSocial = new ObraSocial(
+                dto.getObraSocial().getObraSocial().getId(),
+                dto.getObraSocial().getObraSocial().getNombre() != null 
+                    ? dto.getObraSocial().getObraSocial().getNombre()
+                    : "Obra Social " + dto.getObraSocial().getObraSocial().getId()
+            );
+            
+            afiliado = new Afiliado(obraSocial, dto.getObraSocial().getNumeroAfiliado());
+        }
+        
+        // Crear paciente actualizado manteniendo el ID original
+        Paciente pacienteActualizado = new Paciente(
+            dto.getCuil(),
+            dto.getNombre(),
+            dto.getApellido(),
+            pacienteExistente.getEmail(), // Mantener el email existente si no se proporciona
+            domicilio,
+            afiliado
+        );
+        pacienteActualizado.setId(pacienteExistente.getId());
+        
+        pacientesRepository.update(pacienteActualizado);
+        
+        return pacienteMapper.toResponse(pacienteActualizado);
+    }
+    
+    /**
+     * Elimina un paciente del sistema por su CUIL.
+     * 
+     * @param cuil El CUIL del paciente a eliminar
+     * @return Respuesta con los datos del paciente eliminado
+     * @throws PacienteException Si el paciente no existe
+     */
+    public PacienteResponse eliminar(@NonNull String cuil) {
+        if (cuil == null || cuil.trim().isEmpty()) {
+            throw new PacienteException("El CUIL no puede ser nulo o vacío");
+        }
+        
+        Paciente paciente = pacientesRepository.findByCuil(cuil)
+            .orElseThrow(() -> new PacienteException("No existe un paciente con el CUIL: " + cuil));
+        
+        pacientesRepository.delete(paciente);
+        
+        return pacienteMapper.toResponse(paciente);
     }
 }

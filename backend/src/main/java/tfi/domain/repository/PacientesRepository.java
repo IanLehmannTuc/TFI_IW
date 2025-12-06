@@ -1,6 +1,8 @@
 package tfi.domain.repository;
 
 import tfi.domain.entity.Paciente;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,11 +11,13 @@ import java.util.Optional;
  */
 public interface PacientesRepository {
     
+    
     /**
-     * Obtiene todos los pacientes registrados.
-     * @return lista de todos los pacientes
+     * Obtiene todos los pacientes registrados con paginación.
+     * @param pageable información de paginación (página, tamaño, ordenamiento)
+     * @return página de pacientes con metadatos de paginación
      */
-    List<Paciente> findAll();
+    Page<Paciente> findAll(Pageable pageable);
     
     /**
      * Busca un paciente por su CUIL.

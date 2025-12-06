@@ -1,6 +1,10 @@
 package tfi.infrastructure.persistence.repository.postgres;
 
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -76,13 +80,63 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
     }
 
     @Override
-    public List<Paciente> findAll() {
-        String sql = "SELECT p.id, p.cuil, p.nombre, p.apellido, p.email, " +
-                     "p.domicilio_calle, p.domicilio_numero, p.domicilio_localidad, " +
-                     "p.obra_social_id, p.numero_afiliado, os.nombre AS nombre_obra_social " +
-                     "FROM pacientes p " +
-                     "LEFT JOIN obras_sociales os ON p.obra_social_id = os.id";
-        return jdbcTemplate.query(sql, new PacienteRowMapper());
+    public Page<Paciente> findAll(Pageable pageable) {
+        // Construir la consulta base
+        StringBuilder sql = new StringBuilder(
+            "SELECT p.id, p.cuil, p.nombre, p.apellido, p.email, " +
+            "p.domicilio_calle, p.domicilio_numero, p.domicilio_localidad, " +
+            "p.obra_social_id, p.numero_afiliado, os.nombre AS nombre_obra_social " +
+            "FROM pacientes p " +
+            "LEFT JOIN obras_sociales os ON p.obra_social_id = os.id"
+        );
+
+        // Agregar ordenamiento si existe
+        if (pageable.getSort().isSorted()) {
+            sql.append(" ORDER BY ");
+            List<String> orderByClauses = pageable.getSort().stream()
+                .map(order -> {
+                    String property = order.getProperty();
+                    // Mapear propiedades de la entidad a columnas de la BD
+                    String column = mapPropertyToColumn(property);
+                    String direction = order.getDirection() == Sort.Direction.ASC ? "ASC" : "DESC";
+                    return column + " " + direction;
+                })
+                .toList();
+            sql.append(String.join(", ", orderByClauses));
+        } else {
+            // Ordenamiento por defecto por CUIL
+            sql.append(" ORDER BY p.cuil ASC");
+        }
+
+        // Agregar paginación
+        sql.append(" LIMIT ? OFFSET ?");
+
+        // Ejecutar consulta paginada
+        int pageSize = pageable.getPageSize();
+        int offset = (int) pageable.getOffset();
+        List<Paciente> content = jdbcTemplate.query(sql.toString(), new PacienteRowMapper(), pageSize, offset);
+
+        // Contar el total de registros
+        String countSql = "SELECT COUNT(*) FROM pacientes p";
+        Long total = jdbcTemplate.queryForObject(countSql, Long.class);
+
+        return new PageImpl<>(content, pageable, total != null ? total : 0);
+    }
+
+    /**
+     * Mapea propiedades de la entidad Paciente a columnas de la base de datos.
+     * @param property nombre de la propiedad de la entidad
+     * @return nombre de la columna en la base de datos
+     */
+    private String mapPropertyToColumn(String property) {
+        return switch (property.toLowerCase()) {
+            case "cuil" -> "p.cuil";
+            case "nombre" -> "p.nombre";
+            case "apellido" -> "p.apellido";
+            case "email" -> "p.email";
+            case "id" -> "p.id";
+            default -> "p.cuil"; // Por defecto ordenar por CUIL
+        };
     }
 
     @Override
