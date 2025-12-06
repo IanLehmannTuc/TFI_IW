@@ -1,65 +1,111 @@
-# API REST - TFI Ing Software
+# TFI - Sistema de Gestión de Urgencias Hospitalarias
 
-Documentación completa de la API REST para el sistema de gestión hospitalaria.
+Sistema completo de gestión de urgencias hospitalarias con backend en Spring Boot y frontend en React.
+
+## 📚 Documentación
+
+**Para la documentación completa y actualizada de la API, consulta:**
+- **[API.md](./backend/API.md)** - Documentación completa de todos los endpoints
 
 ## Tabla de Contenidos
 
 - [Información General](#información-general)
-- [Base URL](#base-url)
-- [Autenticación](#autenticación)
-- [Endpoints de Autenticación](#endpoints-de-autenticación)
-- [Endpoints de Pacientes](#endpoints-de-pacientes)
-- [Formatos de Respuesta](#formatos-de-respuesta)
-- [Códigos de Estado HTTP](#códigos-de-estado-http)
-- [Validaciones](#validaciones)
-- [Ejemplos de Uso](#ejemplos-de-uso)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Documentación de la API](#documentación-de-la-api)
+- [Configuración](#configuración)
+- [Endpoints Principales](#endpoints-principales)
 
 ---
 
 ## Información General
 
-Esta API REST proporciona funcionalidades para:
-- **Autenticación**: Registro y login de usuarios con JWT
-- **Gestión de Pacientes**: Creación y consulta de pacientes
+Sistema de gestión de urgencias hospitalarias que permite:
+
+- **Autenticación**: Registro y login de usuarios (médicos y enfermeros) con JWT
+- **Gestión de Pacientes**: Creación, consulta y listado paginado de pacientes
+- **Gestión de Urgencias**: Registro, actualización y eliminación de ingresos a urgencias
+- **Cola de Atención**: Sistema de cola priorizada para atención de pacientes según nivel de emergencia
 
 La API utiliza **JSON Web Tokens (JWT)** para la autenticación. Todos los endpoints protegidos requieren un token válido en el header `Authorization`.
 
+## Estructura del Proyecto
+
+```
+TFI_IW/
+├── backend/          # Aplicación Spring Boot
+│   ├── API.md        # Documentación completa de la API
+│   ├── src/
+│   └── scripts/       # Scripts de configuración y pruebas
+└── frontend/         # Aplicación React
+```
+
+## Documentación de la API
+
+La documentación completa de todos los endpoints está disponible en:
+- **[backend/API.md](./backend/API.md)](./backend/API.md)**
+
+Incluye:
+- Todos los endpoints disponibles
+- Parámetros de request y response
+- Ejemplos de uso
+- Códigos de estado HTTP
+- Validaciones y restricciones
+
+## Endpoints Principales
+
+### Autenticación (`/api/auth`)
+- `POST /api/auth/registro` - Registrar nuevo usuario
+- `POST /api/auth/login` - Iniciar sesión
+- `GET /api/auth/perfil` - Obtener perfil del usuario
+- `GET /api/auth/verificar` - Verificar autenticación
+
+### Pacientes (`/api/pacientes`)
+- `POST /api/pacientes` - Crear paciente (requiere ENFERMERO)
+- `GET /api/pacientes` - Listar pacientes con paginación
+- `GET /api/pacientes/{cuil}` - Buscar paciente por CUIL
+
+### Urgencias (`/api/urgencias`)
+- `POST /api/urgencias` - Registrar ingreso (requiere ENFERMERO)
+- `GET /api/urgencias` - Obtener todos los ingresos
+- `GET /api/urgencias/{id}` - Obtener ingreso por ID
+- `PUT /api/urgencias/{id}` - Actualizar ingreso (requiere ENFERMERO)
+- `DELETE /api/urgencias/{id}` - Eliminar ingreso (requiere ENFERMERO)
+
+### Cola de Atención (`/api/cola-atencion`)
+- `GET /api/cola-atencion` - Obtener cola ordenada por prioridad
+- `GET /api/cola-atencion/siguiente` - Ver siguiente paciente sin removerlo
+- `POST /api/cola-atencion/atender` - Atender siguiente paciente (requiere MEDICO)
+- `GET /api/cola-atencion/cantidad` - Cantidad de pacientes en espera
+
+**Para detalles completos de cada endpoint, consulta [backend/API.md](./backend/API.md)**
+
 ---
 
-## Base URL
+## Configuración
 
+### Base URL
 ```
 http://localhost:8080
 ```
 
----
-
-## Autenticación
+### Autenticación
 
 La API utiliza autenticación basada en **JWT (JSON Web Tokens)**.
 
-### Cómo obtener un token
+**Cómo obtener un token:**
+1. Registrar un nuevo usuario mediante `POST /api/auth/registro`
+2. Iniciar sesión mediante `POST /api/auth/login`
 
-1. **Registrar un nuevo usuario** mediante `POST /api/auth/registro`
-2. **Iniciar sesión** mediante `POST /api/auth/login`
-
-Ambos endpoints retornan un token JWT que debe incluirse en las peticiones subsiguientes.
-
-### Uso del token
-
-Incluir el token en el header `Authorization` de todas las peticiones protegidas:
-
+**Uso del token:**
 ```
 Authorization: Bearer <tu-token-jwt>
 ```
 
-### Expiración del token
-
-Por defecto, los tokens expiran después de **24 horas** (86400000 ms). Este valor puede configurarse en `application.properties`.
+**Expiración:** Los tokens expiran después de 24 horas por defecto.
 
 ---
 
-## Endpoints de Autenticación
+## Endpoints de Autenticación (Resumen)
 
 ### 1. Registrar Usuario
 
