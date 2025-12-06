@@ -12,7 +12,7 @@ if ! docker ps | grep -q tfi-postgres; then
 fi
 
 echo "Ejecutando script de creación de tablas..."
-docker exec -i tfi-postgres psql -U tfi_user -d tfi < src/main/resources/schema.sql
+docker exec -i tfi-postgres psql -U tfi_user -d tfi < ../src/main/resources/schema.sql
 
 if [ $? -eq 0 ]; then
     echo "✓ Base de datos inicializada correctamente"
