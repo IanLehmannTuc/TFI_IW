@@ -11,6 +11,7 @@ import tfi.application.dto.RegistroPacienteRequest;
 import tfi.domain.entity.Paciente;
 import tfi.domain.valueObject.Domicilio;
 import tfi.domain.repository.PacientesRepository;
+import tfi.domain.port.ObraSocialPort;
 import tfi.util.MensajesError;
 import tfi.application.mapper.PacienteMapper;
 
@@ -29,13 +30,16 @@ class PacienteServiceTest {
     @Mock
     private PacientesRepository pacientesRepository;
 
+    @Mock
+    private ObraSocialPort obraSocialPort;
+
     private PacienteService pacienteService;
     private PacienteMapper pacienteMapper;
 
     @BeforeEach
     void setUp() {
         pacienteMapper = new PacienteMapper();
-        pacienteService = new PacienteService(pacientesRepository, pacienteMapper);
+        pacienteService = new PacienteService(pacientesRepository, pacienteMapper, obraSocialPort);
     }
 
     @Test
@@ -74,6 +78,20 @@ class PacienteServiceTest {
         request.getObraSocial().getObraSocial().setNombre("OSDE");
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
+        
+        // Mock de la verificación de afiliación
+        tfi.application.dto.VerificacionAfiliacionResponse verificacion = 
+            new tfi.application.dto.VerificacionAfiliacionResponse();
+        verificacion.setEstaAfiliado(true);
+        verificacion.setNumeroAfiliado("12345678");
+        tfi.application.dto.VerificacionAfiliacionResponse.ObraSocialResponse obraSocialResponse = 
+            new tfi.application.dto.VerificacionAfiliacionResponse.ObraSocialResponse();
+        obraSocialResponse.setId(1);
+        obraSocialResponse.setNombre("OSDE");
+        verificacion.setObraSocial(obraSocialResponse);
+        
+        when(obraSocialPort.verificarAfiliacion(1, "12345678")).thenReturn(verificacion);
+        
         when(pacientesRepository.add(any(Paciente.class))).thenAnswer(invocation -> {
             Paciente p = invocation.getArgument(0);
             p.setId("test-uuid-5678"); // Simular ID generado por BD
@@ -90,6 +108,7 @@ class PacienteServiceTest {
         assertEquals(1, response.getObraSocial().getObraSocial().getId());
         assertEquals("OSDE", response.getObraSocial().getObraSocial().getNombre());
         
+        verify(obraSocialPort).verificarAfiliacion(1, "12345678");
         verify(pacientesRepository).add(any(Paciente.class));
     }
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import tfi.application.dto.ErrorResponse;
+import tfi.exception.ObraSocialException;
 
 import java.util.stream.Collectors;
 
@@ -56,6 +57,19 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(PacienteException.class)
     public ResponseEntity<ErrorResponse> handlePacienteException(PacienteException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
+     * Maneja excepciones de obras sociales.
+     * Puede ser por verificación de afiliación fallida, API no disponible, etc.
+     * 
+     * @param ex La excepción de obra social
+     * @return 400 Bad Request con mensaje descriptivo
+     */
+    @ExceptionHandler(ObraSocialException.class)
+    public ResponseEntity<ErrorResponse> handleObraSocialException(ObraSocialException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }

@@ -33,6 +33,8 @@ import tfi.application.service.UrgenciaService;
 import tfi.application.mapper.PacienteMapper;
 import tfi.application.mapper.IngresoMapper;
 import tfi.application.dto.RegistroIngresoRequest;
+import tfi.domain.port.ObraSocialPort;
+import org.mockito.Mockito;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,6 +47,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
     private IngresoRepository repoIngresos;
     private UrgenciaService urgenciaService;
     private PacienteService pacienteService;
+    private ObraSocialPort obraSocialPort;
     
     private Usuario enfermero;
     private Ingreso ingreso;
@@ -55,9 +58,12 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         this.repoUsuarios = new UsuarioRepositoryImpl();
         this.repoPacientes = new PacientesRepositoryImpl();
         this.repoIngresos = new IngresoRepositoryImpl();
+        
+        // Crear mock de ObraSocialPort para los tests
+        this.obraSocialPort = Mockito.mock(ObraSocialPort.class);
 
         this.urgenciaService = new UrgenciaService(repoPacientes, repoUsuarios, repoIngresos, new IngresoMapper());
-        this.pacienteService = new PacienteService(repoPacientes, new PacienteMapper());
+        this.pacienteService = new PacienteService(repoPacientes, new PacienteMapper(), obraSocialPort);
     }
 
     @After

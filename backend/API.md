@@ -202,8 +202,15 @@ Registra un nuevo paciente en el sistema.
 }
 ```
 
+**Nota importante sobre obras sociales:**
+Si se especifica una obra social al registrar un paciente, el sistema **verifica automáticamente** la afiliación del paciente mediante una API externa. El registro solo se completará si:
+- El número de afiliado es válido
+- El paciente está efectivamente afiliado a la obra social especificada
+
+Si la verificación falla, se retornará un error `400 Bad Request` con un mensaje descriptivo.
+
 **Errores:**
-- `400 Bad Request`: Datos inválidos o CUIL ya existe
+- `400 Bad Request`: Datos inválidos, CUIL ya existe, o el paciente no está afiliado a la obra social especificada
 - `401 Unauthorized`: Token inválido o ausente
 - `403 Forbidden`: Usuario no tiene autoridad ENFERMERO
 
@@ -366,8 +373,11 @@ PUT /api/pacientes/20-20304050-5
 }
 ```
 
+**Nota importante sobre obras sociales:**
+Al igual que en el registro, si se especifica una obra social al actualizar un paciente, el sistema **verifica automáticamente** la afiliación mediante la API externa.
+
 **Errores:**
-- `400 Bad Request`: Datos inválidos o el CUIL en el body no coincide con el de la URL
+- `400 Bad Request`: Datos inválidos, el CUIL en el body no coincide con el de la URL, o el paciente no está afiliado a la obra social especificada
 - `401 Unauthorized`: Token inválido o ausente
 - `403 Forbidden`: Usuario no tiene autoridad ENFERMERO
 - `404 Not Found`: Paciente no encontrado
@@ -413,9 +423,9 @@ DELETE /api/pacientes/20-20304050-5
 
 ---
 
-## 3. Urgencias (`/api/urgencias`)
+## 4. Urgencias (`/api/urgencias`)
 
-### 3.1. Registrar Ingreso
+### 4.1. Registrar Ingreso
 Registra un nuevo ingreso a urgencias. Si el paciente no existe, se crea automáticamente.
 
 **Endpoint:** `POST /api/urgencias`  
@@ -505,7 +515,7 @@ Registra un nuevo ingreso a urgencias. Si el paciente no existe, se crea automá
 
 ---
 
-### 3.2. Obtener Todos los Ingresos
+### 4.2. Obtener Todos los Ingresos
 Obtiene una lista de todos los ingresos registrados.
 
 **Endpoint:** `GET /api/urgencias`  
@@ -547,7 +557,7 @@ Obtiene una lista de todos los ingresos registrados.
 
 ---
 
-### 3.3. Obtener Ingreso por ID
+### 4.3. Obtener Ingreso por ID
 Obtiene la información de un ingreso específico por su ID.
 
 **Endpoint:** `GET /api/urgencias/{id}`  
@@ -591,7 +601,7 @@ Obtiene la información de un ingreso específico por su ID.
 
 ---
 
-### 3.4. Actualizar Ingreso
+### 4.4. Actualizar Ingreso
 Actualiza la información de un ingreso existente.
 
 **Endpoint:** `PUT /api/urgencias/{id}`  
@@ -640,7 +650,7 @@ Actualiza la información de un ingreso existente.
 
 ---
 
-### 3.5. Eliminar Ingreso
+### 4.5. Eliminar Ingreso
 Elimina un ingreso del sistema.
 
 **Endpoint:** `DELETE /api/urgencias/{id}`  
@@ -659,9 +669,9 @@ Elimina un ingreso del sistema.
 
 ---
 
-## 4. Cola de Atención (`/api/cola-atencion`)
+## 5. Cola de Atención (`/api/cola-atencion`)
 
-### 4.1. Obtener Cola de Atención
+### 5.1. Obtener Cola de Atención
 Obtiene la cola de atención ordenada por prioridad (nivel de emergencia y fecha de ingreso).
 
 **Endpoint:** `GET /api/cola-atencion`  
@@ -707,7 +717,7 @@ Obtiene la cola de atención ordenada por prioridad (nivel de emergencia y fecha
 
 ---
 
-### 4.2. Ver Siguiente Paciente
+### 5.2. Ver Siguiente Paciente
 Obtiene el siguiente paciente en la cola sin removerlo.
 
 **Endpoint:** `GET /api/cola-atencion/siguiente`  
@@ -748,7 +758,7 @@ Obtiene el siguiente paciente en la cola sin removerlo.
 
 ---
 
-### 4.3. Atender Siguiente Paciente
+### 5.3. Atender Siguiente Paciente
 Atiende al siguiente paciente en la cola (lo remueve de la cola pero no lo elimina del repositorio).
 
 **Endpoint:** `POST /api/cola-atencion/atender`  
@@ -791,7 +801,7 @@ Atiende al siguiente paciente en la cola (lo remueve de la cola pero no lo elimi
 
 ---
 
-### 4.4. Cantidad de Pacientes en Espera
+### 5.4. Cantidad de Pacientes en Espera
 Obtiene la cantidad de pacientes que están en espera en la cola.
 
 **Endpoint:** `GET /api/cola-atencion/cantidad`  
@@ -850,7 +860,13 @@ curl -X POST http://localhost:8080/api/auth/login \
   -d '{"email":"enfermero@hospital.com","password":"Enfermero123!"}'
 ```
 
-2. **Registrar paciente:**
+2. **Listar obras sociales disponibles:**
+```bash
+curl -X GET http://localhost:8080/api/obras-sociales \
+  -H "Authorization: Bearer <token>"
+```
+
+3. **Registrar paciente:**
 ```bash
 curl -X POST http://localhost:8080/api/pacientes \
   -H "Authorization: Bearer <token>" \
@@ -867,7 +883,31 @@ curl -X POST http://localhost:8080/api/pacientes \
   }'
 ```
 
-3. **Registrar ingreso:**
+4. **Registrar paciente con obra social (se verifica automáticamente la afiliación):**
+```bash
+curl -X POST http://localhost:8080/api/pacientes \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cuil": "20-20304050-5",
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    "domicilio": {
+      "calle": "Av. Corrientes",
+      "numero": 1234,
+      "localidad": "Buenos Aires"
+    },
+    "obraSocial": {
+      "obraSocial": {
+        "id": 1,
+        "nombre": "OSDE"
+      },
+      "numeroAfiliado": "OSDE001234"
+    }
+  }'
+```
+
+5. **Registrar ingreso:**
 ```bash
 curl -X POST http://localhost:8080/api/urgencias \
   -H "Authorization: Bearer <token>" \
@@ -885,7 +925,7 @@ curl -X POST http://localhost:8080/api/urgencias \
   }'
 ```
 
-4. **Actualizar paciente (como enfermero):**
+6. **Actualizar paciente (como enfermero):**
 ```bash
 curl -X PUT http://localhost:8080/api/pacientes/20-20304050-5 \
   -H "Authorization: Bearer <token-enfermero>" \
@@ -902,19 +942,19 @@ curl -X PUT http://localhost:8080/api/pacientes/20-20304050-5 \
   }'
 ```
 
-5. **Eliminar paciente (como enfermero):**
+7. **Eliminar paciente (como enfermero):**
 ```bash
 curl -X DELETE http://localhost:8080/api/pacientes/20-20304050-5 \
   -H "Authorization: Bearer <token-enfermero>"
 ```
 
-6. **Ver cola de atención (como médico):**
+8. **Ver cola de atención (como médico):**
 ```bash
 curl -X GET http://localhost:8080/api/cola-atencion \
   -H "Authorization: Bearer <token-medico>"
 ```
 
-7. **Atender siguiente paciente:**
+9. **Atender siguiente paciente:**
 ```bash
 curl -X POST http://localhost:8080/api/cola-atencion/atender \
   -H "Authorization: Bearer <token-medico>"
@@ -929,3 +969,20 @@ curl -X POST http://localhost:8080/api/cola-atencion/atender \
 - Las temperaturas se manejan en grados Celsius
 - Las frecuencias se expresan en unidades por minuto
 - La paginación usa índices basados en 0 (primera página = 0)
+
+## Integración con API Externa de Obras Sociales
+
+El sistema se integra con una API externa de obras sociales para:
+- **Listar obras sociales disponibles**: El endpoint `/api/obras-sociales` consulta la API externa para obtener todas las obras sociales disponibles.
+- **Verificar afiliación**: Al registrar o actualizar un paciente con obra social, el sistema verifica automáticamente que el paciente esté afiliado a la obra social especificada mediante su número de afiliado.
+
+**Configuración:**
+La URL de la API externa se configura en `application.properties`:
+```properties
+obras-sociales.api.url=http://localhost:8001
+```
+
+**Comportamiento:**
+- Si la API externa no está disponible, los endpoints que la requieren retornarán un error `400 Bad Request` con un mensaje descriptivo.
+- La verificación de afiliación es **obligatoria** cuando se especifica una obra social. Si el paciente no está afiliado, el registro/actualización fallará.
+- Los timeouts de conexión están configurados en 5 segundos para conexión y 10 segundos para lectura.
