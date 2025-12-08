@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script para poblar la base de datos con 100 pacientes válidos
 
-echo "Poblando base de datos con 100 pacientes válidos..."
+echo "Poblando base de datos..."
 
 # Verificar si PostgreSQL está corriendo
 if ! docker ps | grep -q tfi-postgres; then
@@ -12,10 +12,10 @@ if ! docker ps | grep -q tfi-postgres; then
 fi
 
 echo "Ejecutando script de inserción de pacientes..."
-docker exec -i tfi-postgres psql -U tfi_user -d tfi < "$(dirname "$0")/populate-pacientes.sql"
+docker exec -i tfi-postgres psql -U tfi_user -d tfi < "$(dirname "$0")/populate.sql"
 
 if [ $? -eq 0 ]; then
-    echo "✓ Base de datos poblada correctamente con 100 pacientes"
+    echo "✓ Base de datos poblada correctamente"
     echo ""
     echo "Para verificar, puedes ejecutar:"
     echo "  docker exec -it tfi-postgres psql -U tfi_user -d tfi -c 'SELECT COUNT(*) FROM pacientes;'"

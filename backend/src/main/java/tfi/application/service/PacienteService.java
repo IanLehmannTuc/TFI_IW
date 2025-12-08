@@ -5,12 +5,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import tfi.exception.PacienteException;
+import tfi.exception.ObraSocialException;
 import tfi.application.mapper.PacienteMapper;
 import tfi.application.dto.PacienteResponse;
 import tfi.application.dto.RegistroPacienteRequest;
+import tfi.application.dto.VerificacionAfiliacionResponse;
 import tfi.domain.entity.Afiliado;
 import tfi.domain.entity.ObraSocial;
 import tfi.domain.entity.Paciente;
+import tfi.domain.port.ObraSocialPort;
 import tfi.domain.valueObject.Domicilio;
 import tfi.domain.repository.PacientesRepository;
 import tfi.util.MensajesError;
@@ -26,29 +29,32 @@ public class PacienteService {
     
     private final PacientesRepository pacientesRepository;
     private final PacienteMapper pacienteMapper;
+    private final ObraSocialPort obraSocialPort;
 
     /**
      * Constructor con inyección de dependencias
      * 
      * @param pacientesRepository Repositorio de pacientes
      * @param pacienteMapper Mapper para convertir Paciente a PacienteResponse
+     * @param obraSocialPort Puerto para operaciones con obras sociales
      */
     public PacienteService(@NonNull PacientesRepository pacientesRepository,
-                          @NonNull PacienteMapper pacienteMapper) {
+                          @NonNull PacienteMapper pacienteMapper,
+                          @NonNull ObraSocialPort obraSocialPort) {
         this.pacientesRepository = pacientesRepository;
         this.pacienteMapper = pacienteMapper;
+        this.obraSocialPort = obraSocialPort;
     }
 
     /**
      * Registra un nuevo paciente en el sistema.
      * Valida que el CUIL no esté duplicado.
-     * 
-     * NOTA: La validación de obra social se realizará más adelante mediante una API externa.
-     * Por ahora, la obra social es solo un atributo simple.
+     * Si el paciente tiene obra social, verifica la afiliación mediante la API externa.
      * 
      * @param request Datos de registro del paciente
      * @return Respuesta con los datos del paciente registrado
      * @throws PacienteException Si los datos son inválidos o el CUIL ya existe
+     * @throws ObraSocialException Si la verificación de afiliación falla
      * @throws IllegalArgumentException Si el request es null
      */
     public PacienteResponse registrar(@NonNull RegistroPacienteRequest dto) {
@@ -74,14 +80,32 @@ public class PacienteService {
                 throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
             }
             
-            ObraSocial obraSocial = new ObraSocial(
-                dto.getObraSocial().getObraSocial().getId(),
-                dto.getObraSocial().getObraSocial().getNombre() != null 
-                    ? dto.getObraSocial().getObraSocial().getNombre()
-                    : "Obra Social " + dto.getObraSocial().getObraSocial().getId()
+            // Verificar afiliación con la API externa
+            int obraSocialId = dto.getObraSocial().getObraSocial().getId();
+            String numeroAfiliado = dto.getObraSocial().getNumeroAfiliado();
+            
+            VerificacionAfiliacionResponse verificacion = obraSocialPort.verificarAfiliacion(
+                obraSocialId, 
+                numeroAfiliado
             );
             
-            afiliado = new Afiliado(obraSocial, dto.getObraSocial().getNumeroAfiliado());
+            if (!verificacion.isEstaAfiliado()) {
+                String nombreObraSocial = verificacion.getObraSocial() != null 
+                    ? verificacion.getObraSocial().getNombre() 
+                    : "ID " + obraSocialId;
+                throw new ObraSocialException(
+                    String.format("El paciente con número de afiliado '%s' no está afiliado a la obra social '%s'", 
+                        numeroAfiliado, nombreObraSocial)
+                );
+            }
+            
+            // Usar los datos de la verificación para asegurar consistencia
+            ObraSocial obraSocial = new ObraSocial(
+                verificacion.getObraSocial().getId(),
+                verificacion.getObraSocial().getNombre()
+            );
+            
+            afiliado = new Afiliado(obraSocial, verificacion.getNumeroAfiliado());
         }
         
         Paciente paciente = new Paciente(
@@ -169,14 +193,32 @@ public class PacienteService {
                 throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
             }
             
-            ObraSocial obraSocial = new ObraSocial(
-                dto.getObraSocial().getObraSocial().getId(),
-                dto.getObraSocial().getObraSocial().getNombre() != null 
-                    ? dto.getObraSocial().getObraSocial().getNombre()
-                    : "Obra Social " + dto.getObraSocial().getObraSocial().getId()
+            // Verificar afiliación con la API externa
+            int obraSocialId = dto.getObraSocial().getObraSocial().getId();
+            String numeroAfiliado = dto.getObraSocial().getNumeroAfiliado();
+            
+            VerificacionAfiliacionResponse verificacion = obraSocialPort.verificarAfiliacion(
+                obraSocialId, 
+                numeroAfiliado
             );
             
-            afiliado = new Afiliado(obraSocial, dto.getObraSocial().getNumeroAfiliado());
+            if (!verificacion.isEstaAfiliado()) {
+                String nombreObraSocial = verificacion.getObraSocial() != null 
+                    ? verificacion.getObraSocial().getNombre() 
+                    : "ID " + obraSocialId;
+                throw new ObraSocialException(
+                    String.format("El paciente con número de afiliado '%s' no está afiliado a la obra social '%s'", 
+                        numeroAfiliado, nombreObraSocial)
+                );
+            }
+            
+            // Usar los datos de la verificación para asegurar consistencia
+            ObraSocial obraSocial = new ObraSocial(
+                verificacion.getObraSocial().getId(),
+                verificacion.getObraSocial().getNombre()
+            );
+            
+            afiliado = new Afiliado(obraSocial, verificacion.getNumeroAfiliado());
         }
         
         // Crear paciente actualizado manteniendo el ID original

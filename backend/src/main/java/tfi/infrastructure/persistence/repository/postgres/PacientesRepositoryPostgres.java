@@ -57,10 +57,16 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             }
 
             // Obra Social
+            // Nota: El nombre de la obra social ya no está en la BD, se obtiene de la API externa
+            // Usamos un nombre temporal basado en el ID. El nombre real se puede obtener de la API cuando sea necesario.
             Afiliado afiliado = null;
             Integer obraSocialId = (Integer) rs.getObject("obra_social_id");
             if (obraSocialId != null) {
+                // Usamos un nombre temporal. En producción, esto debería obtenerse de la API cuando sea necesario
                 String nombreObraSocial = rs.getString("nombre_obra_social");
+                if (nombreObraSocial == null) {
+                    nombreObraSocial = "Obra Social " + obraSocialId;
+                }
                 String numeroAfiliado = rs.getString("numero_afiliado");
                 ObraSocial obraSocial = new ObraSocial(obraSocialId, nombreObraSocial);
                 afiliado = new Afiliado(obraSocial, numeroAfiliado);
@@ -85,9 +91,8 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
         StringBuilder sql = new StringBuilder(
             "SELECT p.id, p.cuil, p.nombre, p.apellido, p.email, " +
             "p.domicilio_calle, p.domicilio_numero, p.domicilio_localidad, " +
-            "p.obra_social_id, p.numero_afiliado, os.nombre AS nombre_obra_social " +
-            "FROM pacientes p " +
-            "LEFT JOIN obras_sociales os ON p.obra_social_id = os.id"
+            "p.obra_social_id, p.numero_afiliado, NULL AS nombre_obra_social " +
+            "FROM pacientes p"
         );
 
         // Agregar ordenamiento si existe
@@ -147,9 +152,8 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
 
         String sql = "SELECT p.id, p.cuil, p.nombre, p.apellido, p.email, " +
                      "p.domicilio_calle, p.domicilio_numero, p.domicilio_localidad, " +
-                     "p.obra_social_id, p.numero_afiliado, os.nombre AS nombre_obra_social " +
+                     "p.obra_social_id, p.numero_afiliado, NULL AS nombre_obra_social " +
                      "FROM pacientes p " +
-                     "LEFT JOIN obras_sociales os ON p.obra_social_id = os.id " +
                      "WHERE p.cuil = ?";
         
         List<Paciente> results = jdbcTemplate.query(sql, new PacienteRowMapper(), cuil);
@@ -180,10 +184,11 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             throw new IllegalStateException("Ya existe un paciente con el CUIL: " + paciente.getCuil());
         }
 
-        // Obtener o crear obra social si es necesario
+        // Obtener el ID de la obra social directamente del objeto
+        // Nota: Ya no creamos obras sociales en la BD, vienen de la API externa
         Integer obraSocialId = null;
-        if (paciente.getObraSocial() != null) {
-            obraSocialId = obtenerOCrearObraSocial(paciente.getObraSocial().getObraSocial());
+        if (paciente.getObraSocial() != null && paciente.getObraSocial().getObraSocial() != null) {
+            obraSocialId = paciente.getObraSocial().getObraSocial().getId();
         }
 
         // El ID se genera automáticamente en la base de datos
@@ -220,10 +225,11 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             throw new IllegalStateException("No existe un paciente con el CUIL: " + paciente.getCuil());
         }
 
-        // Obtener o crear obra social si es necesario
+        // Obtener el ID de la obra social directamente del objeto
+        // Nota: Ya no creamos obras sociales en la BD, vienen de la API externa
         Integer obraSocialId = null;
-        if (paciente.getObraSocial() != null) {
-            obraSocialId = obtenerOCrearObraSocial(paciente.getObraSocial().getObraSocial());
+        if (paciente.getObraSocial() != null && paciente.getObraSocial().getObraSocial() != null) {
+            obraSocialId = paciente.getObraSocial().getObraSocial().getId();
         }
 
         String sql = "UPDATE pacientes SET nombre = ?, apellido = ?, email = ?, " +
@@ -265,28 +271,5 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
         return existing;
     }
 
-    /**
-     * Obtiene el ID de una obra social o la crea si no existe.
-     */
-    private Integer obtenerOCrearObraSocial(ObraSocial obraSocial) {
-        if (obraSocial == null) {
-            return null;
-        }
-
-        // Primero intentamos obtenerla por nombre
-        String sqlSelect = "SELECT id FROM obras_sociales WHERE nombre = ?";
-        List<Integer> results = jdbcTemplate.query(sqlSelect, 
-            (rs, rowNum) -> rs.getInt("id"),
-            obraSocial.getNombre()
-        );
-
-        if (!results.isEmpty()) {
-            return results.get(0);
-        }
-
-        // Si no existe, la creamos
-        String sqlInsert = "INSERT INTO obras_sociales (nombre) VALUES (?) RETURNING id";
-        return jdbcTemplate.queryForObject(sqlInsert, Integer.class, obraSocial.getNombre());
-    }
 }
 

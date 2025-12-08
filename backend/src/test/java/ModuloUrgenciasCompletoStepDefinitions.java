@@ -30,9 +30,12 @@ import tfi.domain.repository.IngresoRepository;
 import tfi.application.service.PacienteService;
 import tfi.application.service.ColaAtencionService;
 import tfi.application.service.UrgenciaService;
+import tfi.application.service.ObraSocialCacheService;
 import tfi.application.mapper.PacienteMapper;
 import tfi.application.mapper.IngresoMapper;
 import tfi.application.dto.RegistroIngresoRequest;
+import tfi.domain.port.ObraSocialPort;
+import org.mockito.Mockito;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,6 +48,8 @@ public class ModuloUrgenciasCompletoStepDefinitions {
     private IngresoRepository repoIngresos;
     private UrgenciaService urgenciaService;
     private PacienteService pacienteService;
+    private ObraSocialPort obraSocialPort;
+    private ObraSocialCacheService obraSocialCacheService;
     
     private Usuario enfermero;
     private Ingreso ingreso;
@@ -55,9 +60,21 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         this.repoUsuarios = new UsuarioRepositoryImpl();
         this.repoPacientes = new PacientesRepositoryImpl();
         this.repoIngresos = new IngresoRepositoryImpl();
+        
+        // Crear mock de ObraSocialPort para los tests
+        this.obraSocialPort = Mockito.mock(ObraSocialPort.class);
+        
+        // Crear mock de ObraSocialCacheService para los tests
+        this.obraSocialCacheService = Mockito.mock(ObraSocialCacheService.class);
+        // Configurar el mock para que retorne nombres por defecto cuando sea necesario
+        Mockito.when(obraSocialCacheService.getNombreObraSocial(Mockito.anyInt()))
+            .thenAnswer(invocation -> {
+                Integer id = invocation.getArgument(0);
+                return "Obra Social " + id;
+            });
 
         this.urgenciaService = new UrgenciaService(repoPacientes, repoUsuarios, repoIngresos, new IngresoMapper());
-        this.pacienteService = new PacienteService(repoPacientes, new PacienteMapper());
+        this.pacienteService = new PacienteService(repoPacientes, new PacienteMapper(obraSocialCacheService), obraSocialPort);
     }
 
     @After
