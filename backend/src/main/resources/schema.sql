@@ -13,14 +13,6 @@ DROP TABLE IF EXISTS usuarios CASCADE;
 DROP TABLE IF EXISTS obras_sociales CASCADE;
 
 -- ============================================
--- TABLA: obras_sociales
--- ============================================
-CREATE TABLE IF NOT EXISTS obras_sociales (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL UNIQUE
-);
-
--- ============================================
 -- TABLA: usuarios (Personal médico: médicos y enfermeros)
 -- ============================================
 CREATE TABLE IF NOT EXISTS usuarios (
@@ -43,12 +35,14 @@ CREATE TABLE IF NOT EXISTS pacientes (
     nombre VARCHAR(255),
     apellido VARCHAR(255),
     email VARCHAR(255),
+    fecha_nacimiento DATE,
+    telefono VARCHAR(50),
     -- Domicilio
     domicilio_calle VARCHAR(255),
     domicilio_numero INTEGER,
     domicilio_localidad VARCHAR(255),
     -- Obra Social
-    obra_social_id INTEGER REFERENCES obras_sociales(id),
+    obra_social_id INTEGER,
     numero_afiliado VARCHAR(100)
 );
 
@@ -93,12 +87,3 @@ CREATE INDEX IF NOT EXISTS idx_usuarios_autoridad ON usuarios(autoridad);
 -- ============================================
 -- DATOS INICIALES (OPCIONAL)
 -- ============================================
-
--- Insertar algunas obras sociales comunes
-INSERT INTO obras_sociales (nombre) VALUES ('OSDE') ON CONFLICT DO NOTHING;
-INSERT INTO obras_sociales (nombre) VALUES ('Swiss Medical') ON CONFLICT DO NOTHING;
-INSERT INTO obras_sociales (nombre) VALUES ('IOMA') ON CONFLICT DO NOTHING;
-INSERT INTO obras_sociales (nombre) VALUES ('PAMI') ON CONFLICT DO NOTHING;
-INSERT INTO obras_sociales (nombre) VALUES ('Particular') ON CONFLICT DO NOTHING;
-
-

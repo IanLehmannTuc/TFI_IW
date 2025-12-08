@@ -135,10 +135,13 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             }
 
             // Obra Social
+            // Nota: El nombre de la obra social ya no está en la BD, se obtiene de la API externa
+            // Usamos un nombre temporal basado en el ID. El nombre real se puede obtener de la API cuando sea necesario.
             Afiliado afiliado = null;
             Integer obraSocialId = (Integer) rs.getObject("paciente_obra_social_id");
             if (obraSocialId != null) {
-                String nombreObraSocial = rs.getString("paciente_nombre_obra_social");
+                // Usamos un nombre temporal. En producción, esto debería obtenerse de la API cuando sea necesario
+                String nombreObraSocial = "Obra Social " + obraSocialId;
                 String numeroAfiliado = rs.getString("paciente_numero_afiliado");
                 ObraSocial obraSocial = new ObraSocial(obraSocialId, nombreObraSocial);
                 afiliado = new Afiliado(obraSocial, numeroAfiliado);
@@ -336,7 +339,6 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                "p.domicilio_localidad AS paciente_domicilio_localidad, " +
                "p.obra_social_id AS paciente_obra_social_id, " +
                "p.numero_afiliado AS paciente_numero_afiliado, " +
-               "os.nombre AS paciente_nombre_obra_social, " +
                // Enfermero (Usuario)
                "e.id AS enfermero_id, e.email AS enfermero_email, e.password_hash AS enfermero_password_hash, " +
                "e.autoridad AS enfermero_autoridad, e.cuil AS enfermero_cuil, " +
@@ -350,7 +352,6 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                "FROM ingresos i " +
                "INNER JOIN pacientes p ON i.paciente_id = p.id " +
                "INNER JOIN usuarios e ON i.enfermero_id = e.id " +
-               "LEFT JOIN usuarios d ON i.doctor_id = d.id " +
-               "LEFT JOIN obras_sociales os ON p.obra_social_id = os.id";
+               "LEFT JOIN usuarios d ON i.doctor_id = d.id";
     }
 }

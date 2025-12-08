@@ -14,9 +14,11 @@ import tfi.domain.repository.PacientesRepository;
 import tfi.domain.port.ObraSocialPort;
 import tfi.util.MensajesError;
 import tfi.application.mapper.PacienteMapper;
+import tfi.application.service.ObraSocialCacheService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -33,12 +35,21 @@ class PacienteServiceTest {
     @Mock
     private ObraSocialPort obraSocialPort;
 
+    @Mock
+    private ObraSocialCacheService obraSocialCacheService;
+
     private PacienteService pacienteService;
     private PacienteMapper pacienteMapper;
 
     @BeforeEach
     void setUp() {
-        pacienteMapper = new PacienteMapper();
+        // Mock del cache service para que retorne nombres por defecto cuando sea necesario
+        when(obraSocialCacheService.getNombreObraSocial(anyInt())).thenAnswer(invocation -> {
+            Integer id = invocation.getArgument(0);
+            return "Obra Social " + id;
+        });
+        
+        pacienteMapper = new PacienteMapper(obraSocialCacheService);
         pacienteService = new PacienteService(pacientesRepository, pacienteMapper, obraSocialPort);
     }
 

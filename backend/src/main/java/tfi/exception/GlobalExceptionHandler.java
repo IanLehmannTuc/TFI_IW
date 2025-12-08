@@ -191,6 +191,24 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * Maneja excepciones RuntimeException.
+     * Generalmente contienen mensajes descriptivos sobre validaciones de negocio.
+     * 
+     * @param ex La excepción RuntimeException
+     * @return 400 Bad Request con el mensaje específico de la excepción
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+        // Si tiene mensaje, lo usamos; si no, mensaje genérico
+        String mensaje = ex.getMessage() != null && !ex.getMessage().trim().isEmpty()
+            ? ex.getMessage()
+            : "Error de validación: " + ex.getClass().getSimpleName();
+        
+        ErrorResponse error = new ErrorResponse(mensaje, HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
      * Maneja cualquier otra excepción no capturada específicamente.
      * Último recurso para errores inesperados del servidor.
      * 
