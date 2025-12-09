@@ -7,6 +7,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Eliminar tablas si existen (para desarrollo)
+DROP TABLE IF EXISTS atenciones CASCADE;
 DROP TABLE IF EXISTS ingresos CASCADE;
 DROP TABLE IF EXISTS pacientes CASCADE;
 DROP TABLE IF EXISTS usuarios CASCADE;
@@ -53,9 +54,7 @@ CREATE TABLE IF NOT EXISTS ingresos (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     paciente_id UUID NOT NULL REFERENCES pacientes(id),
     enfermero_id UUID NOT NULL REFERENCES usuarios(id),
-    doctor_id UUID REFERENCES usuarios(id),
     descripcion TEXT,
-    informe_doctor TEXT,
     fecha_hora_ingreso TIMESTAMP NOT NULL,
     -- Signos vitales
     temperatura DOUBLE PRECISION,
@@ -69,14 +68,27 @@ CREATE TABLE IF NOT EXISTS ingresos (
 );
 
 -- ============================================
+-- TABLA: atenciones (Informes médicos de ingresos)
+-- ============================================
+CREATE TABLE IF NOT EXISTS atenciones (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ingreso_id UUID NOT NULL UNIQUE REFERENCES ingresos(id),
+    medico_id UUID NOT NULL REFERENCES usuarios(id),
+    informe_medico TEXT NOT NULL,
+    fecha_atencion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
 -- ÍNDICES para mejorar el rendimiento
 -- ============================================
 CREATE INDEX IF NOT EXISTS idx_ingresos_paciente ON ingresos(paciente_id);
 CREATE INDEX IF NOT EXISTS idx_ingresos_enfermero ON ingresos(enfermero_id);
-CREATE INDEX IF NOT EXISTS idx_ingresos_doctor ON ingresos(doctor_id);
 CREATE INDEX IF NOT EXISTS idx_ingresos_fecha ON ingresos(fecha_hora_ingreso);
 CREATE INDEX IF NOT EXISTS idx_ingresos_estado ON ingresos(estado);
 CREATE INDEX IF NOT EXISTS idx_ingresos_nivel ON ingresos(nivel_emergencia);
+CREATE INDEX IF NOT EXISTS idx_atenciones_ingreso ON atenciones(ingreso_id);
+CREATE INDEX IF NOT EXISTS idx_atenciones_medico ON atenciones(medico_id);
+CREATE INDEX IF NOT EXISTS idx_atenciones_fecha ON atenciones(fecha_atencion);
 CREATE INDEX IF NOT EXISTS idx_pacientes_obra_social ON pacientes(obra_social_id);
 CREATE INDEX IF NOT EXISTS idx_pacientes_cuil ON pacientes(cuil);
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email);

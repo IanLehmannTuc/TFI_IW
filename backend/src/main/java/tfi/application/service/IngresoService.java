@@ -21,15 +21,20 @@ import tfi.domain.valueObject.TensionArterial;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
+/**
+ * Servicio para gestionar ingresos de pacientes.
+ * Maneja la lógica de negocio relacionada con el registro, actualización,
+ * eliminación y consulta de ingresos.
+ */
 @Service
-public class UrgenciaService {
+public class IngresoService {
     private PacientesRepository pacientesRepository;
     private UsuarioRepository usuarioRepository;
     private IngresoRepository ingresoRepository;
     private ColaAtencionService colaAtencionService;
     private IngresoMapper ingresoMapper;
 
-    public UrgenciaService(PacientesRepository pacientesRepository, 
+    public IngresoService(PacientesRepository pacientesRepository, 
                           UsuarioRepository usuarioRepository, 
                           IngresoRepository ingresoRepository,
                           IngresoMapper ingresoMapper) {
@@ -41,7 +46,7 @@ public class UrgenciaService {
     }
 
     /**
-     * Registra un nuevo ingreso de paciente a urgencias.
+     * Registra un nuevo ingreso de paciente.
      * Si el paciente no existe, lo crea automáticamente con los datos opcionales proporcionados.
      * Persiste el ingreso en el repositorio y lo agrega a la cola de atención.
      * 
@@ -149,12 +154,21 @@ public class UrgenciaService {
     
     /**
      * Atiende al siguiente paciente en la cola (el de mayor prioridad).
-     * Remueve el ingreso de la cola pero NO lo elimina del repositorio.
+     * Remueve el ingreso de la cola, cambia su estado a EN_PROCESO y lo persiste.
      * 
      * @return el ingreso atendido, o null si no hay pacientes en espera
      */
     public Ingreso atenderSiguientePaciente() {
-        return colaAtencionService.atenderSiguiente();
+        Ingreso ingreso = colaAtencionService.atenderSiguiente();
+        
+        if (ingreso != null) {
+            // Cambiar el estado a EN_PROCESO
+            ingreso.setEstado(tfi.domain.enums.Estado.EN_PROCESO);
+            // Persistir el cambio en el repositorio
+            ingresoRepository.update(ingreso);
+        }
+        
+        return ingreso;
     }
     
     /**
@@ -201,3 +215,4 @@ public class UrgenciaService {
         return ingresoRepository.findAll();
     }
 }
+

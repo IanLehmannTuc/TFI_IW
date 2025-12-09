@@ -14,6 +14,7 @@ import tfi.domain.enums.Autoridad;
  */
 public class SecurityContext {
 
+    private static final String USER_ID_ATTRIBUTE = "userId";
     private static final String USER_EMAIL_ATTRIBUTE = "userEmail";
     private static final String USER_AUTORIDAD_ATTRIBUTE = "userAutoridad";
 
@@ -37,14 +38,15 @@ public class SecurityContext {
         if (request == null) {
             throw new IllegalArgumentException("El request no puede ser nulo");
         }
+        String id = (String) request.getAttribute(USER_ID_ATTRIBUTE);
         String email = (String) request.getAttribute(USER_EMAIL_ATTRIBUTE);
         Autoridad autoridad = (Autoridad) request.getAttribute(USER_AUTORIDAD_ATTRIBUTE);
         
-        if (email == null || autoridad == null) {
+        if (id == null || email == null || autoridad == null) {
             throw new AutenticacionException(MensajesError.NO_AUTENTICADO);
         }
         
-        return new UsuarioAutenticado(email, autoridad);
+        return new UsuarioAutenticado(id, email, autoridad);
     }
 
     /**
@@ -59,14 +61,15 @@ public class SecurityContext {
         if (request == null) {
             throw new IllegalArgumentException("El request no puede ser nulo");
         }
+        String id = (String) request.getAttribute(USER_ID_ATTRIBUTE);
         String email = (String) request.getAttribute(USER_EMAIL_ATTRIBUTE);
         Autoridad autoridad = (Autoridad) request.getAttribute(USER_AUTORIDAD_ATTRIBUTE);
         
-        if (email == null || autoridad == null) {
+        if (id == null || email == null || autoridad == null) {
             return null;
         }
         
-        return new UsuarioAutenticado(email, autoridad);
+        return new UsuarioAutenticado(id, email, autoridad);
     }
 
     /**

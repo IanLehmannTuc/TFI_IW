@@ -98,6 +98,20 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
     }
 
     @Override
+    public Optional<Usuario> findById(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        String sql = "SELECT id, email, password_hash, autoridad, cuil, nombre, apellido, matricula " +
+                     "FROM usuarios WHERE id = ?::uuid";
+        
+        List<Usuario> results = jdbcTemplate.query(sql, new UsuarioRowMapper(), id);
+        
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    @Override
     public Optional<Usuario> findByEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             return Optional.empty();

@@ -5,12 +5,12 @@ Backend desarrollado en Spring Boot para el sistema de gestión de urgencias hos
 ## 📚 Documentación de la API
 
 **La documentación completa de todos los endpoints está disponible en:**
-- **[API.md](./API.md)](./API.md)
+- **[API.md](./API.md)**
 
 ## 🚀 Inicio Rápido
 
 ### Requisitos
-- Java 17 o superior
+- Java 22
 - Maven 3.6+
 - PostgreSQL (opcional, también soporta repositorio en memoria)
 
@@ -53,18 +53,26 @@ La aplicación estará disponible en `http://localhost:8080`
 - `GET /api/pacientes` - Listar pacientes con paginación
 - `GET /api/pacientes/{cuil}` - Buscar paciente por CUIL
 
-### Urgencias (`/api/urgencias`)
-- `POST /api/urgencias` - Registrar ingreso (requiere ENFERMERO)
-- `GET /api/urgencias` - Obtener todos los ingresos
-- `GET /api/urgencias/{id}` - Obtener ingreso por ID
-- `PUT /api/urgencias/{id}` - Actualizar ingreso (requiere ENFERMERO)
-- `DELETE /api/urgencias/{id}` - Eliminar ingreso (requiere ENFERMERO)
+### Ingresos (`/api/ingresos`)
+- `POST /api/ingresos` - Registrar ingreso (requiere ENFERMERO)
+- `GET /api/ingresos` - Obtener todos los ingresos
+- `GET /api/ingresos/{id}` - Obtener ingreso por ID
+- `PUT /api/ingresos/{id}` - Actualizar ingreso (requiere ENFERMERO)
+- `DELETE /api/ingresos/{id}` - Eliminar ingreso (requiere ENFERMERO)
 
 ### Cola de Atención (`/api/cola-atencion`)
 - `GET /api/cola-atencion` - Obtener cola ordenada por prioridad
 - `GET /api/cola-atencion/siguiente` - Ver siguiente paciente sin removerlo
 - `POST /api/cola-atencion/atender` - Atender siguiente paciente (requiere MEDICO)
 - `GET /api/cola-atencion/cantidad` - Cantidad de pacientes en espera
+
+### Atenciones (`/api/atenciones`)
+- `POST /api/atenciones` - Registrar atención médica (requiere MEDICO)
+- `GET /api/atenciones/{id}` - Obtener atención por ID
+- `GET /api/atenciones/ingreso/{ingresoId}` - Obtener atención por ID de ingreso
+
+### Obras Sociales (`/api/obras-sociales`)
+- `GET /api/obras-sociales` - Listar obras sociales disponibles
 
 **Para detalles completos, ejemplos y validaciones, consulta [API.md](./API.md)**
 
@@ -97,10 +105,14 @@ Authorization: Bearer <token>
 
 ## 📦 Dependencias Principales
 
-- Spring Boot 3.x
-- Spring Security
-- JWT (JSON Web Tokens)
+- Spring Boot 3.5.5
+- Spring JDBC (sin JPA/ORM)
+- JWT (JSON Web Tokens) - jjwt 0.12.3
 - PostgreSQL Driver
+- BCrypt para hasheo de contraseñas
+- HikariCP para pool de conexiones
+- Cucumber para tests BDD
+- JUnit 5 para tests unitarios
 - Maven
 
 ## 🔧 Configuración
@@ -112,8 +124,43 @@ La configuración se encuentra en `src/main/resources/application.properties`. S
 - Configuración de JWT (secret, expiración)
 - Perfiles de Spring (postgres, memory)
 
+## 📝 Flujo de Trabajo
+
+### Ciclo de vida de un paciente en urgencias
+
+1. **Registro de Paciente** (ENFERMERO)
+   - Se registra un nuevo paciente o se busca uno existente
+   - Si tiene obra social, se verifica automáticamente la afiliación
+
+2. **Registro de Ingreso** (ENFERMERO)
+   - Se registra el ingreso del paciente con signos vitales
+   - Se asigna un nivel de emergencia (BAJA, MEDIA, ALTA, CRITICA)
+   - El ingreso se crea en estado `PENDIENTE`
+   - Se agrega automáticamente a la cola de atención ordenada por prioridad
+
+3. **Cola de Atención**
+   - Los pacientes se ordenan por nivel de emergencia y fecha de ingreso
+   - Los médicos pueden consultar la cola y ver el siguiente paciente
+
+4. **Atender Paciente** (MEDICO)
+   - El médico reclama al siguiente paciente de la cola
+   - El ingreso cambia a estado `EN_PROCESO`
+   - Se remueve de la cola de espera
+
+5. **Registrar Atención** (MEDICO)
+   - El médico registra un informe de la atención realizada
+   - El ingreso cambia a estado `FINALIZADO`
+   - La atención queda asociada al ingreso
+
+### Estados de un Ingreso
+
+- `PENDIENTE`: Ingreso recién registrado, esperando en cola
+- `EN_PROCESO`: Paciente siendo atendido por un médico
+- `FINALIZADO`: Atención completada con informe médico
+
 ## 📝 Notas
 
 - Por defecto, la aplicación usa el perfil "memory" (repositorio en memoria)
 - Para usar PostgreSQL, activa el perfil "postgres" y configura la conexión
 - Los tokens JWT expiran después de 24 horas por defecto
+- La verificación de obras sociales se realiza contra una API externa configurada en `application.properties`

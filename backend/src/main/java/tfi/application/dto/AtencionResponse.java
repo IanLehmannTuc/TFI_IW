@@ -1,39 +1,28 @@
-package tfi.domain.entity;
+package tfi.application.dto;
 
 import java.time.LocalDateTime;
 
 /**
- * Entidad que representa una atención médica realizada a un ingreso en urgencias.
- * Contiene el informe médico y los datos del médico que realizó la atención.
+ * DTO de respuesta para una atención médica.
+ * Contiene todos los datos de una atención registrada.
  */
-public class Atencion {
+public class AtencionResponse {
+    
     private String id;
     private String ingresoId;
     private String medicoId;
     private String informeMedico;
     private LocalDateTime fechaAtencion;
 
-    /**
-     * Constructor completo para crear una atención con todos los datos.
-     * Usado principalmente al recuperar desde la base de datos.
-     */
-    public Atencion(String id, String ingresoId, String medicoId, String informeMedico, LocalDateTime fechaAtencion) {
+    public AtencionResponse() {
+    }
+
+    public AtencionResponse(String id, String ingresoId, String medicoId, String informeMedico, LocalDateTime fechaAtencion) {
         this.id = id;
         this.ingresoId = ingresoId;
         this.medicoId = medicoId;
         this.informeMedico = informeMedico;
         this.fechaAtencion = fechaAtencion;
-    }
-
-    /**
-     * Constructor para crear una nueva atención sin ID.
-     * El ID será asignado por el repositorio al persistir.
-     */
-    public Atencion(String ingresoId, String medicoId, String informeMedico) {
-        this.ingresoId = ingresoId;
-        this.medicoId = medicoId;
-        this.informeMedico = informeMedico;
-        this.fechaAtencion = LocalDateTime.now();
     }
 
     public String getId() {

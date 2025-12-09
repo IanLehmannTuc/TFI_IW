@@ -19,21 +19,21 @@ import tfi.domain.valueObject.TensionArterial;
 import tfi.application.mapper.IngresoMapper;
 import tfi.domain.repository.UsuarioRepository;
 import tfi.domain.repository.PacientesRepository;
-import tfi.application.service.UrgenciaService;
+import tfi.application.service.IngresoService;
 import tfi.util.SecurityContext;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Controlador REST para endpoints de gestión de urgencias.
+ * Controlador REST para endpoints de gestión de ingresos.
  * Maneja registro, consulta, actualización y eliminación de ingresos.
  */
 @RestController
-@RequestMapping("/api/urgencias")
-public class UrgenciaController {
+@RequestMapping("/api/ingresos")
+public class IngresoController {
     
-    private final UrgenciaService urgenciaService;
+    private final IngresoService ingresoService;
     private final PacientesRepository pacientesRepository;
     private final UsuarioRepository usuarioRepository;
     private final IngresoMapper ingresoMapper;
@@ -41,26 +41,26 @@ public class UrgenciaController {
     /**
      * Constructor con inyección de dependencias
      * 
-     * @param urgenciaService Servicio de urgencias
+     * @param ingresoService Servicio de ingresos
      * @param pacientesRepository Repositorio de pacientes
      * @param usuarioRepository Repositorio de usuarios (personal médico)
      * @param ingresoMapper Mapper para convertir Ingreso a IngresoResponse
      */
-    public UrgenciaController(UrgenciaService urgenciaService,
-                             PacientesRepository pacientesRepository,
-                             UsuarioRepository usuarioRepository,
-                             IngresoMapper ingresoMapper) {
-        this.urgenciaService = urgenciaService;
+    public IngresoController(IngresoService ingresoService,
+                            PacientesRepository pacientesRepository,
+                            UsuarioRepository usuarioRepository,
+                            IngresoMapper ingresoMapper) {
+        this.ingresoService = ingresoService;
         this.pacientesRepository = pacientesRepository;
         this.usuarioRepository = usuarioRepository;
         this.ingresoMapper = ingresoMapper;
     }
 
     /**
-     * Endpoint para registrar un nuevo ingreso a urgencias.
+     * Endpoint para registrar un nuevo ingreso.
      * Endpoint protegido - requiere JWT válido y autoridad ENFERMERO.
      * 
-     * POST /api/urgencias
+     * POST /api/ingresos
      * Header: Authorization: Bearer <token>
      * Body: { "pacienteCuil": "20-20304050-5", "enfermeroCuil": "27-12345678-9", ... }
      * 
@@ -79,7 +79,7 @@ public class UrgenciaController {
         
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
-        IngresoResponse ingresoResponse = urgenciaService.registrarIngreso(request);
+        IngresoResponse ingresoResponse = ingresoService.registrarIngreso(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ingresoResponse);
     }
 
@@ -87,7 +87,7 @@ public class UrgenciaController {
      * Endpoint para obtener todos los ingresos registrados.
      * Endpoint protegido - requiere JWT válido.
      * 
-     * GET /api/urgencias
+     * GET /api/ingresos
      * Header: Authorization: Bearer <token>
      * 
      * @param httpRequest Request HTTP con información del usuario autenticado
@@ -100,7 +100,7 @@ public class UrgenciaController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        List<Ingreso> ingresos = urgenciaService.obtenerTodosLosIngresos();
+        List<Ingreso> ingresos = ingresoService.obtenerTodosLosIngresos();
         List<IngresoResponse> responses = ingresos.stream()
             .map(ingresoMapper::toResponse)
             .collect(Collectors.toList());
@@ -112,7 +112,7 @@ public class UrgenciaController {
      * Endpoint para obtener un ingreso por ID.
      * Endpoint protegido - requiere JWT válido.
      * 
-     * GET /api/urgencias/{id}
+     * GET /api/ingresos/{id}
      * Header: Authorization: Bearer <token>
      * 
      * @param id El ID del ingreso a buscar
@@ -128,7 +128,7 @@ public class UrgenciaController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        List<Ingreso> ingresos = urgenciaService.obtenerTodosLosIngresos();
+        List<Ingreso> ingresos = ingresoService.obtenerTodosLosIngresos();
         Ingreso ingreso = ingresos.stream()
             .filter(i -> i.getId() != null && i.getId().equals(id))
             .findFirst()
@@ -146,7 +146,7 @@ public class UrgenciaController {
      * Endpoint para actualizar un ingreso existente.
      * Endpoint protegido - requiere JWT válido y autoridad ENFERMERO.
      * 
-     * PUT /api/urgencias/{id}
+     * PUT /api/ingresos/{id}
      * Header: Authorization: Bearer <token>
      * Body: { "descripcion": "...", "temperatura": 37.5, ... }
      * 
@@ -167,7 +167,7 @@ public class UrgenciaController {
         
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
-        List<Ingreso> ingresos = urgenciaService.obtenerTodosLosIngresos();
+        List<Ingreso> ingresos = ingresoService.obtenerTodosLosIngresos();
         Ingreso ingresoExistente = ingresos.stream()
             .filter(i -> i.getId() != null && i.getId().equals(id))
             .findFirst()
@@ -212,7 +212,7 @@ public class UrgenciaController {
             );
             ingresoActualizado.setId(id);
             
-            Ingreso ingresoGuardado = urgenciaService.actualizarIngreso(ingresoActualizado);
+            Ingreso ingresoGuardado = ingresoService.actualizarIngreso(ingresoActualizado);
             IngresoResponse response = ingresoMapper.toResponse(ingresoGuardado);
             
             return ResponseEntity.ok(response);
@@ -225,7 +225,7 @@ public class UrgenciaController {
      * Endpoint para eliminar un ingreso.
      * Endpoint protegido - requiere JWT válido y autoridad ENFERMERO.
      * 
-     * DELETE /api/urgencias/{id}
+     * DELETE /api/ingresos/{id}
      * Header: Authorization: Bearer <token>
      * 
      * @param id El ID del ingreso a eliminar
@@ -242,7 +242,7 @@ public class UrgenciaController {
         
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
-        List<Ingreso> ingresos = urgenciaService.obtenerTodosLosIngresos();
+        List<Ingreso> ingresos = ingresoService.obtenerTodosLosIngresos();
         Ingreso ingreso = ingresos.stream()
             .filter(i -> i.getId() != null && i.getId().equals(id))
             .findFirst()
@@ -252,7 +252,8 @@ public class UrgenciaController {
             return ResponseEntity.notFound().build();
         }
         
-        urgenciaService.eliminarIngreso(ingreso);
+        ingresoService.eliminarIngreso(ingreso);
         return ResponseEntity.ok().build();
     }
 }
+

@@ -8,7 +8,7 @@ import tfi.application.dto.IngresoResponse;
 import tfi.domain.entity.Ingreso;
 import tfi.domain.enums.Autoridad;
 import tfi.application.service.ColaAtencionService;
-import tfi.application.service.UrgenciaService;
+import tfi.application.service.IngresoService;
 import tfi.util.SecurityContext;
 
 import java.util.List;
@@ -23,21 +23,21 @@ import java.util.stream.Collectors;
 public class ColaAtencionController {
     
     private final ColaAtencionService colaAtencionService;
-    private final UrgenciaService urgenciaService;
+    private final IngresoService ingresoService;
     private final IngresoMapper ingresoMapper;
 
     /**
      * Constructor con inyección de dependencias
      * 
      * @param colaAtencionService Servicio de cola de atención
-     * @param urgenciaService Servicio de urgencias
+     * @param ingresoService Servicio de ingresos
      * @param ingresoMapper Mapper para convertir Ingreso a IngresoResponse
      */
     public ColaAtencionController(ColaAtencionService colaAtencionService,
-                                 UrgenciaService urgenciaService,
+                                 IngresoService ingresoService,
                                  IngresoMapper ingresoMapper) {
         this.colaAtencionService = colaAtencionService;
-        this.urgenciaService = urgenciaService;
+        this.ingresoService = ingresoService;
         this.ingresoMapper = ingresoMapper;
     }
 
@@ -58,7 +58,7 @@ public class ColaAtencionController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        List<Ingreso> cola = urgenciaService.obtenerColaDeAtencion();
+        List<Ingreso> cola = ingresoService.obtenerColaDeAtencion();
         List<IngresoResponse> responses = cola.stream()
             .map(ingresoMapper::toResponse)
             .collect(Collectors.toList());
@@ -95,8 +95,8 @@ public class ColaAtencionController {
     }
 
     /**
-     * Endpoint para atender al siguiente paciente en la cola.
-     * Remueve el ingreso de la cola pero NO lo elimina del repositorio.
+     * Endpoint para reclamar y atender al siguiente paciente en la cola.
+     * Remueve el ingreso de la cola de espera y cambia su estado a EN_PROCESO.
      * Endpoint protegido - requiere JWT válido y autoridad MEDICO.
      * 
      * POST /api/cola-atencion/atender
@@ -104,7 +104,7 @@ public class ColaAtencionController {
      * 
      * @param httpRequest Request HTTP con información del usuario autenticado
      * @return 200 OK con el ingreso atendido
-     *         204 No Content si no hay pacientes en espera
+     *         400 Bad Request si no hay pacientes en espera
      *         401 Unauthorized si no hay token o es inválido
      *         403 Forbidden si el usuario no tiene autoridad MEDICO
      */
@@ -114,10 +114,10 @@ public class ColaAtencionController {
         
         SecurityContext.requireAutoridad(httpRequest, Autoridad.MEDICO);
         
-        Ingreso ingresoAtendido = urgenciaService.atenderSiguientePaciente();
+        Ingreso ingresoAtendido = ingresoService.atenderSiguientePaciente();
         
         if (ingresoAtendido == null) {
-            return ResponseEntity.noContent().build();
+            throw new IllegalStateException("No hay pacientes en la lista de espera");
         }
         
         IngresoResponse response = ingresoMapper.toResponse(ingresoAtendido);
@@ -141,7 +141,7 @@ public class ColaAtencionController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        int cantidad = urgenciaService.cantidadPacientesEnEspera();
+        int cantidad = ingresoService.cantidadPacientesEnEspera();
         return ResponseEntity.ok(cantidad);
     }
 }

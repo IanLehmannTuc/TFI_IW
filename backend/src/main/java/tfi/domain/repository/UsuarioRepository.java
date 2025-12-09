@@ -22,6 +22,14 @@ public interface UsuarioRepository {
     Usuario add(Usuario usuario);
     
     /**
+     * Busca un usuario por su ID.
+     * 
+     * @param id El ID del usuario a buscar
+     * @return Un Optional con el usuario si existe, vacío si no se encuentra
+     */
+    Optional<Usuario> findById(String id);
+    
+    /**
      * Busca un usuario por su email.
      * 
      * @param email El email del usuario a buscar

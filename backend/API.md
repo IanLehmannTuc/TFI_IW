@@ -423,12 +423,12 @@ DELETE /api/pacientes/20-20304050-5
 
 ---
 
-## 4. Urgencias (`/api/urgencias`)
+## 4. Ingresos (`/api/ingresos`)
 
 ### 4.1. Registrar Ingreso
 Registra un nuevo ingreso a urgencias. Si el paciente no existe, se crea automáticamente.
 
-**Endpoint:** `POST /api/urgencias`  
+**Endpoint:** `POST /api/ingresos`  
 **Autenticación:** Requerida  
 **Autoridad requerida:** `ENFERMERO`
 
@@ -518,7 +518,7 @@ Registra un nuevo ingreso a urgencias. Si el paciente no existe, se crea automá
 ### 4.2. Obtener Todos los Ingresos
 Obtiene una lista de todos los ingresos registrados.
 
-**Endpoint:** `GET /api/urgencias`  
+**Endpoint:** `GET /api/ingresos`  
 **Autenticación:** Requerida (cualquier usuario)
 
 **Response:** `200 OK`
@@ -547,7 +547,7 @@ Obtiene una lista de todos los ingresos registrados.
     "frecuenciaCardiaca": 85,
     "frecuenciaRespiratoria": 18,
     "nivelEmergencia": "ALTA",
-    "estado": "EN_ESPERA"
+    "estado": "PENDIENTE"
   }
 ]
 ```
@@ -560,7 +560,7 @@ Obtiene una lista de todos los ingresos registrados.
 ### 4.3. Obtener Ingreso por ID
 Obtiene la información de un ingreso específico por su ID.
 
-**Endpoint:** `GET /api/urgencias/{id}`  
+**Endpoint:** `GET /api/ingresos/{id}`  
 **Autenticación:** Requerida (cualquier usuario)
 
 **Path Parameters:**
@@ -591,7 +591,7 @@ Obtiene la información de un ingreso específico por su ID.
   "frecuenciaCardiaca": 85,
   "frecuenciaRespiratoria": 18,
   "nivelEmergencia": "ALTA",
-  "estado": "EN_ESPERA"
+  "estado": "PENDIENTE"
 }
 ```
 
@@ -604,7 +604,7 @@ Obtiene la información de un ingreso específico por su ID.
 ### 4.4. Actualizar Ingreso
 Actualiza la información de un ingreso existente.
 
-**Endpoint:** `PUT /api/urgencias/{id}`  
+**Endpoint:** `PUT /api/ingresos/{id}`  
 **Autenticación:** Requerida  
 **Autoridad requerida:** `ENFERMERO`
 
@@ -638,7 +638,7 @@ Actualiza la información de un ingreso existente.
   "frecuenciaCardiaca": 90,
   "frecuenciaRespiratoria": 20,
   "nivelEmergencia": "ALTA",
-  "estado": "EN_ESPERA"
+  "estado": "PENDIENTE"
 }
 ```
 
@@ -653,7 +653,7 @@ Actualiza la información de un ingreso existente.
 ### 4.5. Eliminar Ingreso
 Elimina un ingreso del sistema.
 
-**Endpoint:** `DELETE /api/urgencias/{id}`  
+**Endpoint:** `DELETE /api/ingresos/{id}`  
 **Autenticación:** Requerida  
 **Autoridad requerida:** `ENFERMERO`
 
@@ -703,7 +703,7 @@ Obtiene la cola de atención ordenada por prioridad (nivel de emergencia y fecha
     "frecuenciaCardiaca": 85,
     "frecuenciaRespiratoria": 18,
     "nivelEmergencia": "CRITICA",
-    "estado": "EN_ESPERA"
+    "estado": "PENDIENTE"
   }
 ]
 ```
@@ -748,7 +748,7 @@ Obtiene el siguiente paciente en la cola sin removerlo.
   "frecuenciaCardiaca": 85,
   "frecuenciaRespiratoria": 18,
   "nivelEmergencia": "CRITICA",
-  "estado": "EN_ESPERA"
+  "estado": "PENDIENTE"
 }
 ```
 
@@ -759,7 +759,7 @@ Obtiene el siguiente paciente en la cola sin removerlo.
 ---
 
 ### 5.3. Atender Siguiente Paciente
-Atiende al siguiente paciente en la cola (lo remueve de la cola pero no lo elimina del repositorio).
+Atiende al siguiente paciente en la cola (lo remueve de la cola y cambia su estado a EN_PROCESO).
 
 **Endpoint:** `POST /api/cola-atencion/atender`  
 **Autenticación:** Requerida  
@@ -790,7 +790,7 @@ Atiende al siguiente paciente en la cola (lo remueve de la cola pero no lo elimi
   "frecuenciaCardiaca": 85,
   "frecuenciaRespiratoria": 18,
   "nivelEmergencia": "CRITICA",
-  "estado": "EN_ATENCION"
+  "estado": "EN_PROCESO"
 }
 ```
 
@@ -813,6 +813,151 @@ Obtiene la cantidad de pacientes que están en espera en la cola.
 ```
 
 **Errores:**
+- `401 Unauthorized`: Token inválido o ausente
+
+---
+
+## 6. Atenciones (`/api/atenciones`)
+
+### 6.1. Registrar Atención Médica
+Registra una nueva atención médica para un ingreso. El médico debe haber reclamado previamente el paciente (estado EN_PROCESO).
+
+**Endpoint:** `POST /api/atenciones`  
+**Autenticación:** Requerida  
+**Autoridad requerida:** `MEDICO`
+
+**Request Body:**
+```json
+{
+  "ingresoId": "uuid-del-ingreso",
+  "informe": "Paciente presenta cuadro de dolor torácico. Se realizaron estudios complementarios (ECG, análisis de sangre). Diagnóstico: angina de pecho. Se indica tratamiento farmacológico y reposo."
+}
+```
+
+**Campos:**
+- `ingresoId` (string, requerido): ID del ingreso que se está atendiendo
+- `informe` (string, requerido): Informe médico detallado de la atención
+
+**Validaciones:**
+- El informe no puede estar vacío
+- El ingreso debe existir
+- El ingreso debe estar en estado `EN_PROCESO`
+- No debe existir una atención previa para ese ingreso
+
+**Response:** `201 Created`
+```json
+{
+  "id": "uuid-de-la-atencion",
+  "ingresoId": "uuid-del-ingreso",
+  "medicoId": "uuid-del-medico",
+  "informe": "Paciente presenta cuadro de dolor torácico...",
+  "fechaHoraAtencion": "2024-01-15T11:00:00"
+}
+```
+
+**Efectos:**
+- Se crea el registro de atención
+- El estado del ingreso cambia automáticamente a `FINALIZADO`
+- El ingreso queda asociado a la atención
+
+**Errores:**
+- `400 Bad Request`: Informe vacío, ingreso no está en estado EN_PROCESO, o ya existe una atención para ese ingreso
+- `401 Unauthorized`: Token inválido o ausente
+- `403 Forbidden`: Usuario no tiene autoridad MEDICO
+- `404 Not Found`: Ingreso no encontrado
+
+---
+
+### 6.2. Obtener Atención por ID de Ingreso
+Obtiene la atención médica asociada a un ingreso específico.
+
+**Endpoint:** `GET /api/atenciones/ingreso/{ingresoId}`  
+**Autenticación:** Requerida (cualquier usuario)
+
+**Path Parameters:**
+- `ingresoId` (string): ID del ingreso
+
+**Ejemplo:**
+```
+GET /api/atenciones/ingreso/123e4567-e89b-12d3-a456-426614174000
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": "uuid-de-la-atencion",
+  "ingresoId": "uuid-del-ingreso",
+  "medicoId": "uuid-del-medico",
+  "informe": "Paciente presenta cuadro de dolor torácico...",
+  "fechaHoraAtencion": "2024-01-15T11:00:00"
+}
+```
+
+**Errores:**
+- `401 Unauthorized`: Token inválido o ausente
+- `404 Not Found`: No existe atención para ese ingreso
+
+---
+
+### 6.3. Obtener Atención por ID
+Obtiene una atención médica por su identificador único.
+
+**Endpoint:** `GET /api/atenciones/{id}`  
+**Autenticación:** Requerida (cualquier usuario)
+
+**Path Parameters:**
+- `id` (string): ID de la atención
+
+**Ejemplo:**
+```
+GET /api/atenciones/123e4567-e89b-12d3-a456-426614174000
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": "uuid-de-la-atencion",
+  "ingresoId": "uuid-del-ingreso",
+  "medicoId": "uuid-del-medico",
+  "informe": "Paciente presenta cuadro de dolor torácico...",
+  "fechaHoraAtencion": "2024-01-15T11:00:00"
+}
+```
+
+**Errores:**
+- `401 Unauthorized`: Token inválido o ausente
+- `404 Not Found`: Atención no encontrada
+
+---
+
+## 7. Obras Sociales (`/api/obras-sociales`)
+
+### 7.1. Listar Obras Sociales
+Obtiene la lista de todas las obras sociales disponibles desde la API externa.
+
+**Endpoint:** `GET /api/obras-sociales`  
+**Autenticación:** Requerida (cualquier usuario)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "nombre": "OSDE"
+  },
+  {
+    "id": 2,
+    "nombre": "Swiss Medical"
+  },
+  {
+    "id": 3,
+    "nombre": "Galeno"
+  }
+]
+```
+
+**Errores:**
+- `400 Bad Request`: Error al comunicarse con la API externa de obras sociales
 - `401 Unauthorized`: Token inválido o ausente
 
 ---
@@ -843,50 +988,34 @@ Obtiene la cantidad de pacientes que están en espera en la cola.
 - `CRITICA`
 
 ### Estado
-- `EN_ESPERA`
-- `EN_ATENCION`
-- `ATENDIDO`
+- `PENDIENTE` - Ingreso registrado, esperando en cola de atención
+- `EN_PROCESO` - Paciente siendo atendido por un médico
+- `FINALIZADO` - Atención completada con informe médico
 
 ---
 
 ## Ejemplos de Uso
 
-### Flujo completo: Registrar paciente e ingreso
+### Flujo completo: De ingreso a atención finalizada
 
-1. **Login como enfermero:**
+#### 1. Login como enfermero
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"enfermero@hospital.com","password":"Enfermero123!"}'
 ```
 
-2. **Listar obras sociales disponibles:**
+#### 2. Listar obras sociales disponibles
 ```bash
 curl -X GET http://localhost:8080/api/obras-sociales \
   -H "Authorization: Bearer <token>"
 ```
 
-3. **Registrar paciente:**
+#### 3. Registrar paciente con obra social
+El sistema verifica automáticamente la afiliación:
 ```bash
 curl -X POST http://localhost:8080/api/pacientes \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "cuil": "20-20304050-5",
-    "nombre": "Juan",
-    "apellido": "Pérez",
-    "domicilio": {
-      "calle": "Av. Corrientes",
-      "numero": 1234,
-      "localidad": "Buenos Aires"
-    }
-  }'
-```
-
-4. **Registrar paciente con obra social (se verifica automáticamente la afiliación):**
-```bash
-curl -X POST http://localhost:8080/api/pacientes \
-  -H "Authorization: Bearer <token>" \
+  -H "Authorization: Bearer <token-enfermero>" \
   -H "Content-Type: application/json" \
   -d '{
     "cuil": "20-20304050-5",
@@ -907,10 +1036,11 @@ curl -X POST http://localhost:8080/api/pacientes \
   }'
 ```
 
-5. **Registrar ingreso:**
+#### 4. Registrar ingreso a urgencias
+El ingreso se crea en estado PENDIENTE y se agrega automáticamente a la cola:
 ```bash
-curl -X POST http://localhost:8080/api/urgencias \
-  -H "Authorization: Bearer <token>" \
+curl -X POST http://localhost:8080/api/ingresos \
+  -H "Authorization: Bearer <token-enfermero>" \
   -H "Content-Type: application/json" \
   -d '{
     "pacienteCuil": "20-20304050-5",
@@ -925,7 +1055,58 @@ curl -X POST http://localhost:8080/api/urgencias \
   }'
 ```
 
-6. **Actualizar paciente (como enfermero):**
+#### 5. Login como médico
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"medico@hospital.com","password":"Medico123!"}'
+```
+
+#### 6. Ver cola de atención ordenada por prioridad
+```bash
+curl -X GET http://localhost:8080/api/cola-atencion \
+  -H "Authorization: Bearer <token-medico>"
+```
+
+#### 7. Atender siguiente paciente
+El ingreso cambia a estado EN_PROCESO y se remueve de la cola:
+```bash
+curl -X POST http://localhost:8080/api/cola-atencion/atender \
+  -H "Authorization: Bearer <token-medico>"
+```
+
+Respuesta (guardar el `id` del ingreso):
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "estado": "EN_PROCESO",
+  ...
+}
+```
+
+#### 8. Registrar atención médica
+El ingreso cambia a estado FINALIZADO:
+```bash
+curl -X POST http://localhost:8080/api/atenciones \
+  -H "Authorization: Bearer <token-medico>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ingresoId": "550e8400-e29b-41d4-a716-446655440000",
+    "informe": "Paciente presenta cuadro de dolor torácico. Se realizaron ECG y análisis de sangre. Diagnóstico: angina de pecho. Se indica tratamiento farmacológico y reposo de 48 horas."
+  }'
+```
+
+#### 9. Consultar atención registrada
+```bash
+curl -X GET http://localhost:8080/api/atenciones/ingreso/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer <token-medico>"
+```
+
+---
+
+### Otros ejemplos útiles
+
+#### Actualizar paciente (como enfermero)
 ```bash
 curl -X PUT http://localhost:8080/api/pacientes/20-20304050-5 \
   -H "Authorization: Bearer <token-enfermero>" \
@@ -942,33 +1123,125 @@ curl -X PUT http://localhost:8080/api/pacientes/20-20304050-5 \
   }'
 ```
 
-7. **Eliminar paciente (como enfermero):**
+#### Ver siguiente paciente sin atenderlo
 ```bash
-curl -X DELETE http://localhost:8080/api/pacientes/20-20304050-5 \
-  -H "Authorization: Bearer <token-enfermero>"
+curl -X GET http://localhost:8080/api/cola-atencion/siguiente \
+  -H "Authorization: Bearer <token>"
 ```
 
-8. **Ver cola de atención (como médico):**
+#### Cantidad de pacientes en espera
 ```bash
-curl -X GET http://localhost:8080/api/cola-atencion \
-  -H "Authorization: Bearer <token-medico>"
+curl -X GET http://localhost:8080/api/cola-atencion/cantidad \
+  -H "Authorization: Bearer <token>"
 ```
 
-9. **Atender siguiente paciente:**
-```bash
-curl -X POST http://localhost:8080/api/cola-atencion/atender \
-  -H "Authorization: Bearer <token-medico>"
+---
+
+## Flujo de Trabajo del Sistema
+
+### Estados de un Ingreso
+
+```
+PENDIENTE → EN_PROCESO → FINALIZADO
+```
+
+1. **PENDIENTE**: Ingreso recién registrado por el enfermero
+   - El paciente está en la cola de atención
+   - Ordenado por prioridad (nivel de emergencia + fecha)
+
+2. **EN_PROCESO**: Médico reclama el paciente de la cola
+   - Se remueve de la cola de atención
+   - El médico realiza la evaluación y tratamiento
+
+3. **FINALIZADO**: Médico registra la atención con informe
+   - Se crea el registro de atención médica
+   - El ingreso queda cerrado con su informe
+
+### Diagrama de Flujo
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        ENFERMERO                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  1. Registrar Paciente (si no existe)                           │
+│     └─> POST /api/pacientes                                     │
+│                                                                  │
+│  2. Registrar Ingreso                                           │
+│     └─> POST /api/ingresos                                      │
+│         • Estado inicial: PENDIENTE                             │
+│         • Se agrega automáticamente a la cola de atención       │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+
+                            ↓
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    COLA DE ATENCIÓN                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  • Ordenamiento automático por:                                 │
+│    1. Nivel de emergencia (CRITICA > ALTA > MEDIA > BAJA)       │
+│    2. Fecha de ingreso (FIFO dentro del mismo nivel)            │
+│                                                                  │
+│  • Cualquier usuario puede consultar:                           │
+│    └─> GET /api/cola-atencion                                   │
+│    └─> GET /api/cola-atencion/siguiente                         │
+│    └─> GET /api/cola-atencion/cantidad                          │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+
+                            ↓
+
+┌─────────────────────────────────────────────────────────────────┐
+│                         MÉDICO                                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  3. Reclamar siguiente paciente                                 │
+│     └─> POST /api/cola-atencion/atender                         │
+│         • Remueve el ingreso de la cola                         │
+│         • Estado cambia: PENDIENTE → EN_PROCESO                 │
+│                                                                  │
+│  4. Realizar evaluación y tratamiento                           │
+│                                                                  │
+│  5. Registrar atención con informe                              │
+│     └─> POST /api/atenciones                                    │
+│         • Se crea el registro de atención                       │
+│         • Estado cambia: EN_PROCESO → FINALIZADO                │
+│                                                                  │
+│  6. Consultar atenciones (opcional)                             │
+│     └─> GET /api/atenciones/{id}                                │
+│     └─> GET /api/atenciones/ingreso/{ingresoId}                 │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Notas
 
+### General
 - Todos los timestamps están en formato ISO 8601 (UTC)
 - Los CUIL deben seguir el formato: `XX-XXXXXXXX-X`
 - Las temperaturas se manejan en grados Celsius
 - Las frecuencias se expresan en unidades por minuto
 - La paginación usa índices basados en 0 (primera página = 0)
+
+### Seguridad
+- Los tokens JWT expiran después de 24 horas (configurable)
+- Las contraseñas se hashean con BCrypt
+- Los endpoints protegidos requieren el header `Authorization: Bearer <token>`
+
+### Autoridades y Permisos
+- **MEDICO**: Puede atender pacientes y registrar atenciones
+- **ENFERMERO**: Puede registrar pacientes e ingresos, y modificar datos de pacientes
+
+### Validaciones Importantes
+- El informe médico es **obligatorio** al registrar una atención
+- Solo se pueden atender ingresos en estado **EN_PROCESO**
+- No se puede registrar más de una atención por ingreso
+- Al atender un paciente, automáticamente cambia de PENDIENTE a EN_PROCESO
+- Al registrar una atención, automáticamente cambia de EN_PROCESO a FINALIZADO
 
 ## Integración con API Externa de Obras Sociales
 

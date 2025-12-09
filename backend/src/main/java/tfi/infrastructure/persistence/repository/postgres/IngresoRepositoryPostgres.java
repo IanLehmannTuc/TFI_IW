@@ -89,14 +89,8 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             String estadoStr = rs.getString("estado");
             Estado estado = Estado.valueOf(estadoStr);
 
-            // Atención (Médico - Usuario con rol MEDICO)
+            // Atención - Ya no se obtiene del ingreso, se consulta desde AtencionRepository si es necesario
             Atencion atencion = null;
-            String doctorEmail = rs.getString("doctor_email");
-            if (doctorEmail != null) {
-                Usuario medico = mapUsuario(rs, "doctor_");
-                String informeDoctor = rs.getString("informe_doctor");
-                atencion = new Atencion(medico, informeDoctor);
-            }
 
             // Crear ingreso
             Ingreso ingreso = new Ingreso(
@@ -211,19 +205,16 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
         }
 
         // El ID se genera automáticamente en la base de datos
-        String sql = "INSERT INTO ingresos (paciente_id, enfermero_id, doctor_id, " +
-                     "descripcion, informe_doctor, fecha_hora_ingreso, temperatura, " +
+        String sql = "INSERT INTO ingresos (paciente_id, enfermero_id, " +
+                     "descripcion, fecha_hora_ingreso, temperatura, " +
                      "presion_sistolica, presion_diastolica, frecuencia_cardiaca, frecuencia_respiratoria, " +
                      "nivel_emergencia, estado) " +
-                     "VALUES (CAST(? AS UUID), CAST(? AS UUID), CAST(? AS UUID), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id::text";
+                     "VALUES (CAST(? AS UUID), CAST(? AS UUID), ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id::text";
 
         String generatedId = jdbcTemplate.queryForObject(sql, String.class,
             ingreso.getPaciente() != null ? ingreso.getPaciente().getId() : null,
             ingreso.getEnfermero() != null ? ingreso.getEnfermero().getId() : null,
-            ingreso.getAtencion() != null && ingreso.getAtencion().getMedico() != null ? 
-                ingreso.getAtencion().getMedico().getId() : null,
             ingreso.getDescripcion(),
-            ingreso.getAtencion() != null ? ingreso.getAtencion().getInforme() : null,
             Timestamp.valueOf(ingreso.getFechaHoraIngreso()),
             ingreso.getTemperatura() != null ? ingreso.getTemperatura().getValor() : null,
             ingreso.getTensionArterial() != null ? ingreso.getTensionArterial().getPresionSistolica().getValor() : null,
@@ -252,8 +243,8 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             throw new IllegalStateException("No existe un ingreso con el ID: " + ingreso.getId());
         }
 
-        String sql = "UPDATE ingresos SET paciente_id = CAST(? AS UUID), enfermero_id = CAST(? AS UUID), doctor_id = CAST(? AS UUID), " +
-                     "descripcion = ?, informe_doctor = ?, fecha_hora_ingreso = ?, temperatura = ?, " +
+        String sql = "UPDATE ingresos SET paciente_id = CAST(? AS UUID), enfermero_id = CAST(? AS UUID), " +
+                     "descripcion = ?, fecha_hora_ingreso = ?, temperatura = ?, " +
                      "presion_sistolica = ?, presion_diastolica = ?, frecuencia_cardiaca = ?, " +
                      "frecuencia_respiratoria = ?, nivel_emergencia = ?, estado = ? " +
                      "WHERE id = CAST(? AS UUID)";
@@ -261,10 +252,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
         jdbcTemplate.update(sql,
             ingreso.getPaciente() != null ? ingreso.getPaciente().getId() : null,
             ingreso.getEnfermero() != null ? ingreso.getEnfermero().getId() : null,
-            ingreso.getAtencion() != null && ingreso.getAtencion().getMedico() != null ? 
-                ingreso.getAtencion().getMedico().getId() : null,
             ingreso.getDescripcion(),
-            ingreso.getAtencion() != null ? ingreso.getAtencion().getInforme() : null,
             Timestamp.valueOf(ingreso.getFechaHoraIngreso()),
             ingreso.getTemperatura() != null ? ingreso.getTemperatura().getValor() : null,
             ingreso.getTensionArterial() != null ? ingreso.getTensionArterial().getPresionSistolica().getValor() : null,
@@ -327,7 +315,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
      */
     private String buildSelectQuery() {
         return "SELECT " +
-               "i.id, i.descripcion, i.informe_doctor, i.fecha_hora_ingreso, " +
+               "i.id, i.descripcion, i.fecha_hora_ingreso, " +
                "i.temperatura, i.presion_sistolica, i.presion_diastolica, " +
                "i.frecuencia_cardiaca, i.frecuencia_respiratoria, " +
                "i.nivel_emergencia, i.estado, " +
@@ -343,15 +331,9 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                "e.id AS enfermero_id, e.email AS enfermero_email, e.password_hash AS enfermero_password_hash, " +
                "e.autoridad AS enfermero_autoridad, e.cuil AS enfermero_cuil, " +
                "e.nombre AS enfermero_nombre, e.apellido AS enfermero_apellido, " +
-               "e.matricula AS enfermero_matricula, " +
-               // Doctor (Usuario)
-               "d.id AS doctor_id, d.email AS doctor_email, d.password_hash AS doctor_password_hash, " +
-               "d.autoridad AS doctor_autoridad, d.cuil AS doctor_cuil, " +
-               "d.nombre AS doctor_nombre, d.apellido AS doctor_apellido, " +
-               "d.matricula AS doctor_matricula " +
+               "e.matricula AS enfermero_matricula " +
                "FROM ingresos i " +
                "INNER JOIN pacientes p ON i.paciente_id = p.id " +
-               "INNER JOIN usuarios e ON i.enfermero_id = e.id " +
-               "LEFT JOIN usuarios d ON i.doctor_id = d.id";
+               "INNER JOIN usuarios e ON i.enfermero_id = e.id";
     }
 }

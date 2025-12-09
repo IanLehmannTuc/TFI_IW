@@ -1,9 +1,11 @@
 package tfi.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -70,6 +72,19 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ObraSocialException.class)
     public ResponseEntity<ErrorResponse> handleObraSocialException(ObraSocialException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
+     * Maneja excepciones de atenciones médicas.
+     * Puede contener mensajes específicos sobre validaciones, duplicados o estados inválidos.
+     * 
+     * @param ex La excepción de atención
+     * @return 400 Bad Request con mensaje descriptivo
+     */
+    @ExceptionHandler(AtencionException.class)
+    public ResponseEntity<ErrorResponse> handleAtencionException(AtencionException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -188,6 +203,38 @@ public class GlobalExceptionHandler {
         String mensaje = String.format("Falta el parámetro requerido: '%s'", ex.getParameterName());
         ErrorResponse error = new ErrorResponse(mensaje, HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
+     * Maneja errores de método HTTP no soportado.
+     * Se lanza cuando se intenta usar un método HTTP (POST, GET, etc.) no permitido en un endpoint.
+     * 
+     * @param ex La excepción
+     * @param request La solicitud HTTP
+     * @return 405 Method Not Allowed con mensaje descriptivo
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(
+            HttpRequestMethodNotSupportedException ex,
+            HttpServletRequest request) {
+        
+        // Log detallado para debugging
+        System.err.println("ERROR: Método HTTP no soportado");
+        System.err.println("URL: " + request.getRequestURI());
+        System.err.println("Método usado: " + request.getMethod());
+        System.err.println("Métodos soportados: " + String.join(", ", ex.getSupportedMethods() != null ? ex.getSupportedMethods() : new String[]{"ninguno"}));
+        
+        String mensaje = String.format(
+            "Método %s no soportado para %s. Métodos permitidos: %s",
+            ex.getMethod(),
+            request.getRequestURI(),
+            ex.getSupportedHttpMethods() != null ? 
+                String.join(", ", ex.getSupportedHttpMethods().stream().map(Object::toString).toArray(String[]::new)) : 
+                "ninguno"
+        );
+        
+        ErrorResponse error = new ErrorResponse(mensaje, HttpStatus.METHOD_NOT_ALLOWED.value());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(error);
     }
     
     /**

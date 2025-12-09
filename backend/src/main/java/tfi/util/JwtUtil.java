@@ -38,7 +38,7 @@ public class JwtUtil {
 
     /**
      * Genera un JWT token para un usuario autenticado.
-     * El token contiene el email como subject y la autoridad como claim.
+     * El token contiene el email como subject, el id y la autoridad como claims.
      * 
      * @param usuario El usuario para el cual generar el token
      * @return El token JWT firmado
@@ -49,11 +49,24 @@ public class JwtUtil {
         
         return Jwts.builder()
                 .subject(usuario.getEmail().getValue())
+                .claim("id", usuario.getId())
                 .claim("autoridad", usuario.getAutoridad().name())
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
                 .compact();
+    }
+
+    /**
+     * Extrae el ID del usuario del token JWT.
+     * 
+     * @param token El token JWT
+     * @return El ID del usuario
+     * @throws JwtException Si el token es inválido o expirado
+     */
+    public String getIdFromToken(@NonNull String token) {
+        Claims claims = parseToken(token);
+        return claims.get("id", String.class);
     }
 
     /**

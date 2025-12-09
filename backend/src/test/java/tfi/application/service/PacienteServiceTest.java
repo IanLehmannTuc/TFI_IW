@@ -44,7 +44,8 @@ class PacienteServiceTest {
     @BeforeEach
     void setUp() {
         // Mock del cache service para que retorne nombres por defecto cuando sea necesario
-        when(obraSocialCacheService.getNombreObraSocial(anyInt())).thenAnswer(invocation -> {
+        // Usamos lenient() porque no todos los tests necesitan este stub
+        lenient().when(obraSocialCacheService.getNombreObraSocial(anyInt())).thenAnswer(invocation -> {
             Integer id = invocation.getArgument(0);
             return "Obra Social " + id;
         });

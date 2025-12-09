@@ -58,6 +58,17 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
     }
 
     @Override
+    public Optional<Usuario> findById(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        
+        return usuarios.values().stream()
+            .filter(u -> u.getId() != null && u.getId().equals(id))
+            .findFirst();
+    }
+
+    @Override
     public Optional<Usuario> findByEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             return Optional.empty();

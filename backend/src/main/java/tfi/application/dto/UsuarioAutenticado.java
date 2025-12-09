@@ -7,18 +7,25 @@ import tfi.domain.enums.Autoridad;
  * Se utiliza en el contexto de seguridad para acceder a la información del usuario actual.
  */
 public class UsuarioAutenticado {
+    private String id;
     private String email;
     private Autoridad autoridad;
 
     /**
      * Constructor completo
      * 
+     * @param id ID del usuario autenticado
      * @param email Email del usuario autenticado
      * @param autoridad Rol/autoridad del usuario
      */
-    public UsuarioAutenticado(String email, Autoridad autoridad) {
+    public UsuarioAutenticado(String id, String email, Autoridad autoridad) {
+        this.id = id;
         this.email = email;
         this.autoridad = autoridad;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getEmail() {
@@ -42,7 +49,8 @@ public class UsuarioAutenticado {
     @Override
     public String toString() {
         return "UsuarioAutenticado{" +
-                "email='" + email + '\'' +
+                "id='" + id + '\'' +
+                ", email='" + email + '\'' +
                 ", autoridad=" + autoridad +
                 '}';
     }

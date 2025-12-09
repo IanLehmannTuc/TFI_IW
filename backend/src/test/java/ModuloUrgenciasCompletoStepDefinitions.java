@@ -29,7 +29,7 @@ import tfi.domain.repository.IngresoRepository;
 
 import tfi.application.service.PacienteService;
 import tfi.application.service.ColaAtencionService;
-import tfi.application.service.UrgenciaService;
+import tfi.application.service.IngresoService;
 import tfi.application.service.ObraSocialCacheService;
 import tfi.application.mapper.PacienteMapper;
 import tfi.application.mapper.IngresoMapper;
@@ -46,7 +46,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
     private UsuarioRepository repoUsuarios;
     private PacientesRepository repoPacientes;
     private IngresoRepository repoIngresos;
-    private UrgenciaService urgenciaService;
+    private IngresoService ingresoService;
     private PacienteService pacienteService;
     private ObraSocialPort obraSocialPort;
     private ObraSocialCacheService obraSocialCacheService;
@@ -73,7 +73,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
                 return "Obra Social " + id;
             });
 
-        this.urgenciaService = new UrgenciaService(repoPacientes, repoUsuarios, repoIngresos, new IngresoMapper());
+        this.ingresoService = new IngresoService(repoPacientes, repoUsuarios, repoIngresos, new IngresoMapper());
         this.pacienteService = new PacienteService(repoPacientes, new PacienteMapper(obraSocialCacheService), obraSocialPort);
     }
 
@@ -191,7 +191,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             request.setFrecuenciaRespiratoria(frecuenciaRespiratoria.getValor());
             request.setNivelEmergencia(nivelEmergencia);
             
-            var ingresoResponse = this.urgenciaService.registrarIngreso(request);
+            var ingresoResponse = this.ingresoService.registrarIngreso(request);
             // Buscar el ingreso registrado en el repositorio
             this.ingreso = this.repoIngresos.findById(ingresoResponse.getId()).orElse(null);
         } catch (RuntimeException e) {
@@ -256,7 +256,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             .as("El ingreso debe tener un ID asignado (fue guardado)")
             .isNotNull();
         
-        List<Ingreso> cola = this.urgenciaService.obtenerColaDeAtencion();
+        List<Ingreso> cola = this.ingresoService.obtenerColaDeAtencion();
         assertThat(cola)
             .as("La cola de atención debe contener el ingreso")
             .contains(this.ingreso);
@@ -330,7 +330,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
     
     @Then("La cola de atención se encuentra en el siguiente orden")
     public void laColaDeAtencionSeEncuentraEnElSiguienteOrden(DataTable dataTable) {
-        List<Ingreso> colaAtencion = this.urgenciaService.obtenerColaDeAtencion();
+        List<Ingreso> colaAtencion = this.ingresoService.obtenerColaDeAtencion();
         List<String> cuilesEsperados = dataTable.asList(String.class);
         
         List<String> cuilesEnCola = colaAtencion.stream()

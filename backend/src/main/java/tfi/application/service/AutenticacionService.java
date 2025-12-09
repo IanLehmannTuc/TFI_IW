@@ -194,5 +194,71 @@ public class AutenticacionService {
             usuario.getAutoridad()
         );
     }
+
+    /**
+     * Obtiene el perfil de un usuario por su CUIL.
+     * Consulta el repositorio para obtener todos los datos del usuario excepto la contraseña.
+     * 
+     * @param cuil CUIL del usuario a buscar
+     * @return Respuesta con todos los datos del usuario (id, email, nombre, apellido, cuil, matricula, autoridad)
+     * @throws AutenticacionException Si el usuario no existe
+     * @throws IllegalArgumentException Si el CUIL es null o vacío
+     */
+    public PerfilUsuarioResponse obtenerUsuarioPorCuil(@NonNull String cuil) {
+        if (cuil == null || cuil.trim().isEmpty()) {
+            throw new IllegalArgumentException("El CUIL no puede ser nulo o vacío");
+        }
+        
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByCuil(cuil);
+        
+        if (usuarioOpt.isEmpty()) {
+            throw new AutenticacionException("Usuario no encontrado con CUIL: " + cuil);
+        }
+        
+        Usuario usuario = usuarioOpt.get();
+        
+        return new PerfilUsuarioResponse(
+            usuario.getId(),
+            usuario.getEmail().getValue(),
+            usuario.getNombre(),
+            usuario.getApellido(),
+            usuario.getCuil(),
+            usuario.getMatricula(),
+            usuario.getAutoridad()
+        );
+    }
+
+    /**
+     * Obtiene el perfil de un usuario por su ID.
+     * Consulta el repositorio para obtener todos los datos del usuario excepto la contraseña.
+     * 
+     * @param id ID del usuario a buscar
+     * @return Respuesta con todos los datos del usuario (id, email, nombre, apellido, cuil, matricula, autoridad)
+     * @throws AutenticacionException Si el usuario no existe
+     * @throws IllegalArgumentException Si el ID es null o vacío
+     */
+    public PerfilUsuarioResponse obtenerUsuarioPorId(@NonNull String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El ID no puede ser nulo o vacío");
+        }
+        
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+        
+        if (usuarioOpt.isEmpty()) {
+            throw new AutenticacionException("Usuario no encontrado con ID: " + id);
+        }
+        
+        Usuario usuario = usuarioOpt.get();
+        
+        return new PerfilUsuarioResponse(
+            usuario.getId(),
+            usuario.getEmail().getValue(),
+            usuario.getNombre(),
+            usuario.getApellido(),
+            usuario.getCuil(),
+            usuario.getMatricula(),
+            usuario.getAutoridad()
+        );
+    }
 }
 

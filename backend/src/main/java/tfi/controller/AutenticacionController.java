@@ -104,5 +104,28 @@ public class AutenticacionController {
             " con autoridad: " + usuario.getAutoridad()
         );
     }
+
+    /**
+     * Endpoint para obtener un usuario por su ID.
+     * Endpoint protegido - requiere JWT válido en header Authorization.
+     * 
+     * GET /api/auth/usuario/{id}
+     * Header: Authorization: Bearer <token>
+     * 
+     * @param id ID del usuario a buscar
+     * @param httpRequest Request HTTP con información del usuario autenticado
+     * @return 200 OK con información completa del usuario (id, email, nombre, apellido, cuil, matricula, autoridad)
+     *         404 Not Found si el usuario no existe
+     *         401 Unauthorized si no hay token o es inválido
+     */
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<PerfilUsuarioResponse> obtenerUsuarioPorId(
+            @PathVariable String id,
+            HttpServletRequest httpRequest) {
+        SecurityContext.getUsuarioAutenticado(httpRequest);
+        
+        PerfilUsuarioResponse usuario = autenticacionService.obtenerUsuarioPorId(id);
+        return ResponseEntity.ok(usuario);
+    }
 }
 

@@ -55,13 +55,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             try {
                 if (jwtUtil.validateToken(token)) {
+                    String id = jwtUtil.getIdFromToken(token);
                     String email = jwtUtil.getEmailFromToken(token);
                     Autoridad autoridad = jwtUtil.getAutoridadFromToken(token);
                     
+                    request.setAttribute("userId", id);
                     request.setAttribute("userEmail", email);
                     request.setAttribute("userAutoridad", autoridad);
                     
-                    logger.debug("Usuario autenticado: {} con autoridad: {}", email, autoridad);
+                    logger.debug("Usuario autenticado: {} (ID: {}) con autoridad: {}", email, id, autoridad);
                 } else {
                     logger.warn("Token JWT inválido recibido desde IP: {}", request.getRemoteAddr());
                 }
