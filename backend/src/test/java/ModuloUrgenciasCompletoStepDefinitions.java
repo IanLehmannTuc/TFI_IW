@@ -114,7 +114,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             String apellido = pacienteData.get("Apellido");
             
             
-            Paciente paciente = new Paciente(cuil, nombre, apellido);
+            Paciente paciente = Paciente.crearConDatosBasicos(cuil, nombre, apellido);
             repoPacientes.add(paciente);
         }
     }
@@ -130,7 +130,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
     public void hayUnPacienteConCUILNombreApellidoEnLaColaDeAtencionConNivelDeEmergencia(String cuil, String nombre, String apellido, String nivelEmergencia) {
 
         if (!repoPacientes.findByCuil(cuil).isPresent()) {
-            Paciente nuevoPaciente = new Paciente(cuil, nombre, apellido);
+            Paciente nuevoPaciente = Paciente.crearConDatosBasicos(cuil, nombre, apellido);
             repoPacientes.add(nuevoPaciente);
         }
         String nivelStr = nivelEmergencia.toUpperCase().replace(" ", "_");
@@ -159,7 +159,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             if (paciente == null) {
                 String nombre = pacienteData.getOrDefault("Nombre", "Sin Nombre");
                 String apellido = pacienteData.getOrDefault("Apellido", "Sin Apellido");
-                paciente = new Paciente(cuil, nombre, apellido);
+                paciente = Paciente.crearConDatosBasicos(cuil, nombre, apellido);
             } 
             
             String descripcion = pacienteData.get("Informe");

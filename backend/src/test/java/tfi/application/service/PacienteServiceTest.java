@@ -302,7 +302,7 @@ class PacienteServiceTest {
 
     private Paciente crearPacienteBasico() {
         Domicilio domicilio = new Domicilio("Av. Corrientes", 1234, "Buenos Aires");
-        return new Paciente("20-20304050-5", "Juan", "Pérez", null, domicilio, null);
+        return Paciente.crearCompleto("20-20304050-5", "Juan", "Pérez", null, domicilio, null);
     }
 }
 
