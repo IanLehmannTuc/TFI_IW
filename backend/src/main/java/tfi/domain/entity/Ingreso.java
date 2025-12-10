@@ -100,9 +100,6 @@ public class Ingreso {
         return fechaHoraIngreso;
     }
 
-    public void setFechaHoraIngreso(LocalDateTime fechaHoraIngreso) {
-        this.fechaHoraIngreso = fechaHoraIngreso;
-    }
 
     public Temperatura getTemperatura() {
         return temperatura;
@@ -281,27 +278,67 @@ public class Ingreso {
     }
 
     /**
+     * Método específico para repositorios: Restaura el estado desde la base de datos.
+     * SOLO debe usarse por repositorios al recuperar entidades desde BD.
+     * NO debe usarse para cambiar el estado del negocio. Usar métodos de negocio en su lugar.
+     * 
+     * @param estado Estado a restaurar desde BD
+     */
+    public void restoreEstadoFromPersistence(Estado estado) {
+        this.estado = estado;
+    }
+
+    /**
+     * Método específico para repositorios: Restaura la atención desde la base de datos.
+     * SOLO debe usarse por repositorios al recuperar entidades desde BD.
+     * NO debe usarse para asignar atención. Usar asignarAtencion() o finalizar() en su lugar.
+     * 
+     * @param atencion Atención a restaurar desde BD
+     */
+    public void restoreAtencionFromPersistence(Atencion atencion) {
+        this.atencion = atencion;
+    }
+    
+    /**
+     * Método específico para repositorios: Restaura la fecha de ingreso desde la base de datos.
+     * SOLO debe usarse por repositorios al recuperar entidades desde BD.
+     * 
+     * @param fechaHoraIngreso Fecha a restaurar desde BD
+     */
+    public void restoreFechaHoraIngresoFromPersistence(LocalDateTime fechaHoraIngreso) {
+        this.fechaHoraIngreso = fechaHoraIngreso;
+    }
+    
+    /**
      * Setter para estado - SOLO para uso interno del repositorio al recuperar desde BD.
      * NO debe usarse para cambiar el estado del negocio. Usar métodos de negocio en su lugar.
      * 
-     * @deprecated Usar métodos de negocio (iniciarAtencion(), finalizar()) en su lugar.
-     *             Este método solo debe usarse en el mapeo desde base de datos.
+     * @deprecated Usar restoreEstadoFromPersistence() en su lugar. Este método se mantiene por compatibilidad.
      */
     @Deprecated
     public void setEstado(Estado estado) {
-        this.estado = estado;
+        restoreEstadoFromPersistence(estado);
     }
 
     /**
      * Setter para atención - SOLO para uso interno del repositorio al recuperar desde BD.
      * NO debe usarse para asignar atención. Usar asignarAtencion() o finalizar() en su lugar.
      * 
-     * @deprecated Usar métodos de negocio (asignarAtencion(), finalizar()) en su lugar.
-     *             Este método solo debe usarse en el mapeo desde base de datos.
+     * @deprecated Usar restoreAtencionFromPersistence() en su lugar. Este método se mantiene por compatibilidad.
      */
     @Deprecated
     public void setAtencion(Atencion atencion) {
-        this.atencion = atencion;
+        restoreAtencionFromPersistence(atencion);
+    }
+    
+    /**
+     * Setter para fecha de ingreso - SOLO para uso interno del repositorio al recuperar desde BD.
+     * 
+     * @deprecated Usar restoreFechaHoraIngresoFromPersistence() en su lugar. Este método se mantiene por compatibilidad.
+     */
+    @Deprecated
+    public void setFechaHoraIngreso(LocalDateTime fechaHoraIngreso) {
+        restoreFechaHoraIngresoFromPersistence(fechaHoraIngreso);
     }
 
     /**

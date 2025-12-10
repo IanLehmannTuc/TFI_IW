@@ -90,7 +90,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             Estado estado = Estado.valueOf(estadoStr);
 
             
-            Atencion atencion = null;
+            Atencion atencion = mapAtencion(rs);
 
             
             Ingreso ingreso = new Ingreso(
@@ -107,7 +107,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             );
 
             ingreso.setId(id);
-            ingreso.setEstado(estado);
+            ingreso.restoreEstadoFromPersistence(estado);
 
             return ingreso;
         }
@@ -153,6 +153,30 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
         }
 
         /**
+         * Mapea una Atencion desde el ResultSet.
+         * Retorna null si no hay atención asociada.
+         * 
+         * @param rs ResultSet con los datos
+         * @return Atencion mapeada o null si no existe
+         */
+        private Atencion mapAtencion(ResultSet rs) throws SQLException {
+            String atencionId = rs.getString("atencion_id");
+            if (atencionId == null) {
+                return null;
+            }
+            
+            String ingresoId = rs.getString("atencion_ingreso_id");
+            String medicoId = rs.getString("atencion_medico_id");
+            String informeMedico = rs.getString("atencion_informe_medico");
+            Timestamp fechaAtencionTimestamp = rs.getTimestamp("atencion_fecha_atencion");
+            LocalDateTime fechaAtencion = fechaAtencionTimestamp != null 
+                ? fechaAtencionTimestamp.toLocalDateTime() 
+                : null;
+            
+            return new Atencion(atencionId, ingresoId, medicoId, informeMedico, fechaAtencion);
+        }
+
+        /**
          * Mapea un Usuario desde el ResultSet. 
          * Usa un prefijo para distinguir entre diferentes usuarios en el mismo ResultSet.
          * 
@@ -192,16 +216,16 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             throw new IllegalArgumentException("El ingreso no puede ser nulo");
         }
 
+        
         if (ingreso.getFechaHoraIngreso() == null) {
-            ingreso.setFechaHoraIngreso(LocalDateTime.now());
+            throw new IllegalArgumentException("La fecha de ingreso no puede ser nula");
         }
-
         
         if (ingreso.getNivelEmergencia() == null) {
             throw new IllegalArgumentException("El nivel de emergencia no puede ser nulo");
         }
         if (ingreso.getEstado() == null) {
-            ingreso.setEstado(Estado.PENDIENTE);
+            throw new IllegalArgumentException("El estado no puede ser nulo");
         }
 
         
@@ -312,6 +336,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
 
     /**
      * Construye la consulta SELECT base con todos los JOINs necesarios.
+     * Incluye LEFT JOIN con atenciones para cargar la atención asociada si existe.
      */
     private String buildSelectQuery() {
         return "SELECT " +
@@ -331,9 +356,14 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                "e.id AS enfermero_id, e.email AS enfermero_email, e.password_hash AS enfermero_password_hash, " +
                "e.autoridad AS enfermero_autoridad, e.cuil AS enfermero_cuil, " +
                "e.nombre AS enfermero_nombre, e.apellido AS enfermero_apellido, " +
-               "e.matricula AS enfermero_matricula " +
+               "e.matricula AS enfermero_matricula, " +
+               
+               "a.id AS atencion_id, a.ingreso_id AS atencion_ingreso_id, " +
+               "a.medico_id AS atencion_medico_id, a.informe_medico AS atencion_informe_medico, " +
+               "a.fecha_atencion AS atencion_fecha_atencion " +
                "FROM ingresos i " +
                "INNER JOIN pacientes p ON i.paciente_id = p.id " +
-               "INNER JOIN usuarios e ON i.enfermero_id = e.id";
+               "INNER JOIN usuarios e ON i.enfermero_id = e.id " +
+               "LEFT JOIN atenciones a ON i.id = a.ingreso_id";
     }
 }

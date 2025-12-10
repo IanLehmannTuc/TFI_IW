@@ -130,24 +130,44 @@ public class Atencion {
     }
 
     /**
+     * Método específico para repositorios: Restaura el informe médico desde la base de datos.
+     * SOLO debe usarse por repositorios al recuperar entidades desde BD.
+     * NO debe usarse para actualizar el informe. Usar actualizarInforme() en su lugar.
+     * 
+     * @param informeMedico Informe a restaurar desde BD
+     */
+    public void restoreInformeMedicoFromPersistence(String informeMedico) {
+        this.informeMedico = informeMedico;
+    }
+
+    /**
+     * Método específico para repositorios: Restaura la fecha de atención desde la base de datos.
+     * SOLO debe usarse por repositorios al recuperar entidades desde BD.
+     * 
+     * @param fechaAtencion Fecha a restaurar desde BD
+     */
+    public void restoreFechaAtencionFromPersistence(LocalDateTime fechaAtencion) {
+        this.fechaAtencion = fechaAtencion;
+    }
+    
+    /**
      * Setter para informe médico - SOLO para uso interno del repositorio al recuperar desde BD.
      * NO debe usarse para actualizar el informe. Usar actualizarInforme() en su lugar.
      * 
-     * @deprecated Usar método de negocio actualizarInforme() en su lugar.
-     *             Este método solo debe usarse en el mapeo desde base de datos.
+     * @deprecated Usar restoreInformeMedicoFromPersistence() en su lugar. Este método se mantiene por compatibilidad.
      */
     @Deprecated
     public void setInformeMedico(String informeMedico) {
-        this.informeMedico = informeMedico;
+        restoreInformeMedicoFromPersistence(informeMedico);
     }
 
     /**
      * Setter para fecha de atención - SOLO para uso interno del repositorio al recuperar desde BD.
      * 
-     * @deprecated Este método solo debe usarse en el mapeo desde base de datos.
+     * @deprecated Usar restoreFechaAtencionFromPersistence() en su lugar. Este método se mantiene por compatibilidad.
      */
     @Deprecated
     public void setFechaAtencion(LocalDateTime fechaAtencion) {
-        this.fechaAtencion = fechaAtencion;
+        restoreFechaAtencionFromPersistence(fechaAtencion);
     }
 }

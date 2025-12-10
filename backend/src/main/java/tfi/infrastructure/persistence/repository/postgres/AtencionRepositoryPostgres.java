@@ -111,7 +111,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
         );
 
         atencion.setId(generatedId);
-        atencion.setFechaAtencion(fechaAtencion);
+        atencion.restoreFechaAtencionFromPersistence(fechaAtencion);
         return atencion;
     }
 

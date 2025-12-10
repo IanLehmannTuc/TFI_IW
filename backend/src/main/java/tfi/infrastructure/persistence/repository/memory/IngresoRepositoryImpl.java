@@ -42,8 +42,10 @@ public class IngresoRepositoryImpl implements IngresoRepository {
             throw new IllegalArgumentException("El ingreso no puede ser nulo");
         }
         
+        // El constructor de Ingreso ya establece fechaHoraIngreso por defecto
+        // Solo validamos que no sea null
         if (ingreso.getFechaHoraIngreso() == null) {
-            ingreso.setFechaHoraIngreso(LocalDateTime.now());
+            throw new IllegalArgumentException("La fecha de ingreso no puede ser nula");
         }
         
         String ingresoId = String.valueOf(idGenerator.incrementAndGet());
