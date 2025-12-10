@@ -154,16 +154,17 @@ public class IngresoService {
     
     /**
      * Atiende al siguiente paciente en la cola (el de mayor prioridad).
-     * Remueve el ingreso de la cola, cambia su estado a EN_PROCESO y lo persiste.
+     * Remueve el ingreso de la cola, inicia su atención (cambia estado a EN_PROCESO) y lo persiste.
      * 
      * @return el ingreso atendido, o null si no hay pacientes en espera
+     * @throws IllegalStateException si el ingreso no puede ser atendido (no está pendiente)
      */
     public Ingreso atenderSiguientePaciente() {
         Ingreso ingreso = colaAtencionService.atenderSiguiente();
         
         if (ingreso != null) {
-            
-            ingreso.setEstado(tfi.domain.enums.Estado.EN_PROCESO);
+            // Usar método de negocio en lugar de setter directo
+            ingreso.iniciarAtencion();
             
             ingresoRepository.update(ingreso);
         }

@@ -8,6 +8,13 @@ import tfi.domain.valueObject.FrecuenciaCardiaca;
 import tfi.domain.valueObject.FrecuenciaRespiratoria;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad que representa un ingreso de paciente a urgencias.
+ * Es un agregado raíz que contiene la información del ingreso y su atención médica.
+ * 
+ * Esta entidad implementa Rich Domain Model con métodos de negocio que encapsulan
+ * las reglas de negocio y protegen las invariantes del dominio.
+ */
 public class Ingreso {
     private String id;
     private Atencion atencion;
@@ -20,7 +27,7 @@ public class Ingreso {
     private FrecuenciaCardiaca frecuenciaCardiaca;
     private FrecuenciaRespiratoria frecuenciaRespiratoria;
     private NivelEmergencia nivelEmergencia;
-    private Estado estado;
+    private Estado estado; // Estado privado, solo modificable mediante métodos de negocio
 
     public Ingreso(Atencion atencion, Paciente paciente, Usuario enfermero, String descripcion, LocalDateTime fechaHoraIngreso,
                    Temperatura temperatura, TensionArterial tensionArterial, FrecuenciaCardiaca frecuenciaCardiaca,
@@ -63,10 +70,6 @@ public class Ingreso {
 
     public Atencion getAtencion() {
         return atencion;
-    }
-
-    public void setAtencion(Atencion atencion) {
-        this.atencion = atencion;
     }
 
     public Paciente getPaciente() {
@@ -153,7 +156,132 @@ public class Ingreso {
         return estado;
     }
 
+    /**
+     * Método de negocio: Inicia la atención de un ingreso pendiente.
+     * Valida que el ingreso esté en estado PENDIENTE antes de cambiar a EN_PROCESO.
+     * 
+     * @throws IllegalStateException si el ingreso no está en estado PENDIENTE
+     */
+    public void iniciarAtencion() {
+        if (this.estado != Estado.PENDIENTE) {
+            throw new IllegalStateException(
+                String.format("Solo se pueden iniciar ingresos PENDIENTES. Estado actual: %s", this.estado)
+            );
+        }
+        this.estado = Estado.EN_PROCESO;
+    }
+
+    /**
+     * Método de negocio: Asigna una atención médica al ingreso.
+     * Valida que el ingreso esté en estado EN_PROCESO y que no tenga ya una atención asignada.
+     * 
+     * @param atencion La atención médica a asignar
+     * @throws IllegalStateException si el ingreso no está en estado EN_PROCESO o ya tiene atención
+     * @throws IllegalArgumentException si la atención es nula
+     */
+    public void asignarAtencion(Atencion atencion) {
+        if (atencion == null) {
+            throw new IllegalArgumentException("La atención no puede ser nula");
+        }
+        if (this.atencion != null) {
+            throw new IllegalStateException("El ingreso ya tiene una atención asignada");
+        }
+        if (this.estado != Estado.EN_PROCESO) {
+            throw new IllegalStateException(
+                String.format("Solo se puede asignar atención a ingresos EN_PROCESO. Estado actual: %s", this.estado)
+            );
+        }
+        this.atencion = atencion;
+    }
+
+    /**
+     * Método de negocio: Finaliza un ingreso asignándole una atención.
+     * Valida que el ingreso esté en estado EN_PROCESO y tenga una atención asignada.
+     * 
+     * @param atencion La atención médica que finaliza el ingreso
+     * @throws IllegalStateException si el ingreso no está en estado EN_PROCESO o no tiene atención
+     * @throws IllegalArgumentException si la atención es nula
+     */
+    public void finalizar(Atencion atencion) {
+        if (atencion == null) {
+            throw new IllegalArgumentException("La atención no puede ser nula para finalizar el ingreso");
+        }
+        if (this.estado != Estado.EN_PROCESO) {
+            throw new IllegalStateException(
+                String.format("Solo se pueden finalizar ingresos EN_PROCESO. Estado actual: %s", this.estado)
+            );
+        }
+        asignarAtencion(atencion);
+        this.estado = Estado.FINALIZADO;
+    }
+
+    /**
+     * Método de consulta: Verifica si el ingreso está pendiente.
+     * 
+     * @return true si el ingreso está en estado PENDIENTE, false en caso contrario
+     */
+    public boolean estaPendiente() {
+        return this.estado == Estado.PENDIENTE;
+    }
+
+    /**
+     * Método de consulta: Verifica si el ingreso está en proceso.
+     * 
+     * @return true si el ingreso está en estado EN_PROCESO, false en caso contrario
+     */
+    public boolean estaEnProceso() {
+        return this.estado == Estado.EN_PROCESO;
+    }
+
+    /**
+     * Método de consulta: Verifica si el ingreso está finalizado.
+     * 
+     * @return true si el ingreso está en estado FINALIZADO, false en caso contrario
+     */
+    public boolean estaFinalizado() {
+        return this.estado == Estado.FINALIZADO;
+    }
+
+    /**
+     * Método de consulta: Verifica si el ingreso puede ser atendido.
+     * Un ingreso puede ser atendido si está pendiente y tiene paciente y enfermero asignados.
+     * 
+     * @return true si el ingreso puede ser atendido, false en caso contrario
+     */
+    public boolean puedeSerAtendido() {
+        return estaPendiente() && this.paciente != null && this.enfermero != null;
+    }
+
+    /**
+     * Método de consulta: Verifica si el ingreso tiene atención asignada.
+     * 
+     * @return true si el ingreso tiene atención, false en caso contrario
+     */
+    public boolean tieneAtencion() {
+        return this.atencion != null;
+    }
+
+    /**
+     * Setter para estado - SOLO para uso interno del repositorio al recuperar desde BD.
+     * NO debe usarse para cambiar el estado del negocio. Usar métodos de negocio en su lugar.
+     * 
+     * @deprecated Usar métodos de negocio (iniciarAtencion(), finalizar()) en su lugar.
+     *             Este método solo debe usarse en el mapeo desde base de datos.
+     */
+    @Deprecated
     public void setEstado(Estado estado) {
         this.estado = estado;
+    }
+
+    /**
+     * Setter para atención - SOLO para uso interno del repositorio al recuperar desde BD.
+     * NO debe usarse para asignar atención. Usar asignarAtencion() o finalizar() en su lugar.
+     * 
+     * @deprecated Usar métodos de negocio (asignarAtencion(), finalizar()) en su lugar.
+     *             Este método solo debe usarse en el mapeo desde base de datos.
+     */
+    @Deprecated
+    public void setAtencion(Atencion atencion) {
+        this.atencion = atencion;
     }
 }

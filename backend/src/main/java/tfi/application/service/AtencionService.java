@@ -74,8 +74,8 @@ public class AtencionService {
         Atencion atencion = new Atencion(ingresoId, medicoId, informe);
         Atencion atencionGuardada = atencionRepository.add(atencion);
 
-        
-        ingreso.setEstado(Estado.FINALIZADO);
+        // Usar método de negocio en lugar de setter directo
+        ingreso.finalizar(atencionGuardada);
         ingresoRepository.update(ingreso);
 
         return atencionGuardada;
