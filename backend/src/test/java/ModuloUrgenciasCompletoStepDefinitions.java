@@ -28,24 +28,29 @@ import tfi.domain.repository.PacientesRepository;
 import tfi.domain.repository.IngresoRepository;
 
 import tfi.application.service.PacienteService;
-import tfi.application.service.ColaAtencionService;
+import tfi.domain.service.ColaAtencionService;
 import tfi.application.service.IngresoService;
 import tfi.application.service.ObraSocialCacheService;
 import tfi.application.mapper.PacienteMapper;
 import tfi.application.mapper.IngresoMapper;
 import tfi.application.dto.RegistroIngresoRequest;
+import tfi.application.dto.PacienteResponse;
+import tfi.application.dto.IngresoResponse;
+import tfi.exception.PacienteException;
 import tfi.domain.port.ObraSocialPort;
 import org.mockito.Mockito;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ModuloUrgenciasCompletoStepDefinitions {
 
     private UsuarioRepository repoUsuarios;
     private PacientesRepository repoPacientes;
     private IngresoRepository repoIngresos;
+    private ColaAtencionService colaAtencionService;
     private IngresoService ingresoService;
     private PacienteService pacienteService;
     private ObraSocialPort obraSocialPort;
@@ -73,13 +78,16 @@ public class ModuloUrgenciasCompletoStepDefinitions {
                 return "Obra Social " + id;
             });
 
-        this.ingresoService = new IngresoService(repoPacientes, repoUsuarios, repoIngresos, new IngresoMapper());
+        this.colaAtencionService = new ColaAtencionService();
+        this.ingresoService = new IngresoService(repoPacientes, repoUsuarios, repoIngresos, colaAtencionService, new IngresoMapper());
         this.pacienteService = new PacienteService(repoPacientes, new PacienteMapper(obraSocialCacheService), obraSocialPort);
     }
 
     @After
     public void teardown() {
-        ColaAtencionService.resetInstance();
+        if (colaAtencionService != null) {
+            colaAtencionService.limpiarCola();
+        }
     }
 
     @Given("Que el siguiente enfermero esté registrado:")
@@ -134,8 +142,10 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             repoPacientes.add(nuevoPaciente);
         }
         String nivelStr = nivelEmergencia.toUpperCase().replace(" ", "_");
+        Paciente paciente = repoPacientes.findByCuil(cuil).orElseThrow(() -> 
+            new IllegalStateException("Paciente no encontrado: " + cuil));
         Ingreso ingreso = new Ingreso(
-            repoPacientes.findByCuil(cuil).get(),
+            paciente,
             enfermero,
             "Informe",
             new Temperatura(0.0),
@@ -144,7 +154,6 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             new FrecuenciaRespiratoria(0),
             NivelEmergencia.valueOf(nivelStr)
         );
-        ColaAtencionService colaAtencionService = ColaAtencionService.getInstance();
         colaAtencionService.agregarACola(ingreso);
     }
 
@@ -155,7 +164,13 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             String cuil = pacienteData.get("CUIL");
             String nivelStr = pacienteData.get("Nivel de Emergencia").toUpperCase().replace(" ", "_");
 
-            Paciente paciente = pacienteService.findByCuil(cuil).orElse(null);
+            Paciente paciente;
+            try {
+                PacienteResponse pacienteResponse = pacienteService.findByCuil(cuil);
+                paciente = repoPacientes.findByCuil(cuil).orElse(null);
+            } catch (PacienteException e) {
+                paciente = null;
+            }
             if (paciente == null) {
                 String nombre = pacienteData.getOrDefault("Nombre", "Sin Nombre");
                 String apellido = pacienteData.getOrDefault("Apellido", "Sin Apellido");
@@ -207,7 +222,13 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             Map<String, String> pacienteData = dataTable.asMaps(String.class, String.class).get(0);
             String cuil = pacienteData.get("CUIL");
             
-            Paciente paciente = pacienteService.findByCuil(cuil).orElse(null);
+            Paciente paciente;
+            try {
+                PacienteResponse pacienteResponse = pacienteService.findByCuil(cuil);
+                paciente = repoPacientes.findByCuil(cuil).orElse(null);
+            } catch (PacienteException e) {
+                paciente = null;
+            }
             
             String informe = pacienteData.get("Informe");
             if (informe == null || informe.trim().isEmpty()) {
@@ -256,7 +277,11 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             .as("El ingreso debe tener un ID asignado (fue guardado)")
             .isNotNull();
         
-        List<Ingreso> cola = this.ingresoService.obtenerColaDeAtencion();
+        List<IngresoResponse> colaResponse = this.ingresoService.obtenerColaDeAtencion();
+        List<Ingreso> cola = colaResponse.stream()
+            .map(response -> repoIngresos.findById(response.getId()).orElse(null))
+            .filter(ingreso -> ingreso != null)
+            .collect(java.util.stream.Collectors.toList());
         assertThat(cola)
             .as("La cola de atención debe contener el ingreso")
             .contains(this.ingreso);
@@ -330,11 +355,11 @@ public class ModuloUrgenciasCompletoStepDefinitions {
     
     @Then("La cola de atención se encuentra en el siguiente orden")
     public void laColaDeAtencionSeEncuentraEnElSiguienteOrden(DataTable dataTable) {
-        List<Ingreso> colaAtencion = this.ingresoService.obtenerColaDeAtencion();
+        List<IngresoResponse> colaAtencionResponse = this.ingresoService.obtenerColaDeAtencion();
         List<String> cuilesEsperados = dataTable.asList(String.class);
         
-        List<String> cuilesEnCola = colaAtencion.stream()
-            .map(ingreso -> ingreso.getPaciente().getCuil())
+        List<String> cuilesEnCola = colaAtencionResponse.stream()
+            .map(response -> response.getPacienteCuil())
             .toList();  
         
         assertThat(cuilesEnCola)

@@ -233,22 +233,25 @@ class PacienteServiceTest {
         
         when(pacientesRepository.findByCuil(cuil)).thenReturn(java.util.Optional.of(paciente));
         
-        java.util.Optional<Paciente> resultado = pacienteService.findByCuil(cuil);
+        PacienteResponse resultado = pacienteService.findByCuil(cuil);
         
-        assertTrue(resultado.isPresent());
-        assertEquals(cuil, resultado.get().getCuil());
+        assertNotNull(resultado);
+        assertEquals(cuil, resultado.getCuil());
         verify(pacientesRepository).findByCuil(cuil);
     }
 
     @Test
-    void findByCuilDebeRetornarOptionalVacioSiNoExiste() {
+    void findByCuilDebeLanzarExcepcionSiNoExiste() {
         String cuil = "20-20304050-5";
         
         when(pacientesRepository.findByCuil(cuil)).thenReturn(java.util.Optional.empty());
         
-        java.util.Optional<Paciente> resultado = pacienteService.findByCuil(cuil);
+        PacienteException exception = assertThrows(
+            PacienteException.class,
+            () -> pacienteService.findByCuil(cuil)
+        );
         
-        assertFalse(resultado.isPresent());
+        assertTrue(exception.getMessage().contains("No existe un paciente"));
         verify(pacientesRepository).findByCuil(cuil);
     }
 
