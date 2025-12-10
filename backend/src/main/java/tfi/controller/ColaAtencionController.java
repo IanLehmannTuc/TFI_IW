@@ -3,16 +3,12 @@ package tfi.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tfi.application.mapper.IngresoMapper;
 import tfi.application.dto.IngresoResponse;
-import tfi.domain.entity.Ingreso;
 import tfi.domain.enums.Autoridad;
-import tfi.application.service.ColaAtencionService;
 import tfi.application.service.IngresoService;
 import tfi.util.SecurityContext;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controlador REST para endpoints de gestión de la cola de atención.
@@ -22,23 +18,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/cola-atencion")
 public class ColaAtencionController {
     
-    private final ColaAtencionService colaAtencionService;
     private final IngresoService ingresoService;
-    private final IngresoMapper ingresoMapper;
 
     /**
      * Constructor con inyección de dependencias
      * 
-     * @param colaAtencionService Servicio de cola de atención
      * @param ingresoService Servicio de ingresos
-     * @param ingresoMapper Mapper para convertir Ingreso a IngresoResponse
      */
-    public ColaAtencionController(ColaAtencionService colaAtencionService,
-                                 IngresoService ingresoService,
-                                 IngresoMapper ingresoMapper) {
-        this.colaAtencionService = colaAtencionService;
+    public ColaAtencionController(IngresoService ingresoService) {
         this.ingresoService = ingresoService;
-        this.ingresoMapper = ingresoMapper;
     }
 
     /**
@@ -58,11 +46,7 @@ public class ColaAtencionController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        List<Ingreso> cola = ingresoService.obtenerColaDeAtencion();
-        List<IngresoResponse> responses = cola.stream()
-            .map(ingresoMapper::toResponse)
-            .collect(Collectors.toList());
-        
+        List<IngresoResponse> responses = ingresoService.obtenerColaDeAtencion();
         return ResponseEntity.ok(responses);
     }
 
@@ -84,14 +68,13 @@ public class ColaAtencionController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        Ingreso siguiente = colaAtencionService.verSiguiente();
+        IngresoResponse siguiente = ingresoService.verSiguientePaciente();
         
         if (siguiente == null) {
             return ResponseEntity.noContent().build();
         }
         
-        IngresoResponse response = ingresoMapper.toResponse(siguiente);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(siguiente);
     }
 
     /**
@@ -114,14 +97,13 @@ public class ColaAtencionController {
         
         SecurityContext.requireAutoridad(httpRequest, Autoridad.MEDICO);
         
-        Ingreso ingresoAtendido = ingresoService.atenderSiguientePaciente();
+        IngresoResponse ingresoAtendido = ingresoService.atenderSiguientePaciente();
         
         if (ingresoAtendido == null) {
             throw new IllegalStateException("No hay pacientes en la lista de espera");
         }
         
-        IngresoResponse response = ingresoMapper.toResponse(ingresoAtendido);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ingresoAtendido);
     }
 
     /**

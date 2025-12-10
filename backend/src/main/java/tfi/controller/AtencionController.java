@@ -7,14 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import tfi.application.dto.AtencionResponse;
 import tfi.application.dto.RegistroAtencionRequest;
 import tfi.application.dto.UsuarioAutenticado;
-import tfi.application.mapper.AtencionMapper;
 import tfi.application.service.AtencionService;
-import tfi.domain.entity.Atencion;
 import tfi.domain.enums.Autoridad;
 import tfi.exception.AtencionException;
 import tfi.util.SecurityContext;
-
-import java.util.Optional;
 
 /**
  * Controlador REST para endpoints de gestión de atenciones médicas.
@@ -25,17 +21,14 @@ import java.util.Optional;
 public class AtencionController {
 
     private final AtencionService atencionService;
-    private final AtencionMapper atencionMapper;
 
     /**
      * Constructor con inyección de dependencias
      * 
      * @param atencionService Servicio de atenciones
-     * @param atencionMapper Mapper para convertir Atencion a AtencionResponse
      */
-    public AtencionController(AtencionService atencionService, AtencionMapper atencionMapper) {
+    public AtencionController(AtencionService atencionService) {
         this.atencionService = atencionService;
-        this.atencionMapper = atencionMapper;
     }
 
     /**
@@ -60,21 +53,15 @@ public class AtencionController {
             @RequestBody RegistroAtencionRequest request,
             HttpServletRequest httpRequest) {
         
-        
         SecurityContext.requireAutoridad(httpRequest, Autoridad.MEDICO);
-        
         
         UsuarioAutenticado usuario = SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        
-        Atencion atencion = atencionService.registrarAtencion(
+        AtencionResponse response = atencionService.registrarAtencion(
             request.getIngresoId(),
             usuario.getId(),
             request.getInforme()
         );
-        
-        
-        AtencionResponse response = atencionMapper.toResponse(atencion);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -97,18 +84,14 @@ public class AtencionController {
             @PathVariable String ingresoId,
             HttpServletRequest httpRequest) {
         
-        
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        
-        Optional<Atencion> atencionOpt = atencionService.obtenerAtencionPorIngresoId(ingresoId);
-        
-        if (atencionOpt.isEmpty()) {
-            throw new AtencionException("No se encontró una atención para el ingreso con ID: " + ingresoId);
+        try {
+            AtencionResponse response = atencionService.obtenerAtencionPorIngresoId(ingresoId);
+            return ResponseEntity.ok(response);
+        } catch (AtencionException e) {
+            return ResponseEntity.notFound().build();
         }
-        
-        AtencionResponse response = atencionMapper.toResponse(atencionOpt.get());
-        return ResponseEntity.ok(response);
     }
 
     /**
@@ -129,17 +112,13 @@ public class AtencionController {
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         
-        
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        
-        Optional<Atencion> atencionOpt = atencionService.obtenerAtencionPorId(id);
-        
-        if (atencionOpt.isEmpty()) {
-            throw new AtencionException("No se encontró la atención con ID: " + id);
+        try {
+            AtencionResponse response = atencionService.obtenerAtencionPorId(id);
+            return ResponseEntity.ok(response);
+        } catch (AtencionException e) {
+            return ResponseEntity.notFound().build();
         }
-        
-        AtencionResponse response = atencionMapper.toResponse(atencionOpt.get());
-        return ResponseEntity.ok(response);
     }
 }

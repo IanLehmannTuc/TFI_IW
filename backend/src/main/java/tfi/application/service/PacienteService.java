@@ -134,10 +134,18 @@ public class PacienteService {
      * Busca un paciente por su CUIL.
      * 
      * @param cuil El CUIL del paciente
-     * @return Un Optional con el paciente si existe, vacío en caso contrario
+     * @return PacienteResponse con los datos del paciente si existe
+     * @throws PacienteException si el paciente no existe
      */
-    public Optional<Paciente> findByCuil(String cuil) {
-        return pacientesRepository.findByCuil(cuil);
+    public PacienteResponse findByCuil(String cuil) {
+        if (cuil == null || cuil.trim().isEmpty()) {
+            throw new PacienteException("El CUIL no puede ser nulo o vacío");
+        }
+        
+        Paciente paciente = pacientesRepository.findByCuil(cuil)
+            .orElseThrow(() -> new PacienteException("No existe un paciente con el CUIL: " + cuil));
+        
+        return pacienteMapper.toResponse(paciente);
     }
     
     /**
@@ -159,9 +167,9 @@ public class PacienteService {
      * permanece independiente de frameworks.
      * 
      * @param pageable información de paginación de Spring (página, tamaño, ordenamiento)
-     * @return página de pacientes con metadatos de paginación (Spring Page)
+     * @return página de pacientes como DTOs con metadatos de paginación (Spring Page)
      */
-    public Page<Paciente> findAll(Pageable pageable) {
+    public Page<PacienteResponse> findAll(Pageable pageable) {
         // Convertir Pageable de Spring a PaginationRequest del dominio
         List<SortOrder> sortOrders = new ArrayList<>();
         if (pageable.getSort().isSorted()) {
@@ -184,9 +192,14 @@ public class PacienteService {
         // Usar el repositorio del dominio (independiente de Spring)
         PaginatedResult<Paciente> result = pacientesRepository.findAll(request);
         
+        // Convertir entidades a DTOs
+        List<PacienteResponse> content = result.getContent().stream()
+            .map(pacienteMapper::toResponse)
+            .collect(Collectors.toList());
+        
         // Convertir PaginatedResult del dominio a Page de Spring (solo en capa de aplicación)
         return new PageImpl<>(
-            result.getContent(),
+            content,
             pageable,
             result.getTotalElements()
         );

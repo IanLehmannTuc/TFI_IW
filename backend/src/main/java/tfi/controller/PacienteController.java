@@ -9,11 +9,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tfi.application.mapper.PacienteMapper;
 import tfi.application.dto.PacienteResponse;
 import tfi.application.dto.RegistroPacienteRequest;
 import tfi.domain.enums.Autoridad;
 import tfi.application.service.PacienteService;
+import tfi.exception.PacienteException;
 import tfi.util.SecurityContext;
 
 /**
@@ -25,17 +25,14 @@ import tfi.util.SecurityContext;
 public class PacienteController {
     
     private final PacienteService pacienteService;
-    private final PacienteMapper pacienteMapper;
 
     /**
      * Constructor con inyección de dependencias
      * 
      * @param pacienteService Servicio de pacientes
-     * @param pacienteMapper Mapper para convertir Paciente a PacienteResponse
      */
-    public PacienteController(PacienteService pacienteService, PacienteMapper pacienteMapper) {
+    public PacienteController(PacienteService pacienteService) {
         this.pacienteService = pacienteService;
-        this.pacienteMapper = pacienteMapper;
     }
 
     /**
@@ -90,8 +87,7 @@ public class PacienteController {
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        Page<PacienteResponse> pacientesPage = pacienteService.findAll(pageable)
-            .map(pacienteMapper::toResponse);
+        Page<PacienteResponse> pacientesPage = pacienteService.findAll(pageable);
         
         return ResponseEntity.ok(pacientesPage);
     }
@@ -116,9 +112,12 @@ public class PacienteController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        return pacienteService.findByCuil(cuil)
-            .map(paciente -> ResponseEntity.ok(pacienteMapper.toResponse(paciente)))
-            .orElse(ResponseEntity.notFound().build());
+        try {
+            PacienteResponse response = pacienteService.findByCuil(cuil);
+            return ResponseEntity.ok(response);
+        } catch (PacienteException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**

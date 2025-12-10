@@ -147,20 +147,23 @@ public class IngresoService {
      * 
      * La cola se mantiene automáticamente ordenada mediante PriorityQueue en el servicio Singleton.
      * 
-     * @return lista de ingresos ordenados según criterio de cola de atención
+     * @return lista de ingresos como DTOs ordenados según criterio de cola de atención
      */
-    public List<Ingreso> obtenerColaDeAtencion() {
-        return this.colaAtencionService.obtenerCola();
+    public List<IngresoResponse> obtenerColaDeAtencion() {
+        List<Ingreso> cola = this.colaAtencionService.obtenerCola();
+        return cola.stream()
+            .map(ingresoMapper::toResponse)
+            .collect(Collectors.toList());
     }
     
     /**
      * Atiende al siguiente paciente en la cola (el de mayor prioridad).
      * Remueve el ingreso de la cola, inicia su atención (cambia estado a EN_PROCESO) y lo persiste.
      * 
-     * @return el ingreso atendido, o null si no hay pacientes en espera
+     * @return el ingreso atendido como DTO, o null si no hay pacientes en espera
      * @throws IllegalStateException si el ingreso no puede ser atendido (no está pendiente)
      */
-    public Ingreso atenderSiguientePaciente() {
+    public IngresoResponse atenderSiguientePaciente() {
         Ingreso ingreso = colaAtencionService.atenderSiguiente();
         
         if (ingreso != null) {
@@ -168,9 +171,10 @@ public class IngresoService {
             ingreso.iniciarAtencion();
             
             ingresoRepository.update(ingreso);
+            return ingresoMapper.toResponse(ingreso);
         }
         
-        return ingreso;
+        return null;
     }
     
     /**
@@ -206,6 +210,16 @@ public class IngresoService {
         return ingresoActualizado;
     }
     
+    /**
+     * Consulta el siguiente paciente a atender sin removerlo de la cola.
+     * 
+     * @return el ingreso de mayor prioridad como DTO, o null si la cola está vacía
+     */
+    public IngresoResponse verSiguientePaciente() {
+        Ingreso siguiente = colaAtencionService.verSiguiente();
+        return siguiente != null ? ingresoMapper.toResponse(siguiente) : null;
+    }
+
     /**
      * Obtiene la cantidad de pacientes en espera en la cola.
      * 

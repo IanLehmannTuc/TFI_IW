@@ -1,6 +1,8 @@
 package tfi.application.service;
 
 import org.springframework.stereotype.Service;
+import tfi.application.dto.AtencionResponse;
+import tfi.application.mapper.AtencionMapper;
 import tfi.domain.entity.Atencion;
 import tfi.domain.entity.Ingreso;
 import tfi.domain.repository.AtencionRepository;
@@ -19,10 +21,14 @@ public class AtencionService {
 
     private final AtencionRepository atencionRepository;
     private final IngresoRepository ingresoRepository;
+    private final AtencionMapper atencionMapper;
 
-    public AtencionService(AtencionRepository atencionRepository, IngresoRepository ingresoRepository) {
+    public AtencionService(AtencionRepository atencionRepository, 
+                          IngresoRepository ingresoRepository,
+                          AtencionMapper atencionMapper) {
         this.atencionRepository = atencionRepository;
         this.ingresoRepository = ingresoRepository;
+        this.atencionMapper = atencionMapper;
     }
 
     /**
@@ -41,10 +47,10 @@ public class AtencionService {
      * @param ingresoId ID del ingreso a atender
      * @param medicoId ID del médico que realiza la atención
      * @param informe Informe médico de la atención
-     * @return La atención registrada
+     * @return La atención registrada como DTO
      * @throws AtencionException si hay algún error de validación
      */
-    public Atencion registrarAtencion(String ingresoId, String medicoId, String informe) {
+    public AtencionResponse registrarAtencion(String ingresoId, String medicoId, String informe) {
         
         if (informe == null || informe.trim().isEmpty()) {
             throw new AtencionException("El informe del paciente es obligatorio");
@@ -79,26 +85,42 @@ public class AtencionService {
         ingreso.finalizar(atencionGuardada);
         ingresoRepository.update(ingreso);
 
-        return atencionGuardada;
+        return atencionMapper.toResponse(atencionGuardada);
     }
 
     /**
      * Obtiene la atención asociada a un ingreso específico.
      * 
      * @param ingresoId ID del ingreso
-     * @return Optional con la atención si existe, vacío si no
+     * @return AtencionResponse con la atención si existe
+     * @throws AtencionException si no se encuentra la atención
      */
-    public Optional<Atencion> obtenerAtencionPorIngresoId(String ingresoId) {
-        return atencionRepository.findByIngresoId(ingresoId);
+    public AtencionResponse obtenerAtencionPorIngresoId(String ingresoId) {
+        if (ingresoId == null || ingresoId.trim().isEmpty()) {
+            throw new AtencionException("El ID del ingreso no puede ser nulo o vacío");
+        }
+        
+        Atencion atencion = atencionRepository.findByIngresoId(ingresoId)
+            .orElseThrow(() -> new AtencionException("No se encontró una atención para el ingreso con ID: " + ingresoId));
+        
+        return atencionMapper.toResponse(atencion);
     }
 
     /**
      * Obtiene una atención por su ID.
      * 
      * @param id ID de la atención
-     * @return Optional con la atención si existe, vacío si no
+     * @return AtencionResponse con la atención si existe
+     * @throws AtencionException si no se encuentra la atención
      */
-    public Optional<Atencion> obtenerAtencionPorId(String id) {
-        return atencionRepository.findById(id);
+    public AtencionResponse obtenerAtencionPorId(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new AtencionException("El ID de la atención no puede ser nulo o vacío");
+        }
+        
+        Atencion atencion = atencionRepository.findById(id)
+            .orElseThrow(() -> new AtencionException("No se encontró la atención con ID: " + id));
+        
+        return atencionMapper.toResponse(atencion);
     }
 }
