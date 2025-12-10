@@ -61,9 +61,6 @@ export interface Patient {
   cuil: string;
   nombre: string;
   apellido: string;
-  telefono?: string;
-  fechaNacimiento?: string; 
-  sexo?: string;
   edad?: number;
   domicilio?: Domicilio;
   obraSocial?: ObraSocial;
@@ -85,9 +82,6 @@ export interface AdmissionRequest {
   pacienteNombre?: string;
   pacienteApellido?: string;
   pacienteEmail?: string;
-  pacienteTelefono?: string;
-  pacienteFechaNacimiento?: string;
-  pacienteSexo?: string;
   pacienteDomicilio?: {
     calle: string;
     numero: number;

@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { Admission, AdmissionStatus, Attention, UserRole } from '../types';
+import { Admission, AdmissionStatus } from '../types';
 import TriageBadge from '../components/TriageBadge';
 import { RefreshCcw, Eye, Search, X, Calendar, User as UserIcon, Stethoscope, Activity, FileText } from 'lucide-react';
 
 const AdmissionsHistory: React.FC = () => {
-  const { user } = useAuth();
   const [admissions, setAdmissions] = useState<Admission[]>([]);
   const [filteredAdmissions, setFilteredAdmissions] = useState<Admission[]>([]);
   const [loading, setLoading] = useState(true);

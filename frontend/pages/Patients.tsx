@@ -3,12 +3,10 @@ import { useForm } from 'react-hook-form';
 import { apiRequest } from '../services/api';
 import { Patient, Page, ObraSocialRef } from '../types';
 import { 
-  Users, 
   Search, 
   Plus, 
   Pencil, 
   X, 
-  Save, 
   MapPin, 
   CreditCard, 
   AlertCircle,
@@ -23,9 +21,6 @@ interface PatientFormData {
   nombre: string;
   apellido: string;
   cuil: string;
-  fechaNacimiento?: string;
-  sexo?: string;
-  telefono?: string;
 
   calle?: string;
   numero?: number;
@@ -61,13 +56,13 @@ const Patients: React.FC = () => {
   const [obrasSocialesList, setObrasSocialesList] = useState<ObraSocialRef[]>([]);
   const [osQuery, setOsQuery] = useState('');
   const [isOsDropdownOpen, setIsOsDropdownOpen] = useState(false);
-  const [osFetchError, setOsFetchError] = useState('');
+  const [_osFetchError, setOsFetchError] = useState('');
   const [osLoading, setOsLoading] = useState(false);
   const osDropdownRef = useRef<HTMLDivElement>(null);
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<PatientFormData>();
+  const { register, handleSubmit, reset, setValue } = useForm<PatientFormData>();
 
   const fetchOS = async () => {
     setOsLoading(true);
@@ -174,9 +169,6 @@ const Patients: React.FC = () => {
     setValue('nombre', patient.nombre);
     setValue('apellido', patient.apellido);
     setValue('cuil', patient.cuil);
-    setValue('fechaNacimiento', patient.fechaNacimiento);
-    setValue('sexo', patient.sexo);
-    setValue('telefono', patient.telefono);
 
     if (patient.domicilio) {
       setValue('calle', patient.domicilio.calle);
@@ -233,9 +225,6 @@ const Patients: React.FC = () => {
       nombre: data.nombre,
       apellido: data.apellido,
       cuil: data.cuil,
-      fechaNacimiento: data.fechaNacimiento,
-      sexo: data.sexo,
-      telefono: data.telefono,
       domicilio: (data.calle && data.numero) ? {
         calle: data.calle,
         numero: Number(data.numero),
@@ -350,7 +339,6 @@ const Patients: React.FC = () => {
                                 </div>
                                 <div>
                                     <div className="text-sm font-medium text-gray-900">{patient.nombre} {patient.apellido}</div>
-                                    <div className="text-xs text-gray-400">{patient.sexo} - {patient.fechaNacimiento}</div>
                                 </div>
                             </div>
                         </td>
@@ -447,23 +435,6 @@ const Patients: React.FC = () => {
                                 <div className="sm:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700">CUIL</label>
                                     <input {...register('cuil', { required: true })} className={inputClass} placeholder="20-12345678-9" readOnly={!!currentPatient} />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Fecha Nacimiento</label>
-                                    <input type="date" {...register('fechaNacimiento')} className={inputClass} />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Sexo</label>
-                                    <select {...register('sexo')} className={inputClass}>
-                                        <option value="">Seleccionar...</option>
-                                        <option value="M">Masculino</option>
-                                        <option value="F">Femenino</option>
-                                        <option value="X">Otro</option>
-                                    </select>
-                                </div>
-                                <div className="sm:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700">Teléfono</label>
-                                    <input {...register('telefono')} className={inputClass} />
                                 </div>
 
                                 <div className="sm:col-span-2 pt-4 border-t border-gray-200">

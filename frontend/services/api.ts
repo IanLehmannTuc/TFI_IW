@@ -1,5 +1,4 @@
 import { API_BASE_URL } from '../constants';
-import { ErrorResponse } from '../types';
 
 interface RequestOptions extends RequestInit {
   headers?: Record<string, string>;

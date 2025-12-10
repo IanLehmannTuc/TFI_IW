@@ -11,9 +11,6 @@ interface AdmissionFormData {
   pacienteCuil: string;
   pacienteNombre: string;
   pacienteApellido: string;
-  pacienteFechaNacimiento?: string;
-  pacienteSexo?: string;
-  pacienteTelefono?: string;
   calle?: string;
   numero?: number;
   localidad?: string;
@@ -105,7 +102,7 @@ const Admission: React.FC = () => {
   const [obrasSocialesList, setObrasSocialesList] = useState<ObraSocialRef[]>([]);
   const [osQuery, setOsQuery] = useState('');
   const [isOsDropdownOpen, setIsOsDropdownOpen] = useState(false);
-  const [osFetchError, setOsFetchError] = useState('');
+  const [_osFetchError, setOsFetchError] = useState('');
   const [osLoading, setOsLoading] = useState(false);
   const osDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -170,9 +167,6 @@ const Admission: React.FC = () => {
 
         setValue('pacienteNombre', patient.nombre);
         setValue('pacienteApellido', patient.apellido);
-        setValue('pacienteFechaNacimiento', patient.fechaNacimiento || '');
-        setValue('pacienteSexo', patient.sexo || '');
-        setValue('pacienteTelefono', patient.telefono || '');
 
         if (patient.domicilio) {
             setValue('calle', patient.domicilio.calle);
@@ -203,9 +197,6 @@ const Admission: React.FC = () => {
 
             setValue('pacienteNombre', '');
             setValue('pacienteApellido', '');
-            setValue('pacienteFechaNacimiento', '');
-            setValue('pacienteSexo', '');
-            setValue('pacienteTelefono', '');
             setValue('calle', '');
             setValue('numero', undefined);
             setValue('localidad', '');
@@ -271,9 +262,6 @@ const Admission: React.FC = () => {
 
             pacienteNombre: data.pacienteNombre,
             pacienteApellido: data.pacienteApellido,
-            pacienteFechaNacimiento: data.pacienteFechaNacimiento || undefined,
-            pacienteSexo: data.pacienteSexo || undefined,
-            pacienteTelefono: data.pacienteTelefono || undefined,
             pacienteDomicilio: (data.calle && data.numero) ? {
                 calle: data.calle,
                 numero: Math.abs(Number(data.numero)),
@@ -437,37 +425,6 @@ const Admission: React.FC = () => {
                             />
                              {errors.pacienteApellido && <span className="text-red-500 text-xs">Requerido</span>}
                         </div>
-
-                         <div className="sm:col-span-2">
-                             <label className="block text-sm font-medium text-gray-700">Fecha Nacimiento</label>
-                             <input 
-                                type="date"
-                                {...register('pacienteFechaNacimiento')} 
-                                className={getEditableInputClass(!isNewPatient)} 
-                                readOnly={!isNewPatient}
-                            />
-                         </div>
-                         <div className="sm:col-span-2">
-                             <label className="block text-sm font-medium text-gray-700">Sexo</label>
-                             <select 
-                                {...register('pacienteSexo')}
-                                className={getEditableInputClass(!isNewPatient)} 
-                                disabled={!isNewPatient}
-                             >
-                                 <option value="">Seleccionar...</option>
-                                 <option value="M">Masculino</option>
-                                 <option value="F">Femenino</option>
-                                 <option value="X">Otro</option>
-                             </select>
-                         </div>
-                         <div className="sm:col-span-2">
-                             <label className="block text-sm font-medium text-gray-700">Teléfono</label>
-                             <input 
-                                {...register('pacienteTelefono')} 
-                                className={getEditableInputClass(!isNewPatient)} 
-                                readOnly={!isNewPatient}
-                            />
-                         </div>
                     </div>
 
                     <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
