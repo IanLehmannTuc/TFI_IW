@@ -733,3 +733,4 @@ Authorization: Bearer <token>
 
 7. **Estado de Ingresos**: El flujo de estados es unidireccional: PENDIENTE → EN_PROCESO → FINALIZADO
 
+
