@@ -35,17 +35,17 @@ public class AtencionRepositoryImpl implements AtencionRepository {
         if (atencion == null) {
             throw new IllegalArgumentException("La atención no puede ser nula");
         }
-        
-        
+
+
         if (findByIngresoId(atencion.getIngresoId()).isPresent()) {
             throw new IllegalStateException("Ya existe una atención registrada para este ingreso");
         }
-        
-        
+
+
         if (atencion.getId() == null) {
             atencion.setId(UUID.randomUUID().toString());
         }
-        
+
         atenciones.put(atencion.getId(), atencion);
         return atencion;
     }
@@ -55,15 +55,15 @@ public class AtencionRepositoryImpl implements AtencionRepository {
         if (atencion == null) {
             throw new IllegalArgumentException("La atención no puede ser nula");
         }
-        
+
         if (atencion.getId() == null) {
             throw new IllegalArgumentException("La atención debe tener un ID para ser actualizada");
         }
-        
+
         if (!atenciones.containsKey(atencion.getId())) {
             throw new IllegalArgumentException("No se encontró la atención con ID: " + atencion.getId());
         }
-        
+
         atenciones.put(atencion.getId(), atencion);
         return atencion;
     }
@@ -78,13 +78,13 @@ public class AtencionRepositoryImpl implements AtencionRepository {
         if (atencion == null || atencion.getId() == null) {
             throw new IllegalArgumentException("La atención debe tener un ID válido para ser eliminada");
         }
-        
+
         Atencion atencionEliminada = atenciones.remove(atencion.getId());
-        
+
         if (atencionEliminada == null) {
             throw new IllegalArgumentException("No se encontró la atención con ID: " + atencion.getId());
         }
-        
+
         return atencionEliminada;
     }
 }

@@ -51,12 +51,12 @@ public class AtencionService {
      * @throws AtencionException si hay algún error de validación
      */
     public AtencionResponse registrarAtencion(String ingresoId, String medicoId, String informe) {
-        
+
         if (informe == null || informe.trim().isEmpty()) {
             throw new AtencionException("El informe del paciente es obligatorio");
         }
 
-        
+
         Optional<Ingreso> ingresoOpt = ingresoRepository.findById(ingresoId);
         if (ingresoOpt.isEmpty()) {
             throw new AtencionException("No se encontró el ingreso con ID: " + ingresoId);
@@ -64,24 +64,24 @@ public class AtencionService {
 
         Ingreso ingreso = ingresoOpt.get();
 
-        // Validación en el dominio - encapsula las reglas de negocio
+
         try {
             ingreso.puedeRecibirAtencion();
         } catch (IllegalStateException e) {
             throw new AtencionException(e.getMessage());
         }
 
-        // Verificar que no exista una atención ya persistida (validación de infraestructura)
+
         Optional<Atencion> atencionExistente = atencionRepository.findByIngresoId(ingresoId);
         if (atencionExistente.isPresent()) {
             throw new AtencionException("Ya existe una atención registrada para este ingreso");
         }
 
-        // Crear y persistir la atención
+
         Atencion atencion = new Atencion(ingresoId, medicoId, informe);
         Atencion atencionGuardada = atencionRepository.add(atencion);
 
-        // Usar método de negocio para finalizar el ingreso
+
         ingreso.finalizar(atencionGuardada);
         ingresoRepository.update(ingreso);
 
@@ -99,10 +99,10 @@ public class AtencionService {
         if (ingresoId == null || ingresoId.trim().isEmpty()) {
             throw new AtencionException("El ID del ingreso no puede ser nulo o vacío");
         }
-        
+
         Atencion atencion = atencionRepository.findByIngresoId(ingresoId)
             .orElseThrow(() -> new AtencionException("No se encontró una atención para el ingreso con ID: " + ingresoId));
-        
+
         return atencionMapper.toResponse(atencion);
     }
 
@@ -117,10 +117,10 @@ public class AtencionService {
         if (id == null || id.trim().isEmpty()) {
             throw new AtencionException("El ID de la atención no puede ser nulo o vacío");
         }
-        
+
         Atencion atencion = atencionRepository.findById(id)
             .orElseThrow(() -> new AtencionException("No se encontró la atención con ID: " + id));
-        
+
         return atencionMapper.toResponse(atencion);
     }
 }

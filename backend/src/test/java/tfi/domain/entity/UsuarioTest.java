@@ -17,9 +17,9 @@ class UsuarioTest {
         Email email = Email.from("medico@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
         Autoridad autoridad = Autoridad.MEDICO;
-        
+
         Usuario usuario = new Usuario(email, passwordHash, autoridad);
-        
+
         assertNotNull(usuario);
         assertEquals(email, usuario.getEmail());
         assertEquals(passwordHash, usuario.getPasswordHash());
@@ -29,31 +29,31 @@ class UsuarioTest {
     @Test
     void debeLanzarExcepcionSiEmailEsNull() {
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
-        
+
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(null, passwordHash, Autoridad.MEDICO)
         );
-        
+
         assertEquals("El email no puede ser nulo", exception.getMessage());
     }
 
     @Test
     void debeLanzarExcepcionSiPasswordHashEsNull() {
         Email email = Email.from("medico@hospital.com");
-        
+
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, null, Autoridad.MEDICO)
         );
-        
+
         assertEquals("El hash de contraseña no puede ser nulo o vacío", exception.getMessage());
     }
 
     @Test
     void debeLanzarExcepcionSiPasswordHashEsVacio() {
         Email email = Email.from("medico@hospital.com");
-        
+
         assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, "", Autoridad.MEDICO)
@@ -64,12 +64,12 @@ class UsuarioTest {
     void debeLanzarExcepcionSiAutoridadEsNull() {
         Email email = Email.from("medico@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
-        
+
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> new Usuario(email, passwordHash, null)
         );
-        
+
         assertEquals("La autoridad no puede ser nula", exception.getMessage());
     }
 
@@ -77,9 +77,9 @@ class UsuarioTest {
     void debeCrearUsuarioConAutoridadMedico() {
         Email email = Email.from("medico@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
-        
+
         Usuario usuario = new Usuario(email, passwordHash, Autoridad.MEDICO);
-        
+
         assertEquals(Autoridad.MEDICO, usuario.getAutoridad());
     }
 
@@ -87,9 +87,9 @@ class UsuarioTest {
     void debeCrearUsuarioConAutoridadEnfermera() {
         Email email = Email.from("enfermera@hospital.com");
         String passwordHash = "$2a$10$abcdefghijklmnopqrstuvwxyz";
-        
+
         Usuario usuario = new Usuario(email, passwordHash, Autoridad.ENFERMERO);
-        
+
         assertEquals(Autoridad.ENFERMERO, usuario.getAutoridad());
     }
 
@@ -98,9 +98,9 @@ class UsuarioTest {
         Email emailOriginal = Email.from("medico@hospital.com");
         Usuario usuario = new Usuario(emailOriginal, "hash", Autoridad.MEDICO);
         Email nuevoEmail = Email.from("nuevo@hospital.com");
-        
+
         usuario.setEmail(nuevoEmail);
-        
+
         assertEquals(nuevoEmail, usuario.getEmail());
     }
 
@@ -111,7 +111,7 @@ class UsuarioTest {
             "hash", 
             Autoridad.MEDICO
         );
-        
+
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setEmail(null)
@@ -125,9 +125,9 @@ class UsuarioTest {
             "hashOriginal", 
             Autoridad.MEDICO
         );
-        
+
         usuario.setPasswordHash("nuevoHash");
-        
+
         assertEquals("nuevoHash", usuario.getPasswordHash());
     }
 
@@ -138,7 +138,7 @@ class UsuarioTest {
             "hash", 
             Autoridad.MEDICO
         );
-        
+
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setPasswordHash(null)
@@ -152,7 +152,7 @@ class UsuarioTest {
             "hash", 
             Autoridad.MEDICO
         );
- 
+
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setPasswordHash("")
@@ -166,9 +166,9 @@ class UsuarioTest {
             "hash", 
             Autoridad.MEDICO
         );
-        
+
         usuario.setAutoridad(Autoridad.ENFERMERO);
-        
+
         assertEquals(Autoridad.ENFERMERO, usuario.getAutoridad());
     }
 
@@ -179,7 +179,7 @@ class UsuarioTest {
             "hash", 
             Autoridad.MEDICO
         );
- 
+
         assertThrows(
             IllegalArgumentException.class,
             () -> usuario.setAutoridad(null)
@@ -191,7 +191,7 @@ class UsuarioTest {
         Email email = Email.from("medico@hospital.com");
         Usuario usuario1 = new Usuario(email, "hash1", Autoridad.MEDICO);
         Usuario usuario2 = new Usuario(email, "hash2", Autoridad.ENFERMERO);
-        
+
         assertEquals(usuario1, usuario2);
         assertEquals(usuario1.hashCode(), usuario2.hashCode());
     }
@@ -208,7 +208,7 @@ class UsuarioTest {
             "hash", 
             Autoridad.MEDICO
         );
-        
+
         assertNotEquals(usuario1, usuario2);
     }
 
@@ -219,9 +219,9 @@ class UsuarioTest {
             "secretHash", 
             Autoridad.MEDICO
         );
-        
+
         String resultado = usuario.toString();
-        
+
         assertFalse(resultado.contains("secretHash"));
         assertTrue(resultado.contains("medico@hospital.com"));
         assertTrue(resultado.contains("MEDICO"));

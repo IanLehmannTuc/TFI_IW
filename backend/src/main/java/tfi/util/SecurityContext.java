@@ -41,11 +41,11 @@ public class SecurityContext {
         String id = (String) request.getAttribute(USER_ID_ATTRIBUTE);
         String email = (String) request.getAttribute(USER_EMAIL_ATTRIBUTE);
         Autoridad autoridad = (Autoridad) request.getAttribute(USER_AUTORIDAD_ATTRIBUTE);
-        
+
         if (id == null || email == null || autoridad == null) {
             throw new AutenticacionException(MensajesError.NO_AUTENTICADO);
         }
-        
+
         return new UsuarioAutenticado(id, email, autoridad);
     }
 
@@ -64,11 +64,11 @@ public class SecurityContext {
         String id = (String) request.getAttribute(USER_ID_ATTRIBUTE);
         String email = (String) request.getAttribute(USER_EMAIL_ATTRIBUTE);
         Autoridad autoridad = (Autoridad) request.getAttribute(USER_AUTORIDAD_ATTRIBUTE);
-        
+
         if (id == null || email == null || autoridad == null) {
             return null;
         }
-        
+
         return new UsuarioAutenticado(id, email, autoridad);
     }
 
@@ -90,7 +90,7 @@ public class SecurityContext {
             throw new IllegalArgumentException("La autoridad requerida no puede ser nula");
         }
         UsuarioAutenticado usuario = getUsuarioAutenticado(request);
-        
+
         if (usuario.getAutoridad() != autoridadRequerida) {
             throw new ForbiddenException(
                 MensajesError.sinPermisosParaAutoridad(autoridadRequerida.name())
@@ -115,13 +115,13 @@ public class SecurityContext {
             throw new IllegalArgumentException("Debe especificar al menos una autoridad");
         }
         UsuarioAutenticado usuario = getUsuarioAutenticado(request);
-        
+
         for (Autoridad autoridad : autoridades) {
             if (usuario.getAutoridad() == autoridad) {
                 return;
             }
         }
-        
+
         String autoridadesStr = String.join(", ", java.util.Arrays.stream(autoridades)
                 .map(Enum::name)
                 .toArray(String[]::new));

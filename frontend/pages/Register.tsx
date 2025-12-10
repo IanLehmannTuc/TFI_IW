@@ -28,12 +28,12 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      // IS2025-005: Registro
+
       await apiRequest('/auth/registro', {
         method: 'POST',
         body: JSON.stringify(formData),
       });
-      // On success (201)
+
       navigate('/login');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al registrar usuario');

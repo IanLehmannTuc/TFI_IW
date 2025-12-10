@@ -9,39 +9,39 @@ import jakarta.validation.constraints.NotNull;
  * Contiene los datos necesarios para crear un ingreso en el sistema.
  */
 public class RegistroIngresoRequest {
-    
+
     @NotBlank(message = "El CUIL del paciente es obligatorio")
     private String pacienteCuil;
-    
+
     private String pacienteNombre;
     private String pacienteApellido;
     private String pacienteEmail;
-    
+
     private RegistroPacienteRequest.DomicilioRequest pacienteDomicilio;
-    
+
     private RegistroPacienteRequest.AfiliadoRequest pacienteObraSocial;
-    
+
     @NotBlank(message = "El CUIL del enfermero es obligatorio")
     private String enfermeroCuil;
-    
+
     @NotBlank(message = "La descripción es obligatoria")
     private String descripcion;
-    
+
     @NotNull(message = "La temperatura es obligatoria")
     private Double temperatura;
-    
+
     @NotNull(message = "La tensión arterial sistólica es obligatoria")
     private Integer tensionSistolica;
-    
+
     @NotNull(message = "La tensión arterial diastólica es obligatoria")
     private Integer tensionDiastolica;
-    
+
     @NotNull(message = "La frecuencia cardíaca es obligatoria")
     private Integer frecuenciaCardiaca;
-    
+
     @NotNull(message = "La frecuencia respiratoria es obligatoria")
     private Integer frecuenciaRespiratoria;
-    
+
     @NotNull(message = "El nivel de emergencia es obligatorio")
     private NivelEmergencia nivelEmergencia;
 

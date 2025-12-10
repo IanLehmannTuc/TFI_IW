@@ -55,7 +55,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
     private PacienteService pacienteService;
     private ObraSocialPort obraSocialPort;
     private ObraSocialCacheService obraSocialCacheService;
-    
+
     private Usuario enfermero;
     private Ingreso ingreso;
     private String ultimoError;
@@ -65,13 +65,13 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         this.repoUsuarios = new UsuarioRepositoryImpl();
         this.repoPacientes = new PacientesRepositoryImpl();
         this.repoIngresos = new IngresoRepositoryImpl();
-        
-        
+
+
         this.obraSocialPort = Mockito.mock(ObraSocialPort.class);
-        
-        
+
+
         this.obraSocialCacheService = Mockito.mock(ObraSocialCacheService.class);
-        
+
         Mockito.when(obraSocialCacheService.getNombreObraSocial(Mockito.anyInt()))
             .thenAnswer(invocation -> {
                 Integer id = invocation.getArgument(0);
@@ -98,7 +98,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         String apellido = enfermeroData.get("Apellido");
         String email = enfermeroData.get("Email");
         String matricula = enfermeroData.get("Matricula");
-        
+
         Usuario enfermero = new Usuario(
             Email.from(email),
             "hash_dummy", 
@@ -108,7 +108,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             apellido,
             matricula
         );
-        
+
         repoUsuarios.add(enfermero);
         this.enfermero = enfermero;
     }
@@ -120,8 +120,8 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             String cuil = pacienteData.get("CUIL");
             String nombre = pacienteData.get("Nombre");
             String apellido = pacienteData.get("Apellido");
-            
-            
+
+
             Paciente paciente = Paciente.crearConDatosBasicos(cuil, nombre, apellido);
             repoPacientes.add(paciente);
         }
@@ -176,7 +176,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
                 String apellido = pacienteData.getOrDefault("Apellido", "Sin Apellido");
                 paciente = Paciente.crearConDatosBasicos(cuil, nombre, apellido);
             } 
-            
+
             String descripcion = pacienteData.get("Informe");
             NivelEmergencia nivelEmergencia = NivelEmergencia.valueOf(nivelStr);
             Temperatura temperatura = new Temperatura(
@@ -193,8 +193,8 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             FrecuenciaRespiratoria frecuenciaRespiratoria = new FrecuenciaRespiratoria(
                 Integer.parseInt(pacienteData.get("Frecuencia Respiratoria"))
             );
-            
-            
+
+
             RegistroIngresoRequest request = new RegistroIngresoRequest();
             request.setPacienteCuil(paciente.getCuil());
             request.setEnfermeroCuil(this.enfermero.getCuil());
@@ -205,9 +205,9 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             request.setFrecuenciaCardiaca(frecuenciaCardiaca.getValor());
             request.setFrecuenciaRespiratoria(frecuenciaRespiratoria.getValor());
             request.setNivelEmergencia(nivelEmergencia);
-            
+
             var ingresoResponse = this.ingresoService.registrarIngreso(request);
-            
+
             this.ingreso = this.repoIngresos.findById(ingresoResponse.getId()).orElse(null);
         } catch (RuntimeException e) {
             ultimoError = e.getMessage();
@@ -221,7 +221,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         try {
             Map<String, String> pacienteData = dataTable.asMaps(String.class, String.class).get(0);
             String cuil = pacienteData.get("CUIL");
-            
+
             Paciente paciente;
             try {
                 PacienteResponse pacienteResponse = pacienteService.findByCuil(cuil);
@@ -229,12 +229,12 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             } catch (PacienteException e) {
                 paciente = null;
             }
-            
+
             String informe = pacienteData.get("Informe");
             if (informe == null || informe.trim().isEmpty()) {
                 throw new IllegalArgumentException("El informe es obligatorio");
             }
-            
+
             String nivelEmergenciaStr = pacienteData.get("Nivel de Emergencia");
             String temperatura = pacienteData.get("Temperatura");
             String frecuenciaCardiaca = pacienteData.get("Frecuencia Cardiaca");
@@ -272,11 +272,11 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         assertThat(this.ingreso)
             .as("El ingreso debe haberse creado")
             .isNotNull();
-        
+
         assertThat(this.ingreso.getId())
             .as("El ingreso debe tener un ID asignado (fue guardado)")
             .isNotNull();
-        
+
         List<IngresoResponse> colaResponse = this.ingresoService.obtenerColaDeAtencion();
         List<Ingreso> cola = colaResponse.stream()
             .map(response -> repoIngresos.findById(response.getId()).orElse(null))
@@ -292,76 +292,76 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         assertThat(ultimoError)
             .as("Debe haberse generado un error")
             .isNotNull();
-        
+
         assertThat(ultimoError)
             .as("El mensaje de error debe mencionar que el campo es obligatorio")
             .contains("obligatorio");
     }
-    
+
     @Then("Se emite un mensaje de error indicando que el informe es obligatorio")
     public void seEmiteUnMensajeDeErrorIndicandoQueElInformeEsObligatorio() {
         assertThat(ultimoError)
             .as("Debe haberse generado un error")
             .isNotNull();
-        
+
         assertThat(ultimoError)
             .as("El mensaje de error debe mencionar que el informe es obligatorio")
             .containsAnyOf("informe", "obligatorio");
     }
-    
+
     @Then("Se emite un mensaje de error indicando que la frecuencia cardíaca no puede ser negativa")
     public void seEmiteUnMensajeDeErrorIndicandoQueLaFrecuenciaCardiacaNoPuedeSerNegativa() {
         assertThat(ultimoError)
             .as("Debe haberse generado un error")
             .isNotNull();
-        
+
         assertThat(ultimoError)
             .as("El mensaje de error debe mencionar que la frecuencia cardíaca no puede ser negativa")
             .containsAnyOf("frecuencia cardíaca", "negativa", "negativo");
     }
-    
+
     @Then("Se emite un mensaje de error indicando que la frecuencia respiratoria no puede ser negativa")
     public void seEmiteUnMensajeDeErrorIndicandoQueLaFrecuenciaRespiratoriaNoPuedeSerNegativa() {
         assertThat(ultimoError)
             .as("Debe haberse generado un error")
             .isNotNull();
-        
+
         assertThat(ultimoError)
             .as("El mensaje de error debe mencionar que la frecuencia respiratoria no puede ser negativa")
             .containsAnyOf("frecuencia respiratoria", "negativa", "negativo");
     }
-    
+
     @Then("Se emite un mensaje de error indicando que la tensión arterial sistólica no puede ser negativa")
     public void seEmiteUnMensajeDeErrorIndicandoQueLaTensionArterialSistolicaNoPuedeSerNegativa() {
         assertThat(ultimoError)
             .as("Debe haberse generado un error")
             .isNotNull();
-        
+
         assertThat(ultimoError)
             .as("El mensaje de error debe mencionar que la presión/tensión no puede ser negativa")
             .containsAnyOf("presión", "tensión", "negativa", "negativo");
     }
-    
+
     @Then("Se emite un mensaje de error indicando que la tensión arterial diastólica no puede ser negativa")
     public void seEmiteUnMensajeDeErrorIndicandoQueLaTensionArterialDiastolicaNoPuedeSerNegativa() {
         assertThat(ultimoError)
             .as("Debe haberse generado un error")
             .isNotNull();
-        
+
         assertThat(ultimoError)
             .as("El mensaje de error debe mencionar que la presión/tensión no puede ser negativa")
             .containsAnyOf("presión", "tensión", "negativa", "negativo");
     }
-    
+
     @Then("La cola de atención se encuentra en el siguiente orden")
     public void laColaDeAtencionSeEncuentraEnElSiguienteOrden(DataTable dataTable) {
         List<IngresoResponse> colaAtencionResponse = this.ingresoService.obtenerColaDeAtencion();
         List<String> cuilesEsperados = dataTable.asList(String.class);
-        
+
         List<String> cuilesEnCola = colaAtencionResponse.stream()
             .map(response -> response.getPacienteCuil())
             .toList();  
-        
+
         assertThat(cuilesEnCola)
             .as("La cola debe tener exactamente los CUILs esperados en el mismo orden")
             .containsExactlyElementsOf(cuilesEsperados);

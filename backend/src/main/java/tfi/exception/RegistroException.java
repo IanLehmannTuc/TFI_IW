@@ -6,7 +6,7 @@ package tfi.exception;
  * sobre problemas de validación o duplicados.
  */
 public class RegistroException extends RuntimeException {
-    
+
     /**
      * Constructor con mensaje
      * 

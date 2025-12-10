@@ -189,7 +189,7 @@ public class Paciente {
         return "Paciente " + cuil.getValor();
     }
 
-    // Getters
+
     public String getCuil() {
         return cuil != null ? cuil.getValor() : null;
     }
@@ -214,7 +214,7 @@ public class Paciente {
         return domicilio;
     }
 
-    // Setters deprecated - solo para uso del repositorio
+
     /**
      * Setter para CUIL - SOLO para uso interno del repositorio al recuperar desde BD.
      * @deprecated El CUIL no debería cambiarse después de la creación.

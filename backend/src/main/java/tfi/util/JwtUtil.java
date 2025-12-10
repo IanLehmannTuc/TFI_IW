@@ -20,7 +20,7 @@ import java.util.Date;
  */
 @Component
 public class JwtUtil {
-    
+
     private final JwtConfig jwtConfig;
     private final SecretKey key;
 
@@ -46,7 +46,7 @@ public class JwtUtil {
     public String generateToken(@NonNull Usuario usuario) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationTime());
-        
+
         return Jwts.builder()
                 .subject(usuario.getEmail().getValue())
                 .claim("id", usuario.getId())
@@ -154,7 +154,7 @@ public class JwtUtil {
         if (!validateToken(token)) {
             return true;
         }
-        
+
         try {
             Date expiration = getExpirationFromToken(token);
             return expiration.before(new Date());

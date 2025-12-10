@@ -5,7 +5,7 @@ package tfi.exception;
  * Puede ser por verificación de afiliación fallida, API no disponible, etc.
  */
 public class ObraSocialException extends RuntimeException {
-    
+
     /**
      * Constructor con mensaje
      * 

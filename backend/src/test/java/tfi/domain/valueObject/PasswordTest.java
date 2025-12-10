@@ -12,7 +12,7 @@ class PasswordTest {
     @Test
     void debeCrearPasswordValida() {
         Password password = Password.from("password123");
-        
+
         assertNotNull(password);
         assertEquals("password123", password.getValue());
     }
@@ -20,7 +20,7 @@ class PasswordTest {
     @Test
     void debeAceptarPasswordDe8Caracteres() {
         Password password = Password.from("12345678");
-        
+
         assertNotNull(password);
         assertEquals(8, password.getValue().length());
     }
@@ -28,9 +28,9 @@ class PasswordTest {
     @Test
     void debeAceptarPasswordLarga() {
         String passwordLarga = "estaesunapasswordmuylargatienemasdecincuentacaracteres123456";
-        
+
         Password password = Password.from(passwordLarga);
-        
+
         assertNotNull(password);
         assertEquals(passwordLarga, password.getValue());
     }
@@ -41,7 +41,7 @@ class PasswordTest {
             IllegalArgumentException.class,
             () -> Password.from("1234567")
         );
-        
+
         assertEquals("La contraseña debe tener al menos 8 caracteres", exception.getMessage());
     }
 
@@ -51,7 +51,7 @@ class PasswordTest {
             IllegalArgumentException.class,
             () -> Password.from("")
         );
-        
+
         assertEquals("La contraseña no puede ser nula o vacía", exception.getMessage());
     }
 
@@ -61,14 +61,14 @@ class PasswordTest {
             IllegalArgumentException.class,
             () -> Password.from(null)
         );
-        
+
         assertEquals("La contraseña no puede ser nula o vacía", exception.getMessage());
     }
 
     @Test
     void debeAceptarPasswordConCaracteresEspeciales() {
         Password password = Password.from("P@ssw0rd!");
-        
+
         assertNotNull(password);
         assertEquals("P@ssw0rd!", password.getValue());
     }
@@ -76,7 +76,7 @@ class PasswordTest {
     @Test
     void debeAceptarPasswordConEspacios() {
         Password password = Password.from("mi password");
-        
+
         assertNotNull(password);
         assertEquals("mi password", password.getValue());
     }
@@ -104,7 +104,7 @@ class PasswordTest {
     void dosPasswordsConMismoValorDebenSerIguales() {
         Password password1 = Password.from("password123");
         Password password2 = Password.from("password123");
-        
+
         assertEquals(password1, password2);
         assertEquals(password1.hashCode(), password2.hashCode());
     }
@@ -113,16 +113,16 @@ class PasswordTest {
     void dosPasswordsConDiferenteValorNoDebenSerIguales() {
         Password password1 = Password.from("password123");
         Password password2 = Password.from("password456");
-        
+
         assertNotEquals(password1, password2);
     }
 
     @Test
     void toStringNoDebeRevelarPassword() {
         Password password = Password.from("secretpassword");
-        
+
         String resultado = password.toString();
-        
+
         assertEquals("***********", resultado);
         assertNotEquals("secretpassword", resultado);
     }
@@ -131,7 +131,7 @@ class PasswordTest {
     void passwordEsInmutable() {
         Password password = Password.from("password123");
         String valorOriginal = password.getValue();
-        
+
         assertEquals(valorOriginal, password.getValue());
     }
 }

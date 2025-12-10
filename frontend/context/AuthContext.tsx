@@ -20,12 +20,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const fetchProfile = async () => {
     try {
-       // IS2025-005: Load profile to get CUIL/Matricula
+
        const profile = await apiRequest<User>('/auth/perfil');
        setUser(profile);
     } catch (error) {
        console.error("Could not fetch full profile details", error);
-       // If profile fetch fails, user might be invalid or token expired
+
        logout();
     }
   };
@@ -46,22 +46,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = (data: AuthResponse) => {
     localStorage.setItem('token', data.token);
     setToken(data.token);
-    
-    // Set minimal user initially to allow UI to react, but immediately fetch full profile
+
+
     setUser({
         id: 'current',
         email: data.email,
         autoridad: data.autoridad,
-        // Name and CUIL will come from profile
+
     });
 
-    // Immediately fetch full profile to fill CUIL and matricula
+
     fetchProfile();
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('activePatientId'); // Clear active session if any
+    localStorage.removeItem('activePatientId'); 
     setToken(null);
     setUser(null);
   };

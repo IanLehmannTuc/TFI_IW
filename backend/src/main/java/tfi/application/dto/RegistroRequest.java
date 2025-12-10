@@ -16,16 +16,16 @@ import tfi.domain.enums.Autoridad;
  * (CUIL, nombre, apellido, matrícula) para crear automáticamente el perfil de Enfermero/Doctor.
  */
 public class RegistroRequest {
-    
+
     @NotBlank(message = "El email es obligatorio")
     private String email;
-    
+
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
-    
+
     @NotNull(message = "La autoridad es obligatoria")
     private Autoridad autoridad;
-    
+
     @NotBlank(message = "El CUIL es obligatorio")
     private String cuil;
 
@@ -44,7 +44,7 @@ public class RegistroRequest {
     public RegistroRequest() {
     }
 
-    
+
     /**
      * Constructor completo con datos profesionales
      */

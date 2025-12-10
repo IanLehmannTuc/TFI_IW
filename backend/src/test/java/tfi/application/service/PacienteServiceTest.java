@@ -43,13 +43,13 @@ class PacienteServiceTest {
 
     @BeforeEach
     void setUp() {
-        
-        
+
+
         lenient().when(obraSocialCacheService.getNombreObraSocial(anyInt())).thenAnswer(invocation -> {
             Integer id = invocation.getArgument(0);
             return "Obra Social " + id;
         });
-        
+
         pacienteMapper = new PacienteMapper(obraSocialCacheService);
         pacienteService = new PacienteService(pacientesRepository, pacienteMapper, obraSocialPort);
     }
@@ -58,16 +58,16 @@ class PacienteServiceTest {
     void registrarDebeCrearPacienteConDatosValidosSinObraSocial() {
         RegistroPacienteRequest request = crearRequestBasico();
         request.setObraSocial(null);
-        
+
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         when(pacientesRepository.add(any(Paciente.class))).thenAnswer(invocation -> {
             Paciente p = invocation.getArgument(0);
             p.setId("test-uuid-1234"); 
             return p;
         });
-        
+
         PacienteResponse response = pacienteService.registrar(request);
-        
+
         assertNotNull(response);
         assertNotNull(response.getId());
         assertEquals("test-uuid-1234", response.getId());
@@ -79,7 +79,7 @@ class PacienteServiceTest {
         assertEquals(1234, response.getDomicilio().getNumero());
         assertEquals("Buenos Aires", response.getDomicilio().getLocalidad());
         assertNull(response.getObraSocial());
-        
+
         verify(pacientesRepository).existsByCuil("20-20304050-5");
         verify(pacientesRepository).add(any(Paciente.class));
     }
@@ -88,10 +88,10 @@ class PacienteServiceTest {
     void registrarDebeCrearPacienteConObraSocialValida() {
         RegistroPacienteRequest request = crearRequestBasico();
         request.getObraSocial().getObraSocial().setNombre("OSDE");
-        
+
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
-        
-        
+
+
         tfi.application.dto.VerificacionAfiliacionResponse verificacion = 
             new tfi.application.dto.VerificacionAfiliacionResponse();
         verificacion.setEstaAfiliado(true);
@@ -101,17 +101,17 @@ class PacienteServiceTest {
         obraSocialResponse.setId(1);
         obraSocialResponse.setNombre("OSDE");
         verificacion.setObraSocial(obraSocialResponse);
-        
+
         when(obraSocialPort.verificarAfiliacion(1, "12345678")).thenReturn(verificacion);
-        
+
         when(pacientesRepository.add(any(Paciente.class))).thenAnswer(invocation -> {
             Paciente p = invocation.getArgument(0);
             p.setId("test-uuid-5678"); 
             return p;
         });
-        
+
         PacienteResponse response = pacienteService.registrar(request);
-        
+
         assertNotNull(response);
         assertNotNull(response.getId());
         assertEquals("test-uuid-5678", response.getId());
@@ -119,7 +119,7 @@ class PacienteServiceTest {
         assertEquals("12345678", response.getObraSocial().getNumeroAfiliado());
         assertEquals(1, response.getObraSocial().getObraSocial().getId());
         assertEquals("OSDE", response.getObraSocial().getObraSocial().getNombre());
-        
+
         verify(obraSocialPort).verificarAfiliacion(1, "12345678");
         verify(pacientesRepository).add(any(Paciente.class));
     }
@@ -127,15 +127,15 @@ class PacienteServiceTest {
     @Test
     void registrarDebeLanzarExcepcionSiCuilYaExiste() {
         RegistroPacienteRequest request = crearRequestBasico();
-        
+
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(true);
-        
- 
+
+
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
         );
-        
+
         assertEquals(MensajesError.CUIL_YA_REGISTRADO, exception.getMessage());
         verify(pacientesRepository, never()).add(any());
     }
@@ -145,15 +145,15 @@ class PacienteServiceTest {
     void registrarDebeLanzarExcepcionSiDomicilioCalleEsNula() {
         RegistroPacienteRequest request = crearRequestBasico();
         request.getDomicilio().setCalle(null);
-        
+
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
-        
- 
+
+
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
         );
-        
+
         assertTrue(exception.getMessage().contains("calle"));
         verify(pacientesRepository, never()).add(any());
     }
@@ -162,15 +162,15 @@ class PacienteServiceTest {
     void registrarDebeLanzarExcepcionSiDomicilioNumeroEsCero() {
         RegistroPacienteRequest request = crearRequestBasico();
         request.getDomicilio().setNumero(0);
-        
+
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
-        
- 
+
+
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
         );
-        
+
         assertTrue(exception.getMessage().contains("número") || exception.getMessage().contains("mayor"));
         verify(pacientesRepository, never()).add(any());
     }
@@ -179,15 +179,15 @@ class PacienteServiceTest {
     void registrarDebeLanzarExcepcionSiDomicilioLocalidadEsNula() {
         RegistroPacienteRequest request = crearRequestBasico();
         request.getDomicilio().setLocalidad(null);
-        
+
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
-        
- 
+
+
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
         );
-        
+
         assertTrue(exception.getMessage().contains("localidad"));
         verify(pacientesRepository, never()).add(any());
     }
@@ -196,15 +196,15 @@ class PacienteServiceTest {
     void registrarDebeLanzarExcepcionSiNumeroAfiliadoEsNulo() {
         RegistroPacienteRequest request = crearRequestBasico();
         request.getObraSocial().setNumeroAfiliado(null);
-        
+
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
-        
- 
+
+
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
         );
-        
+
         assertTrue(exception.getMessage().contains("número de afiliado"));
         verify(pacientesRepository, never()).add(any());
     }
@@ -213,15 +213,15 @@ class PacienteServiceTest {
     void registrarDebeLanzarExcepcionSiNumeroAfiliadoEsVacio() {
         RegistroPacienteRequest request = crearRequestBasico();
         request.getObraSocial().setNumeroAfiliado("   ");
-        
+
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
-        
- 
+
+
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.registrar(request)
         );
-        
+
         assertTrue(exception.getMessage().contains("número de afiliado"));
         verify(pacientesRepository, never()).add(any());
     }
@@ -230,11 +230,11 @@ class PacienteServiceTest {
     void findByCuilDebeRetornarPacienteSiExiste() {
         String cuil = "20-20304050-5";
         Paciente paciente = crearPacienteBasico();
-        
+
         when(pacientesRepository.findByCuil(cuil)).thenReturn(java.util.Optional.of(paciente));
-        
+
         PacienteResponse resultado = pacienteService.findByCuil(cuil);
-        
+
         assertNotNull(resultado);
         assertEquals(cuil, resultado.getCuil());
         verify(pacientesRepository).findByCuil(cuil);
@@ -243,14 +243,14 @@ class PacienteServiceTest {
     @Test
     void findByCuilDebeLanzarExcepcionSiNoExiste() {
         String cuil = "20-20304050-5";
-        
+
         when(pacientesRepository.findByCuil(cuil)).thenReturn(java.util.Optional.empty());
-        
+
         PacienteException exception = assertThrows(
             PacienteException.class,
             () -> pacienteService.findByCuil(cuil)
         );
-        
+
         assertTrue(exception.getMessage().contains("No existe un paciente"));
         verify(pacientesRepository).findByCuil(cuil);
     }
@@ -258,11 +258,11 @@ class PacienteServiceTest {
     @Test
     void existsByCuilDebeRetornarTrueSiExiste() {
         String cuil = "20-20304050-5";
-        
+
         when(pacientesRepository.existsByCuil(cuil)).thenReturn(true);
-        
+
         boolean resultado = pacienteService.existsByCuil(cuil);
-        
+
         assertTrue(resultado);
         verify(pacientesRepository).existsByCuil(cuil);
     }
@@ -270,11 +270,11 @@ class PacienteServiceTest {
     @Test
     void existsByCuilDebeRetornarFalseSiNoExiste() {
         String cuil = "20-20304050-5";
-        
+
         when(pacientesRepository.existsByCuil(cuil)).thenReturn(false);
-        
+
         boolean resultado = pacienteService.existsByCuil(cuil);
-        
+
         assertFalse(resultado);
         verify(pacientesRepository).existsByCuil(cuil);
     }
@@ -284,22 +284,22 @@ class PacienteServiceTest {
         request.setCuil("20-20304050-5");
         request.setNombre("Juan");
         request.setApellido("Pérez");
-        
+
         RegistroPacienteRequest.DomicilioRequest domicilio = new RegistroPacienteRequest.DomicilioRequest();
         domicilio.setCalle("Av. Corrientes");
         domicilio.setNumero(1234);
         domicilio.setLocalidad("Buenos Aires");
         request.setDomicilio(domicilio);
-        
+
         RegistroPacienteRequest.ObraSocialRequest obraSocialRequest = new RegistroPacienteRequest.ObraSocialRequest();
         obraSocialRequest.setId(1);
         obraSocialRequest.setNombre("OSDE");
-        
+
         RegistroPacienteRequest.AfiliadoRequest afiliado = new RegistroPacienteRequest.AfiliadoRequest();
         afiliado.setObraSocial(obraSocialRequest);
         afiliado.setNumeroAfiliado("12345678");
         request.setObraSocial(afiliado);
-        
+
         return request;
     }
 

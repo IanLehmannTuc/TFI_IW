@@ -10,7 +10,7 @@ import tfi.domain.entity.Ingreso;
  */
 @Component
 public class IngresoMapper {
-    
+
     /**
      * Convierte un Ingreso a IngresoResponse.
      * 
@@ -21,7 +21,7 @@ public class IngresoMapper {
         if (ingreso == null) {
             return null;
         }
-        
+
         return new IngresoResponse(
             ingreso.getId(),
             ingreso.getPaciente() != null ? ingreso.getPaciente().getCuil() : null,

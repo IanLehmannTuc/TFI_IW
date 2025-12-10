@@ -40,19 +40,19 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
     private class IngresoRowMapper implements RowMapper<Ingreso> {
         @Override
         public Ingreso mapRow(@org.springframework.lang.NonNull ResultSet rs, int rowNum) throws SQLException {
-            
+
             String id = rs.getString("id");
             String descripcion = rs.getString("descripcion");
             Timestamp timestamp = rs.getTimestamp("fecha_hora_ingreso");
             LocalDateTime fechaHoraIngreso = timestamp != null ? timestamp.toLocalDateTime() : null;
 
-            
+
             Paciente paciente = mapPaciente(rs);
 
-            
+
             Usuario enfermero = mapUsuario(rs, "enfermero_");
 
-            
+
             Temperatura temperatura = null;
             Double tempValor = (Double) rs.getObject("temperatura");
             if (tempValor != null) {
@@ -81,18 +81,18 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                 frecuenciaRespiratoria = new FrecuenciaRespiratoria(frValor);
             }
 
-            
+
             String nivelStr = rs.getString("nivel_emergencia");
             NivelEmergencia nivelEmergencia = NivelEmergencia.valueOf(nivelStr);
 
-            
+
             String estadoStr = rs.getString("estado");
             Estado estado = Estado.valueOf(estadoStr);
 
-            
+
             Atencion atencion = mapAtencion(rs);
 
-            
+
             Ingreso ingreso = new Ingreso(
                 atencion,
                 paciente,
@@ -119,7 +119,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             String apellido = rs.getString("paciente_apellido");
             String email = rs.getString("paciente_email");
 
-            
+
             Domicilio domicilio = null;
             String calle = rs.getString("paciente_domicilio_calle");
             if (calle != null) {
@@ -128,13 +128,13 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                 domicilio = new Domicilio(calle, numero, localidad);
             }
 
-            
-            
-            
+
+
+
             Afiliado afiliado = null;
             Integer obraSocialId = (Integer) rs.getObject("paciente_obra_social_id");
             if (obraSocialId != null) {
-                
+
                 String nombreObraSocial = "Obra Social " + obraSocialId;
                 String numeroAfiliado = rs.getString("paciente_numero_afiliado");
                 ObraSocial obraSocial = new ObraSocial(obraSocialId, nombreObraSocial);
@@ -147,7 +147,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             } else {
                 paciente = Paciente.crearCompleto(cuil, nombre, apellido, email, domicilio, afiliado);
             }
-            
+
             paciente.setId(id);
             return paciente;
         }
@@ -164,7 +164,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             if (atencionId == null) {
                 return null;
             }
-            
+
             String ingresoId = rs.getString("atencion_ingreso_id");
             String medicoId = rs.getString("atencion_medico_id");
             String informeMedico = rs.getString("atencion_informe_medico");
@@ -172,7 +172,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             LocalDateTime fechaAtencion = fechaAtencionTimestamp != null 
                 ? fechaAtencionTimestamp.toLocalDateTime() 
                 : null;
-            
+
             return new Atencion(atencionId, ingresoId, medicoId, informeMedico, fechaAtencion);
         }
 
@@ -216,11 +216,11 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             throw new IllegalArgumentException("El ingreso no puede ser nulo");
         }
 
-        
+
         if (ingreso.getFechaHoraIngreso() == null) {
             throw new IllegalArgumentException("La fecha de ingreso no puede ser nula");
         }
-        
+
         if (ingreso.getNivelEmergencia() == null) {
             throw new IllegalArgumentException("El nivel de emergencia no puede ser nulo");
         }
@@ -228,7 +228,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             throw new IllegalArgumentException("El estado no puede ser nulo");
         }
 
-        
+
         String sql = "INSERT INTO ingresos (paciente_id, enfermero_id, " +
                      "descripcion, fecha_hora_ingreso, temperatura, " +
                      "presion_sistolica, presion_diastolica, frecuencia_cardiaca, frecuencia_respiratoria, " +
@@ -301,7 +301,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             throw new IllegalArgumentException("El ingreso debe tener un ID");
         }
 
-        
+
         Optional<Ingreso> existing = findById(ingreso.getId());
         if (existing.isEmpty()) {
             throw new IllegalStateException("No existe un ingreso con el ID: " + ingreso.getId());
@@ -344,7 +344,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                "i.temperatura, i.presion_sistolica, i.presion_diastolica, " +
                "i.frecuencia_cardiaca, i.frecuencia_respiratoria, " +
                "i.nivel_emergencia, i.estado, " +
-               
+
                "p.id AS paciente_id, p.cuil AS paciente_cuil, p.nombre AS paciente_nombre, " +
                "p.apellido AS paciente_apellido, p.email AS paciente_email, " +
                "p.domicilio_calle AS paciente_domicilio_calle, " +
@@ -352,12 +352,12 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                "p.domicilio_localidad AS paciente_domicilio_localidad, " +
                "p.obra_social_id AS paciente_obra_social_id, " +
                "p.numero_afiliado AS paciente_numero_afiliado, " +
-               
+
                "e.id AS enfermero_id, e.email AS enfermero_email, e.password_hash AS enfermero_password_hash, " +
                "e.autoridad AS enfermero_autoridad, e.cuil AS enfermero_cuil, " +
                "e.nombre AS enfermero_nombre, e.apellido AS enfermero_apellido, " +
                "e.matricula AS enfermero_matricula, " +
-               
+
                "a.id AS atencion_id, a.ingreso_id AS atencion_ingreso_id, " +
                "a.medico_id AS atencion_medico_id, a.informe_medico AS atencion_informe_medico, " +
                "a.fecha_atencion AS atencion_fecha_atencion " +

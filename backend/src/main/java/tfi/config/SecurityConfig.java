@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class SecurityConfig {
-    
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /**
@@ -31,12 +31,10 @@ public class SecurityConfig {
     public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilter() {
         FilterRegistrationBean<JwtAuthenticationFilter> registrationBean = 
             new FilterRegistrationBean<>();
-        
+
         registrationBean.setFilter(jwtAuthenticationFilter);
         registrationBean.addUrlPatterns("/api/*");
-        registrationBean.setOrder(1);
-        
+
         return registrationBean;
     }
 }
-

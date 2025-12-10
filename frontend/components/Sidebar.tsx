@@ -62,7 +62,7 @@ const Sidebar: React.FC = () => {
                 <FileText className="w-5 h-5" />
                 Ingresos
             </Link>
-            
+
             <Link to="/patients" className={linkClass('/patients')}>
                 <Users className="w-5 h-5" />
                 Pacientes

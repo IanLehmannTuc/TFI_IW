@@ -53,7 +53,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
 
         String sql = "SELECT id::text, ingreso_id::text, medico_id::text, informe_medico, fecha_atencion " +
                      "FROM atenciones WHERE id = CAST(? AS UUID)";
-        
+
         List<Atencion> results = jdbcTemplate.query(sql, new AtencionRowMapper(), id);
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
@@ -66,7 +66,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
 
         String sql = "SELECT id::text, ingreso_id::text, medico_id::text, informe_medico, fecha_atencion " +
                      "FROM atenciones WHERE ingreso_id = CAST(? AS UUID)";
-        
+
         List<Atencion> results = jdbcTemplate.query(sql, new AtencionRowMapper(), ingresoId);
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
@@ -89,7 +89,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
             throw new IllegalArgumentException("La atención debe tener un informe médico");
         }
 
-        
+
         if (findByIngresoId(atencion.getIngresoId()).isPresent()) {
             throw new IllegalStateException("Ya existe una atención registrada para este ingreso");
         }
@@ -99,7 +99,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
             fechaAtencion = LocalDateTime.now();
         }
 
-        
+
         String sql = "INSERT INTO atenciones (ingreso_id, medico_id, informe_medico, fecha_atencion) " +
                      "VALUES (CAST(? AS UUID), CAST(? AS UUID), ?, ?) RETURNING id::text";
 
@@ -160,7 +160,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
             throw new IllegalArgumentException("La atención debe tener un ID para ser eliminada");
         }
 
-        
+
         Optional<Atencion> existing = findById(atencion.getId());
         if (existing.isEmpty()) {
             throw new IllegalStateException("No existe una atención con el ID: " + atencion.getId());

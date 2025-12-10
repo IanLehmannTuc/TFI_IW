@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/cola-atencion")
 public class ColaAtencionController {
-    
+
     private final IngresoService ingresoService;
 
     /**
@@ -43,9 +43,9 @@ public class ColaAtencionController {
     @GetMapping
     public ResponseEntity<List<IngresoResponse>> obtenerColaDeAtencion(
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         List<IngresoResponse> responses = ingresoService.obtenerColaDeAtencion();
         return ResponseEntity.ok(responses);
     }
@@ -65,15 +65,15 @@ public class ColaAtencionController {
     @GetMapping("/siguiente")
     public ResponseEntity<IngresoResponse> verSiguientePaciente(
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         IngresoResponse siguiente = ingresoService.verSiguientePaciente();
-        
+
         if (siguiente == null) {
             return ResponseEntity.noContent().build();
         }
-        
+
         return ResponseEntity.ok(siguiente);
     }
 
@@ -94,15 +94,15 @@ public class ColaAtencionController {
     @PostMapping("/atender")
     public ResponseEntity<IngresoResponse> atenderSiguientePaciente(
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.requireAutoridad(httpRequest, Autoridad.MEDICO);
-        
+
         IngresoResponse ingresoAtendido = ingresoService.atenderSiguientePaciente();
-        
+
         if (ingresoAtendido == null) {
             throw new IllegalStateException("No hay pacientes en la lista de espera");
         }
-        
+
         return ResponseEntity.ok(ingresoAtendido);
     }
 
@@ -120,9 +120,9 @@ public class ColaAtencionController {
     @GetMapping("/cantidad")
     public ResponseEntity<Integer> cantidadPacientesEnEspera(
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         int cantidad = ingresoService.cantidadPacientesEnEspera();
         return ResponseEntity.ok(cantidad);
     }

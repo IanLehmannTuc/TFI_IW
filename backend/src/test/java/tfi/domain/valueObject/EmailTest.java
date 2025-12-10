@@ -12,7 +12,7 @@ class EmailTest {
     @Test
     void debeCrearEmailValido() {
         Email email = Email.from("usuario@example.com");
-        
+
         assertNotNull(email);
         assertEquals("usuario@example.com", email.getValue());
     }
@@ -20,14 +20,14 @@ class EmailTest {
     @Test
     void debeNormalizarEmailAMinusculas() {
         Email email = Email.from("USUARIO@EXAMPLE.COM");
-        
+
         assertEquals("usuario@example.com", email.getValue());
     }
 
     @Test
     void debeEliminarEspaciosEnBlanco() {
         Email email = Email.from("  usuario@example.com  ");
-        
+
         assertEquals("usuario@example.com", email.getValue());
     }
 
@@ -36,7 +36,7 @@ class EmailTest {
         Email email1 = Email.from("user+test@example.com");
         Email email2 = Email.from("user.name@example.com");
         Email email3 = Email.from("user_name@example.com");
-        
+
         assertNotNull(email1);
         assertNotNull(email2);
         assertNotNull(email3);
@@ -48,7 +48,7 @@ class EmailTest {
             IllegalArgumentException.class,
             () -> Email.from("usuarioexample.com")
         );
-        
+
         assertEquals("El email no tiene un formato válido", exception.getMessage());
     }
 
@@ -74,7 +74,7 @@ class EmailTest {
             IllegalArgumentException.class,
             () -> Email.from("")
         );
-        
+
         assertEquals("El email no puede ser nulo o vacío", exception.getMessage());
     }
 
@@ -84,7 +84,7 @@ class EmailTest {
             IllegalArgumentException.class,
             () -> Email.from(null)
         );
-        
+
         assertEquals("El email no puede ser nulo o vacío", exception.getMessage());
     }
 
@@ -114,7 +114,7 @@ class EmailTest {
     void dosEmailsConMismoValorDebenSerIguales() {
         Email email1 = Email.from("usuario@example.com");
         Email email2 = Email.from("usuario@example.com");
-        
+
         assertEquals(email1, email2);
         assertEquals(email1.hashCode(), email2.hashCode());
     }
@@ -123,14 +123,14 @@ class EmailTest {
     void dosEmailsConDiferenteValorNoDebenSerIguales() {
         Email email1 = Email.from("usuario1@example.com");
         Email email2 = Email.from("usuario2@example.com");
-        
+
         assertNotEquals(email1, email2);
     }
 
     @Test
     void toStringDebeRetornarElEmail() {
         Email email = Email.from("usuario@example.com");
-        
+
         assertEquals("usuario@example.com", email.toString());
     }
 
@@ -138,7 +138,7 @@ class EmailTest {
     void emailEsInmutable() {
         Email email = Email.from("usuario@example.com");
         String valorOriginal = email.getValue();
-        
+
         assertEquals(valorOriginal, email.getValue());
     }
 }

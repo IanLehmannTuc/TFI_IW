@@ -11,7 +11,7 @@ public class Email {
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
         "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
     );
-    
+
     private final String value;
 
     /**
@@ -34,13 +34,13 @@ public class Email {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("El email no puede ser nulo o vacío");
         }
-        
+
         String trimmedEmail = email.trim().toLowerCase();
-        
+
         if (!EMAIL_PATTERN.matcher(trimmedEmail).matches()) {
             throw new IllegalArgumentException("El email no tiene un formato válido");
         }
-        
+
         return new Email(trimmedEmail);
     }
 

@@ -23,7 +23,7 @@ import tfi.util.SecurityContext;
 @RestController
 @RequestMapping("/api/pacientes")
 public class PacienteController {
-    
+
     private final PacienteService pacienteService;
 
     /**
@@ -54,9 +54,9 @@ public class PacienteController {
     public ResponseEntity<PacienteResponse> crear(
             @Valid @RequestBody RegistroPacienteRequest request,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
-        
+
         PacienteResponse response = pacienteService.registrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -83,12 +83,12 @@ public class PacienteController {
             @RequestParam(defaultValue = "cuil") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<PacienteResponse> pacientesPage = pacienteService.findAll(pageable);
-        
+
         return ResponseEntity.ok(pacientesPage);
     }
 
@@ -109,9 +109,9 @@ public class PacienteController {
     public ResponseEntity<PacienteResponse> buscarPorCuil(
             @PathVariable String cuil,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         try {
             PacienteResponse response = pacienteService.findByCuil(cuil);
             return ResponseEntity.ok(response);
@@ -142,9 +142,9 @@ public class PacienteController {
             @PathVariable String cuil,
             @Valid @RequestBody RegistroPacienteRequest request,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
-        
+
         PacienteResponse response = pacienteService.actualizar(cuil, request);
         return ResponseEntity.ok(response);
     }
@@ -168,9 +168,9 @@ public class PacienteController {
     public ResponseEntity<PacienteResponse> eliminar(
             @PathVariable String cuil,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
-        
+
         PacienteResponse response = pacienteService.eliminar(cuil);
         return ResponseEntity.ok(response);
     }

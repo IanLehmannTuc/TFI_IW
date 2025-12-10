@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/obras-sociales")
 public class ObraSocialController {
-    
+
     private final ObraSocialPort obraSocialPort;
 
     /**
@@ -45,9 +45,9 @@ public class ObraSocialController {
     @GetMapping
     public ResponseEntity<List<ObraSocialResponse>> listarObrasSociales(
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         List<ObraSocialResponse> obrasSociales = obraSocialPort.listarObrasSociales();
         return ResponseEntity.ok(obrasSociales);
     }

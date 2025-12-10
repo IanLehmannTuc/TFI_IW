@@ -10,7 +10,7 @@ import tfi.domain.entity.Atencion;
  */
 @Component
 public class AtencionMapper {
-    
+
     /**
      * Convierte una Atencion a AtencionResponse.
      * 
@@ -21,7 +21,7 @@ public class AtencionMapper {
         if (atencion == null) {
             return null;
         }
-        
+
         return new AtencionResponse(
             atencion.getId(),
             atencion.getIngresoId(),

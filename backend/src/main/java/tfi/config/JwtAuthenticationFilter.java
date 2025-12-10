@@ -21,7 +21,7 @@ import java.io.IOException;
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private final JwtUtil jwtUtil;
 
@@ -47,22 +47,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        
+
         String authHeader = request.getHeader("Authorization");
-        
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            
+
             try {
                 if (jwtUtil.validateToken(token)) {
                     String id = jwtUtil.getIdFromToken(token);
                     String email = jwtUtil.getEmailFromToken(token);
                     Autoridad autoridad = jwtUtil.getAutoridadFromToken(token);
-                    
+
                     request.setAttribute("userId", id);
                     request.setAttribute("userEmail", email);
                     request.setAttribute("userAutoridad", autoridad);
-                    
+
                     logger.debug("Usuario autenticado: {} (ID: {}) con autoridad: {}", email, id, autoridad);
                 } else {
                     logger.warn("Token JWT inválido recibido desde IP: {}", request.getRemoteAddr());
@@ -72,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     request.getRemoteAddr(), e.getMessage());
             }
         }
-        
+
         filterChain.doFilter(request, response);
     }
 

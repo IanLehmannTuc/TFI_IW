@@ -10,7 +10,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * Siempre usar esta utilidad para hashear antes de guardar.
  */
 public class PasswordHasher {
-    
+
     /**
      * Número de rondas para el algoritmo BCrypt.
      * Valor por defecto recomendado es 10.
@@ -56,7 +56,7 @@ public class PasswordHasher {
         if (hashedPassword == null || hashedPassword.isEmpty()) {
             throw new IllegalArgumentException("El hash no puede ser nulo o vacío");
         }
-        
+
         try {
             return BCrypt.checkpw(plainPassword, hashedPassword);
         } catch (IllegalArgumentException e) {

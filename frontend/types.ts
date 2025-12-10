@@ -4,11 +4,11 @@ export enum UserRole {
 }
 
 export enum TriageLevel {
-  CRITICA = 'CRITICA', // Nivel 5
-  EMERGENCIA = 'EMERGENCIA', // Nivel 4
-  URGENCIA = 'URGENCIA', // Nivel 3
-  URGENCIA_MENOR = 'URGENCIA_MENOR', // Nivel 2
-  SIN_URGENCIA = 'SIN_URGENCIA', // Nivel 1
+  CRITICA = 'CRITICA', 
+  EMERGENCIA = 'EMERGENCIA', 
+  URGENCIA = 'URGENCIA', 
+  URGENCIA_MENOR = 'URGENCIA_MENOR', 
+  SIN_URGENCIA = 'SIN_URGENCIA', 
 }
 
 export enum AdmissionStatus {
@@ -62,7 +62,7 @@ export interface Patient {
   nombre: string;
   apellido: string;
   telefono?: string;
-  fechaNacimiento?: string; // YYYY-MM-DD
+  fechaNacimiento?: string; 
   sexo?: string;
   edad?: number;
   domicilio?: Domicilio;
@@ -78,9 +78,9 @@ export interface Page<T> {
   number: number;
 }
 
-// IS2025-001: Estructura plana para el Request de Ingreso (creación on-the-fly)
+
 export interface AdmissionRequest {
-  // Paciente
+
   pacienteCuil: string;
   pacienteNombre?: string;
   pacienteApellido?: string;
@@ -98,10 +98,10 @@ export interface AdmissionRequest {
     numeroAfiliado: string;
   };
 
-  // Enfermero
+
   enfermeroCuil: string;
 
-  // Triage
+
   descripcion: string;
   temperatura: number;
   tensionSistolica: number;
@@ -119,15 +119,29 @@ export interface SignosVitales {
   frecuenciaRespiratoria: number;
 }
 
+
 export interface Admission {
   id: string;
-  paciente: Patient;
-  enfermero?: User;
+
+  pacienteCuil: string;
+  pacienteNombre: string;
+  pacienteApellido: string;
+
+  enfermeroCuil: string;
+  enfermeroMatricula: string;
+
   descripcion: string;
   fechaHoraIngreso: string;
-  signosVitales?: SignosVitales;
+
+  temperatura: number;
+  tensionSistolica: number;
+  tensionDiastolica: number;
+  frecuenciaCardiaca: number;
+  frecuenciaRespiratoria: number;
+
   nivelEmergencia: TriageLevel;
   estado: AdmissionStatus;
+
   atencion?: Attention;
 }
 
@@ -136,10 +150,11 @@ export interface AttentionRequest {
   informe: string;
 }
 
+
 export interface Attention {
   id: string;
   ingresoId?: string;
-  medico: User;
+  medicoId: string; 
   informeMedico: string; 
   fechaAtencion: string;
 }

@@ -5,7 +5,7 @@ package tfi.application.dto;
  * Contiene los datos necesarios para crear una nueva atención.
  */
 public class RegistroAtencionRequest {
-    
+
     private String ingresoId;
     private String informe;
 

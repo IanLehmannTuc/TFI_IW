@@ -11,7 +11,7 @@ import java.util.List;
  * Sigue el principio de inversión de dependencias (DIP).
  */
 public interface ObraSocialPort {
-    
+
     /**
      * Lista todas las obras sociales disponibles.
      * 
@@ -20,7 +20,7 @@ public interface ObraSocialPort {
      *         o hay un error en la comunicación
      */
     List<ObraSocialResponse> listarObrasSociales();
-    
+
     /**
      * Verifica si un paciente está afiliado a una obra social específica.
      * 

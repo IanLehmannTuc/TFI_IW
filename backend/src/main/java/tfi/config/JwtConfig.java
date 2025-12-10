@@ -10,15 +10,15 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class JwtConfig {
-    
+
     private static final int MIN_SECRET_LENGTH = 32; 
-    
+
     @Value("${jwt.secret:mi-clave-secreta-super-segura-que-debe-ser-muy-larga-y-compleja-para-jwt-authentication-module-2024}")
     private String secretKey;
-    
+
     @Value("${jwt.expiration:86400000}")
     private Long expirationTime;
-    
+
     /**
      * Valida que la clave secreta tenga una longitud mínima segura.
      * Se ejecuta después de la inyección de dependencias.

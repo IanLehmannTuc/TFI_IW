@@ -26,12 +26,12 @@ interface PatientFormData {
   fechaNacimiento?: string;
   sexo?: string;
   telefono?: string;
-  // Flat structure for form handling
+
   calle?: string;
   numero?: number;
   localidad?: string;
-  
-  // Obra social
+
+
   obraSocialId?: number; 
   numeroAfiliado?: string;
 }
@@ -39,8 +39,8 @@ interface PatientFormData {
 const Patients: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Pagination State
+
+
   const [page, setPage] = useState(0);
   const [pageSize] = useState(10); 
   const [totalPages, setTotalPages] = useState(0);
@@ -48,16 +48,16 @@ const Patients: React.FC = () => {
   const [sortBy, setSortBy] = useState('cuil');
   const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('ASC');
 
-  // Search
+
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Modal states
+
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
   const [operationLoading, setOperationLoading] = useState(false);
   const [operationError, setOperationError] = useState('');
 
-  // Obra Social Search/Dropdown State
+
   const [obrasSocialesList, setObrasSocialesList] = useState<ObraSocialRef[]>([]);
   const [osQuery, setOsQuery] = useState('');
   const [isOsDropdownOpen, setIsOsDropdownOpen] = useState(false);
@@ -114,13 +114,13 @@ const Patients: React.FC = () => {
       const params = new URLSearchParams({
         page: page.toString(),
         size: pageSize.toString(),
-        sort: sortBy,
+        sortBy: sortBy,  
         direction: sortDirection
       });
 
-      // IS2025-002: Listado paginado
+
       const response = await apiRequest<Page<Patient>>(`/pacientes?${params.toString()}`);
-      
+
       setPatients(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
@@ -136,7 +136,7 @@ const Patients: React.FC = () => {
     fetchPatients();
   }, [page, sortBy, sortDirection]);
 
-  // Client-side filtering for search (since API doesn't specify search param)
+
   const filteredPatients = patients.filter(
     (p) =>
       p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -170,14 +170,14 @@ const Patients: React.FC = () => {
   const handleOpenEdit = (patient: Patient) => {
     setCurrentPatient(patient);
     setOperationError('');
-    
+
     setValue('nombre', patient.nombre);
     setValue('apellido', patient.apellido);
     setValue('cuil', patient.cuil);
     setValue('fechaNacimiento', patient.fechaNacimiento);
     setValue('sexo', patient.sexo);
     setValue('telefono', patient.telefono);
-    
+
     if (patient.domicilio) {
       setValue('calle', patient.domicilio.calle);
       setValue('numero', patient.domicilio.numero);
@@ -197,7 +197,7 @@ const Patients: React.FC = () => {
         setValue('obraSocialId', undefined);
         setValue('numeroAfiliado', '');
     }
-    
+
     setIsModalOpen(true);
   };
 
@@ -252,21 +252,21 @@ const Patients: React.FC = () => {
 
     try {
       if (currentPatient) {
-        // Warning: Endpoint not strictly in IS2025 specs, assuming REST convention
+
          await apiRequest(`/pacientes/${currentPatient.cuil}`, {
           method: 'PUT',
           body: JSON.stringify(payload)
         });
         showSuccessNotification('Paciente actualizado exitosamente');
       } else {
-        // IS2025-002: Create Patient
+
         await apiRequest('/pacientes', {
           method: 'POST',
           body: JSON.stringify(payload)
         });
         showSuccessNotification('Paciente creado exitosamente');
       }
-      
+
       await fetchPatients();
       setIsModalOpen(false);
     } catch (err) {

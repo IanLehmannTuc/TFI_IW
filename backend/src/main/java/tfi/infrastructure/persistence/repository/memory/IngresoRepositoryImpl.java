@@ -41,18 +41,18 @@ public class IngresoRepositoryImpl implements IngresoRepository {
         if (ingreso == null) {
             throw new IllegalArgumentException("El ingreso no puede ser nulo");
         }
-        
-        // El constructor de Ingreso ya establece fechaHoraIngreso por defecto
-        // Solo validamos que no sea null
+
+
+
         if (ingreso.getFechaHoraIngreso() == null) {
             throw new IllegalArgumentException("La fecha de ingreso no puede ser nula");
         }
-        
+
         String ingresoId = String.valueOf(idGenerator.incrementAndGet());
         ingreso.setId(ingresoId);
-        
+
         store.put(ingresoId, ingreso);
-        
+
         return ingreso;
     }
 
@@ -61,17 +61,17 @@ public class IngresoRepositoryImpl implements IngresoRepository {
         if (ingreso == null) {
             throw new IllegalArgumentException("El ingreso no puede ser nulo");
         }
-        
+
         if (ingreso.getId() == null || ingreso.getId().trim().isEmpty()) {
             throw new IllegalArgumentException("El ingreso debe tener un ID");
         }
-        
+
         if (!store.containsKey(ingreso.getId())) {
             throw new IllegalStateException("No existe un ingreso con el ID: " + ingreso.getId());
         }
-        
+
         store.put(ingreso.getId(), ingreso);
-        
+
         return ingreso;
     }
 
@@ -80,17 +80,17 @@ public class IngresoRepositoryImpl implements IngresoRepository {
         if (ingreso == null) {
             throw new IllegalArgumentException("El ingreso no puede ser nulo");
         }
-        
+
         if (ingreso.getId() == null || ingreso.getId().trim().isEmpty()) {
             throw new IllegalArgumentException("El ingreso debe tener un ID");
         }
-        
+
         Ingreso removed = store.remove(ingreso.getId());
-        
+
         if (removed == null) {
             throw new IllegalStateException("No existe un ingreso con el ID: " + ingreso.getId());
         }
-        
+
         return removed;
     }
 

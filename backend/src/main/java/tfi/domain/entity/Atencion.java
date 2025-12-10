@@ -149,7 +149,7 @@ public class Atencion {
     public void restoreFechaAtencionFromPersistence(LocalDateTime fechaAtencion) {
         this.fechaAtencion = fechaAtencion;
     }
-    
+
     /**
      * Setter para informe médico - SOLO para uso interno del repositorio al recuperar desde BD.
      * NO debe usarse para actualizar el informe. Usar actualizarInforme() en su lugar.

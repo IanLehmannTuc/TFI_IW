@@ -5,7 +5,7 @@ package tfi.exception;
  * para el cual no tiene permisos suficientes.
  */
 public class ForbiddenException extends RuntimeException {
-    
+
     /**
      * Constructor con mensaje
      * 

@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PacienteService {
-    
+
     private final PacientesRepository pacientesRepository;
     private final PacienteMapper pacienteMapper;
     private final ObraSocialPort obraSocialPort;
@@ -69,7 +69,7 @@ public class PacienteService {
         if (pacientesRepository.existsByCuil(dto.getCuil())) {
             throw new PacienteException(MensajesError.CUIL_YA_REGISTRADO);
         }
-        
+
         Domicilio domicilio;
         try {
             domicilio = new Domicilio(
@@ -80,23 +80,23 @@ public class PacienteService {
         } catch (IllegalArgumentException e) {
             throw new PacienteException(e.getMessage());
         }
-        
+
         Afiliado afiliado = null;
         if (dto.getObraSocial() != null) {
             if (dto.getObraSocial().getNumeroAfiliado() == null || 
                 dto.getObraSocial().getNumeroAfiliado().trim().isEmpty()) {
                 throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
             }
-            
-            
+
+
             int obraSocialId = dto.getObraSocial().getObraSocial().getId();
             String numeroAfiliado = dto.getObraSocial().getNumeroAfiliado();
-            
+
             VerificacionAfiliacionResponse verificacion = obraSocialPort.verificarAfiliacion(
                 obraSocialId, 
                 numeroAfiliado
             );
-            
+
             if (!verificacion.isEstaAfiliado()) {
                 String nombreObraSocial = verificacion.getObraSocial() != null 
                     ? verificacion.getObraSocial().getNombre() 
@@ -106,16 +106,16 @@ public class PacienteService {
                         numeroAfiliado, nombreObraSocial)
                 );
             }
-            
-            
+
+
             ObraSocial obraSocial = new ObraSocial(
                 verificacion.getObraSocial().getId(),
                 verificacion.getObraSocial().getNombre()
             );
-            
+
             afiliado = new Afiliado(obraSocial, verificacion.getNumeroAfiliado());
         }
-        
+
         Paciente paciente = Paciente.crearCompleto(
             dto.getCuil(),
             dto.getNombre(),
@@ -124,9 +124,9 @@ public class PacienteService {
             domicilio,
             afiliado
         );
-        
+
         pacientesRepository.add(paciente);
-        
+
         return pacienteMapper.toResponse(paciente);
     }
 
@@ -141,13 +141,13 @@ public class PacienteService {
         if (cuil == null || cuil.trim().isEmpty()) {
             throw new PacienteException("El CUIL no puede ser nulo o vacío");
         }
-        
+
         Paciente paciente = pacientesRepository.findByCuil(cuil)
             .orElseThrow(() -> new PacienteException("No existe un paciente con el CUIL: " + cuil));
-        
+
         return pacienteMapper.toResponse(paciente);
     }
-    
+
     /**
      * Verifica si existe un paciente con el CUIL especificado.
      * 
@@ -157,7 +157,7 @@ public class PacienteService {
     public boolean existsByCuil(String cuil) {
         return pacientesRepository.existsByCuil(cuil);
     }
-    
+
     /**
      * Obtiene todos los pacientes con paginación.
      * 
@@ -170,7 +170,7 @@ public class PacienteService {
      * @return página de pacientes como DTOs con metadatos de paginación (Spring Page)
      */
     public Page<PacienteResponse> findAll(Pageable pageable) {
-        // Convertir Pageable de Spring a PaginationRequest del dominio
+
         List<SortOrder> sortOrders = new ArrayList<>();
         if (pageable.getSort().isSorted()) {
             sortOrders = pageable.getSort().stream()
@@ -182,29 +182,29 @@ public class PacienteService {
                 ))
                 .collect(Collectors.toList());
         }
-        
+
         PaginationRequest request = new PaginationRequest(
             pageable.getPageNumber(),
             pageable.getPageSize(),
             sortOrders
         );
-        
-        // Usar el repositorio del dominio (independiente de Spring)
+
+
         PaginatedResult<Paciente> result = pacientesRepository.findAll(request);
-        
-        // Convertir entidades a DTOs
+
+
         List<PacienteResponse> content = result.getContent().stream()
             .map(pacienteMapper::toResponse)
             .collect(Collectors.toList());
-        
-        // Convertir PaginatedResult del dominio a Page de Spring (solo en capa de aplicación)
+
+
         return new PageImpl<>(
             content,
             pageable,
             result.getTotalElements()
         );
     }
-    
+
     /**
      * Actualiza los datos de un paciente existente.
      * Valida que el paciente exista antes de actualizar.
@@ -218,16 +218,16 @@ public class PacienteService {
         if (cuil == null || cuil.trim().isEmpty()) {
             throw new PacienteException("El CUIL no puede ser nulo o vacío");
         }
-        
-        
+
+
         Paciente pacienteExistente = pacientesRepository.findByCuil(cuil)
             .orElseThrow(() -> new PacienteException("No existe un paciente con el CUIL: " + cuil));
-        
-        
+
+
         if (!cuil.equals(dto.getCuil())) {
             throw new PacienteException("El CUIL en el body debe coincidir con el CUIL en la URL");
         }
-        
+
         Domicilio domicilio;
         try {
             domicilio = new Domicilio(
@@ -238,23 +238,23 @@ public class PacienteService {
         } catch (IllegalArgumentException e) {
             throw new PacienteException(e.getMessage());
         }
-        
+
         Afiliado afiliado = null;
         if (dto.getObraSocial() != null) {
             if (dto.getObraSocial().getNumeroAfiliado() == null || 
                 dto.getObraSocial().getNumeroAfiliado().trim().isEmpty()) {
                 throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
             }
-            
-            
+
+
             int obraSocialId = dto.getObraSocial().getObraSocial().getId();
             String numeroAfiliado = dto.getObraSocial().getNumeroAfiliado();
-            
+
             VerificacionAfiliacionResponse verificacion = obraSocialPort.verificarAfiliacion(
                 obraSocialId, 
                 numeroAfiliado
             );
-            
+
             if (!verificacion.isEstaAfiliado()) {
                 String nombreObraSocial = verificacion.getObraSocial() != null 
                     ? verificacion.getObraSocial().getNombre() 
@@ -264,26 +264,26 @@ public class PacienteService {
                         numeroAfiliado, nombreObraSocial)
                 );
             }
-            
-            
+
+
             ObraSocial obraSocial = new ObraSocial(
                 verificacion.getObraSocial().getId(),
                 verificacion.getObraSocial().getNombre()
             );
-            
+
             afiliado = new Afiliado(obraSocial, verificacion.getNumeroAfiliado());
         }
-        
-        // Usar métodos de negocio de la entidad para actualizar
+
+
         pacienteExistente.actualizarDatosPersonales(dto.getNombre(), dto.getApellido());
         pacienteExistente.actualizarDomicilio(domicilio);
         pacienteExistente.actualizarObraSocial(afiliado);
-        
+
         pacientesRepository.update(pacienteExistente);
-        
+
         return pacienteMapper.toResponse(pacienteExistente);
     }
-    
+
     /**
      * Elimina un paciente del sistema por su CUIL.
      * 
@@ -295,12 +295,12 @@ public class PacienteService {
         if (cuil == null || cuil.trim().isEmpty()) {
             throw new PacienteException("El CUIL no puede ser nulo o vacío");
         }
-        
+
         Paciente paciente = pacientesRepository.findByCuil(cuil)
             .orElseThrow(() -> new PacienteException("No existe un paciente con el CUIL: " + cuil));
-        
+
         pacientesRepository.delete(paciente);
-        
+
         return pacienteMapper.toResponse(paciente);
     }
 }

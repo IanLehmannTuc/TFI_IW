@@ -12,7 +12,7 @@ const Queue: React.FC = () => {
   const fetchQueue = async () => {
     setLoading(true);
     try {
-      // IS2025-003: Cola de atención (ordenada por prioridad)
+
       const data = await apiRequest<Admission[]>('/cola-atencion');
       setAdmissions(data);
     } catch (e) {
@@ -24,7 +24,7 @@ const Queue: React.FC = () => {
 
   useEffect(() => {
     fetchQueue();
-    // Auto refresh every 30 seconds
+
     const interval = setInterval(fetchQueue, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -34,8 +34,8 @@ const Queue: React.FC = () => {
   };
 
   const getBloodPressure = (adm: Admission) => {
-    if (adm.signosVitales) {
-        return `${adm.signosVitales.tensionSistolica}/${adm.signosVitales.tensionDiastolica}`;
+    if (adm.tensionSistolica && adm.tensionDiastolica) {
+        return `${adm.tensionSistolica}/${adm.tensionDiastolica}`;
     }
     return '-/-';
   };
@@ -87,10 +87,10 @@ const Queue: React.FC = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm font-medium text-gray-900">
-                                    {admission.paciente?.nombre ? `${admission.paciente.nombre} ${admission.paciente.apellido}` : 'Cargando...'}
+                                    {admission.pacienteNombre ? `${admission.pacienteNombre} ${admission.pacienteApellido}` : 'Cargando...'}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                    CUIL: {admission.paciente?.cuil || 'S/D'}
+                                    CUIL: {admission.pacienteCuil || 'S/D'}
                                 </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -102,14 +102,11 @@ const Queue: React.FC = () => {
                                 </div>
                             </td>
                         </tr>
-                        
-                        {/* Expanded Row */}
+
                         {expandedId === admission.id && (
                             <tr className="bg-gray-50">
                                 <td colSpan={5} className="px-6 py-4 border-t border-gray-100 shadow-inner">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        
-                                        {/* Full Description */}
                                         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                                             <h4 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-2">
                                                 <FileText className="w-4 h-4 text-primary-500" />
@@ -120,10 +117,8 @@ const Queue: React.FC = () => {
                                             </p>
                                         </div>
 
-                                        {/* Vitals & Details */}
                                         <div className="space-y-4">
-                                            {/* Vitals */}
-                                            {admission.signosVitales && (
+                                            {admission.temperatura && (
                                                 <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                                                     <h4 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
                                                         <Activity className="w-4 h-4 text-primary-500" />
@@ -143,31 +138,30 @@ const Queue: React.FC = () => {
                                                             <Heart className="w-4 h-4 text-rose-500" />
                                                             <div>
                                                                 <p className="text-xs text-gray-500 uppercase">Pulso</p>
-                                                                <p className="text-sm font-bold">{admission.signosVitales.frecuenciaCardiaca} bpm</p>
+                                                                <p className="text-sm font-bold">{admission.frecuenciaCardiaca} bpm</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                                                             <Thermometer className="w-4 h-4 text-orange-500" />
                                                             <div>
                                                                 <p className="text-xs text-gray-500 uppercase">Temp</p>
-                                                                <p className="text-sm font-bold">{admission.signosVitales.temperatura}°C</p>
+                                                                <p className="text-sm font-bold">{admission.temperatura}°C</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                                                             <Wind className="w-4 h-4 text-blue-500" />
                                                             <div>
                                                                 <p className="text-xs text-gray-500 uppercase">Resp</p>
-                                                                <p className="text-sm font-bold">{admission.signosVitales.frecuenciaRespiratoria} rpm</p>
+                                                                <p className="text-sm font-bold">{admission.frecuenciaRespiratoria} rpm</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             )}
-                                            
-                                            {/* Extra Info */}
+
                                             <div className="flex items-center gap-2 text-xs text-gray-500 px-1">
                                                 <User className="w-3 h-3" />
-                                                <span>Registrado por: {admission.enfermero?.apellido || 'N/A'}, {admission.enfermero?.nombre || ''}</span>
+                                                <span>Registrado por enfermero CUIL: {admission.enfermeroCuil || 'N/A'} (Mat: {admission.enfermeroMatricula || 'N/A'})</span>
                                             </div>
                                         </div>
                                     </div>

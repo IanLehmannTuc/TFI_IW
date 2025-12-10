@@ -35,8 +35,8 @@ public class PacientesRepositoryImpl implements PacientesRepository {
     @Override
     public PaginatedResult<Paciente> findAll(PaginationRequest request) {
         List<Paciente> allPacientes = new ArrayList<>(store.values());
-        
-        
+
+
         if (request.hasSorting()) {
             Comparator<Paciente> comparator = null;
             for (SortOrder sortOrder : request.getSortOrders()) {
@@ -53,19 +53,19 @@ public class PacientesRepositoryImpl implements PacientesRepository {
                     .collect(Collectors.toList());
             }
         } else {
-            
+
             allPacientes = allPacientes.stream()
                 .sorted(Comparator.comparing(Paciente::getCuil))
                 .collect(Collectors.toList());
         }
-        
-        
+
+
         int start = request.getOffset();
         int end = Math.min((start + request.getSize()), allPacientes.size());
         List<Paciente> pageContent = start < allPacientes.size() 
             ? allPacientes.subList(start, end)
             : new ArrayList<>();
-        
+
         return new PaginatedResult<>(
             pageContent, 
             allPacientes.size(), 
@@ -73,7 +73,7 @@ public class PacientesRepositoryImpl implements PacientesRepository {
             request.getSize()
         );
     }
-    
+
     /**
      * Obtiene un Comparator para ordenar pacientes según una propiedad.
      */
@@ -86,11 +86,11 @@ public class PacientesRepositoryImpl implements PacientesRepository {
             case "id" -> Comparator.comparing(p -> p.getId() != null ? p.getId() : "");
             default -> Comparator.comparing(p -> p.getCuil() != null ? p.getCuil() : "");
         };
-        
+
         if (sortOrder.isDescending()) {
             comparator = comparator.reversed();
         }
-        
+
         return comparator;
     }
 
@@ -121,12 +121,12 @@ public class PacientesRepositoryImpl implements PacientesRepository {
         if (store.containsKey(paciente.getCuil())) {
             throw new IllegalStateException("Ya existe un paciente con el CUIL: " + paciente.getCuil());
         }
-        
-        
+
+
         if (paciente.getId() == null) {
             paciente.setId(java.util.UUID.randomUUID().toString());
         }
-        
+
         store.put(paciente.getCuil(), paciente);
         return paciente;
     }

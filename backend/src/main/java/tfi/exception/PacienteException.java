@@ -5,7 +5,7 @@ package tfi.exception;
  * Puede contener mensajes específicos sobre problemas de validación o duplicados.
  */
 public class PacienteException extends RuntimeException {
-    
+
     /**
      * Constructor con mensaje
      * 

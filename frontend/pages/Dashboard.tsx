@@ -20,21 +20,21 @@ const Dashboard: React.FC = () => {
   const [patientCount, setPatientCount] = useState(0);
   const [criticalCount, setCriticalCount] = useState(0);
   const [admissionsToday, setAdmissionsToday] = useState(0);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 4.1 Ver Cola de Atención Completa
+
         const queue = await apiRequest<Admission[]>('/cola-atencion');
         setPatientCount(queue.length);
-        
-        // Count both CRITICA and EMERGENCIA as high priority
+
+
         const crit = queue.filter(p => p.nivelEmergencia === TriageLevel.CRITICA || p.nivelEmergencia === TriageLevel.EMERGENCIA).length;
         setCriticalCount(crit);
 
-        // 6.1 Listar Todos los Ingresos
+
         const history = await apiRequest<Admission[]>('/ingresos');
-        
+
         const now = new Date();
         const todayCount = history.filter(p => {
             const admissionDate = new Date(p.fechaHoraIngreso);
@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
                    admissionDate.getMonth() === now.getMonth() &&
                    admissionDate.getFullYear() === now.getFullYear();
         }).length;
-        
+
         setAdmissionsToday(todayCount);
 
       } catch (e) {
@@ -120,8 +120,7 @@ const Dashboard: React.FC = () => {
           Hola, <span className="font-semibold text-primary-700">{user?.nombre}</span>. Aquí tienes un resumen del estado actual de urgencias.
         </p>
       </div>
-      
-      {/* Stats Row */}
+
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((item) => (
           <div key={item.name} className="relative bg-white pt-5 px-4 pb-6 shadow-sm rounded-2xl border border-gray-100 overflow-hidden">
@@ -142,14 +141,13 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Quick Actions Grid */}
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-gray-400" />
           Accesos Rápidos
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          
+
           <ActionCard 
             to="/admission"
             title="Registrar Ingreso"

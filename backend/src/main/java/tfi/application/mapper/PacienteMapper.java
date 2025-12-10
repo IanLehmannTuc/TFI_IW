@@ -13,13 +13,13 @@ import tfi.domain.entity.Paciente;
  */
 @Component
 public class PacienteMapper {
-    
+
     private final ObraSocialCacheService obraSocialCacheService;
-    
+
     public PacienteMapper(ObraSocialCacheService obraSocialCacheService) {
         this.obraSocialCacheService = obraSocialCacheService;
     }
-    
+
     /**
      * Convierte un Paciente a PacienteResponse.
      * Enriquece el nombre de la obra social desde el cache si es necesario.
@@ -31,7 +31,7 @@ public class PacienteMapper {
         if (paciente == null) {
             return null;
         }
-        
+
         PacienteResponse.DomicilioResponse domicilioResponse = null;
         if (paciente.getDomicilio() != null) {
             domicilioResponse = new PacienteResponse.DomicilioResponse(
@@ -40,21 +40,21 @@ public class PacienteMapper {
                 paciente.getDomicilio().getLocalidad()
             );
         }
-        
+
         PacienteResponse.AfiliadoResponse afiliadoResponse = null;
         if (paciente.getObraSocial() != null && paciente.getObraSocial().getObraSocial() != null) {
             Integer obraSocialId = paciente.getObraSocial().getObraSocial().getId();
             String nombreObraSocial = paciente.getObraSocial().getObraSocial().getNombre();
-            
-            
-            
+
+
+
             if (nombreObraSocial != null && nombreObraSocial.matches("^Obra Social \\d+$")) {
                 nombreObraSocial = obraSocialCacheService.getNombreObraSocial(obraSocialId);
             } else if (nombreObraSocial == null || nombreObraSocial.trim().isEmpty()) {
-                
+
                 nombreObraSocial = obraSocialCacheService.getNombreObraSocial(obraSocialId);
             }
-            
+
             PacienteResponse.ObraSocialResponse obraSocialResponse = new PacienteResponse.ObraSocialResponse(
                 obraSocialId,
                 nombreObraSocial
@@ -64,7 +64,7 @@ public class PacienteMapper {
                 paciente.getObraSocial().getNumeroAfiliado()
             );
         }
-        
+
         return new PacienteResponse(
             paciente.getId(),
             paciente.getCuil(),

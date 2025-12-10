@@ -21,9 +21,9 @@ import java.util.PriorityQueue;
  */
 @Service
 public class ColaAtencionService {
-    
+
     private final PriorityQueue<Ingreso> colaAtencion;
-    
+
     /**
      * Constructor público para permitir la inyección de dependencias.
      */
@@ -34,7 +34,7 @@ public class ColaAtencionService {
                 .thenComparing(Ingreso::getFechaHoraIngreso)  
         );
     }
-    
+
     /**
      * Agrega un ingreso a la cola de atención.
      * Se inserta automáticamente en la posición correcta según prioridad.
@@ -48,7 +48,7 @@ public class ColaAtencionService {
         }
         colaAtencion.offer(ingreso);
     }
-    
+
     /**
      * Obtiene la cola de atención completa ordenada por prioridad.
      * No modifica la cola, solo retorna una copia.
@@ -58,7 +58,7 @@ public class ColaAtencionService {
     public synchronized List<Ingreso> obtenerCola() {
         return new ArrayList<>(colaAtencion);
     }
-    
+
     /**
      * Atiende y remueve el siguiente paciente de la cola (el de mayor prioridad).
      * 
@@ -67,7 +67,7 @@ public class ColaAtencionService {
     public synchronized Ingreso atenderSiguiente() {
         return colaAtencion.poll();
     }
-    
+
     /**
      * Remueve un ingreso específico de la cola.
      * Útil cuando un paciente es dado de alta o transferido.
@@ -78,7 +78,7 @@ public class ColaAtencionService {
     public synchronized boolean removerDeCola(Ingreso ingreso) {
         return colaAtencion.remove(ingreso);
     }
-    
+
     /**
      * Actualiza un ingreso en la cola (útil si cambia su prioridad).
      * Remueve el ingreso viejo y agrega el nuevo en la posición correcta.
@@ -90,7 +90,7 @@ public class ColaAtencionService {
         colaAtencion.remove(ingresoViejo);
         colaAtencion.offer(ingresoNuevo);
     }
-    
+
     /**
      * Verifica si un ingreso está en la cola de atención.
      * 
@@ -100,7 +100,7 @@ public class ColaAtencionService {
     public synchronized boolean estaEnCola(Ingreso ingreso) {
         return colaAtencion.contains(ingreso);
     }
-    
+
     /**
      * Obtiene la cantidad de pacientes en espera.
      * 
@@ -109,7 +109,7 @@ public class ColaAtencionService {
     public synchronized int cantidadEnEspera() {
         return colaAtencion.size();
     }
-    
+
     /**
      * Consulta el siguiente paciente a atender sin removerlo de la cola.
      * 
@@ -118,7 +118,7 @@ public class ColaAtencionService {
     public synchronized Ingreso verSiguiente() {
         return colaAtencion.peek();
     }
-    
+
     /**
      * Limpia completamente la cola de atención.
      * PRECAUCIÓN: Esta operación es irreversible.
@@ -127,7 +127,7 @@ public class ColaAtencionService {
     public synchronized void limpiarCola() {
         colaAtencion.clear();
     }
-    
+
     /**
      * Reconstruye la cola desde una lista de ingresos.
      * Útil para sincronizar con el repositorio después de un reinicio.

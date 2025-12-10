@@ -8,7 +8,7 @@ interface RequestOptions extends RequestInit {
 export class ApiError extends Error {
   status: number;
   timestamp?: string;
-  
+
   constructor(message: string, status: number, timestamp?: string) {
     super(message);
     this.status = status;
@@ -34,7 +34,7 @@ export const apiRequest = async <T>(endpoint: string, options: RequestOptions = 
   try {
     const response = await fetch(url, { ...options, headers });
 
-    // Handle session expiration (except login)
+
     if (response.status === 401 && !endpoint.includes('/auth/login')) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -49,32 +49,32 @@ export const apiRequest = async <T>(endpoint: string, options: RequestOptions = 
     if (!response.ok) {
       let errorMessage = `Error ${response.status}`;
       let timestamp = undefined;
-      
+
       try {
         const errorText = await response.text();
         if (errorText) {
              try {
                  const errorJson = JSON.parse(errorText);
-                 
-                 // Standard ErrorResponse format: { mensaje, timestamp, status }
+
+
                  if (errorJson.mensaje) {
                      errorMessage = errorJson.mensaje;
                      timestamp = errorJson.timestamp;
                  }
-                 // Fallbacks
+
                  else if (errorJson.message) {
                      errorMessage = errorJson.message;
                  } else if (errorJson.error && typeof errorJson.error === 'string') {
                      errorMessage = errorJson.error;
                  }
-                 
-                 // Spring Validation errors
+
+
                  if (errorJson.errors && Array.isArray(errorJson.errors)) {
                      const validationMessages = errorJson.errors
                         .map((e: any) => e.message || e.defaultMessage)
                         .filter(Boolean)
                         .join(', ');
-                     
+
                      if (validationMessages) {
                          errorMessage = validationMessages;
                      }
@@ -88,7 +88,7 @@ export const apiRequest = async <T>(endpoint: string, options: RequestOptions = 
       } catch (e) {
           console.error("Error reading error response", e);
       }
-      
+
       throw new ApiError(errorMessage, response.status, timestamp);
     }
 

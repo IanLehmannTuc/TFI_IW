@@ -116,9 +116,32 @@ Authorization: Bearer <token>
 
 ---
 
+### 5. Obtener Usuario por ID
+
+**Endpoint:** `GET /auth/usuario/{id}`
+
+**Autenticación:** Requerida
+
+**Response:** `200 OK`
+```json
+{
+  "id": "uuid",
+  "email": "medico@hospital.com",
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "cuil": "20-12345678-9",
+  "matricula": "MP12345",
+  "autoridad": "MEDICO"
+}
+```
+
+**Response:** `404 Not Found` (si el usuario no existe)
+
+---
+
 ## Pacientes
 
-### 5. Crear Paciente
+### 6. Crear Paciente
 
 **Endpoint:** `POST /pacientes`
 
@@ -171,7 +194,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 6. Listar Pacientes (Paginado)
+### 7. Listar Pacientes (Paginado)
 
 **Endpoint:** `GET /pacientes?page=0&size=10&sortBy=cuil&direction=ASC`
 
@@ -236,7 +259,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 7. Buscar Paciente por CUIL
+### 8. Buscar Paciente por CUIL
 
 **Endpoint:** `GET /pacientes/{cuil}`
 
@@ -268,7 +291,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 8. Actualizar Paciente
+### 9. Actualizar Paciente
 
 **Endpoint:** `PUT /pacientes/{cuil}`
 
@@ -280,7 +303,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 9. Eliminar Paciente
+### 10. Eliminar Paciente
 
 **Endpoint:** `DELETE /pacientes/{cuil}`
 
@@ -306,7 +329,7 @@ Authorization: Bearer <token>
 
 ## Ingresos
 
-### 10. Registrar Ingreso
+### 11. Registrar Ingreso
 
 **Endpoint:** `POST /ingresos`
 
@@ -364,7 +387,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 11. Listar Todos los Ingresos
+### 12. Listar Todos los Ingresos
 
 **Endpoint:** `GET /ingresos`
 
@@ -395,7 +418,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 12. Obtener Ingreso por ID
+### 13. Obtener Ingreso por ID
 
 **Endpoint:** `GET /ingresos/{id}`
 
@@ -407,7 +430,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 13. Actualizar Ingreso
+### 14. Actualizar Ingreso
 
 **Endpoint:** `PUT /ingresos/{id}`
 
@@ -419,7 +442,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 14. Eliminar Ingreso
+### 15. Eliminar Ingreso
 
 **Endpoint:** `DELETE /ingresos/{id}`
 
@@ -431,7 +454,7 @@ Authorization: Bearer <token>
 
 ## Cola de Atención
 
-### 15. Obtener Cola de Atención
+### 16. Obtener Cola de Atención
 
 **Endpoint:** `GET /cola-atencion`
 
@@ -481,7 +504,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 16. Ver Siguiente Paciente
+### 17. Ver Siguiente Paciente
 
 **Endpoint:** `GET /cola-atencion/siguiente`
 
@@ -495,7 +518,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 17. Atender Siguiente Paciente
+### 18. Atender Siguiente Paciente
 
 **Endpoint:** `POST /cola-atencion/atender`
 
@@ -528,7 +551,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 18. Cantidad de Pacientes en Espera
+### 19. Cantidad de Pacientes en Espera
 
 **Endpoint:** `GET /cola-atencion/cantidad`
 
@@ -543,7 +566,7 @@ Authorization: Bearer <token>
 
 ## Atenciones
 
-### 19. Registrar Atención
+### 20. Registrar Atención
 
 **Endpoint:** `POST /atenciones`
 
@@ -578,7 +601,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 20. Obtener Atención por ID de Ingreso
+### 21. Obtener Atención por ID de Ingreso
 
 **Endpoint:** `GET /atenciones/ingreso/{ingresoId}`
 
@@ -599,7 +622,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 21. Obtener Atención por ID
+### 22. Obtener Atención por ID
 
 **Endpoint:** `GET /atenciones/{id}`
 
@@ -613,7 +636,7 @@ Authorization: Bearer <token>
 
 ## Obras Sociales
 
-### 22. Listar Obras Sociales
+### 23. Listar Obras Sociales
 
 **Endpoint:** `GET /obras-sociales`
 

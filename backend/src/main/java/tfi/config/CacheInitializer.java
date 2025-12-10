@@ -9,16 +9,16 @@ import tfi.application.service.ObraSocialCacheService;
  */
 @Component
 public class CacheInitializer implements CommandLineRunner {
-    
+
     private final ObraSocialCacheService obraSocialCacheService;
-    
+
     public CacheInitializer(ObraSocialCacheService obraSocialCacheService) {
         this.obraSocialCacheService = obraSocialCacheService;
     }
-    
+
     @Override
     public void run(String... args) throws Exception {
-        
+
         obraSocialCacheService.precargarCache();
     }
 }

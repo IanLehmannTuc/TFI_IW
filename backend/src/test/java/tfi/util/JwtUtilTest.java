@@ -26,7 +26,7 @@ class JwtUtilTest {
         jwtConfig = new JwtConfig();
         jwtConfig.setSecretKey("clave-secreta-para-testing-debe-ser-larga-al-menos-256-bits");
         jwtConfig.setExpirationTime(3600000L);
-        
+
         jwtUtil = new JwtUtil(jwtConfig);
     }
 
@@ -37,9 +37,9 @@ class JwtUtilTest {
             "hash",
             Autoridad.MEDICO
         );
-        
+
         String token = jwtUtil.generateToken(usuario);
-        
+
         assertNotNull(token);
         assertFalse(token.isEmpty());
         assertTrue(token.split("\\.").length == 3);
@@ -53,9 +53,9 @@ class JwtUtilTest {
             Autoridad.MEDICO
         );
         String token = jwtUtil.generateToken(usuario);
-        
+
         String email = jwtUtil.getEmailFromToken(token);
-        
+
         assertEquals("medico@hospital.com", email);
     }
 
@@ -67,9 +67,9 @@ class JwtUtilTest {
             Autoridad.MEDICO
         );
         String token = jwtUtil.generateToken(usuario);
-        
+
         Autoridad autoridad = jwtUtil.getAutoridadFromToken(token);
-        
+
         assertEquals(Autoridad.MEDICO, autoridad);
     }
 
@@ -81,9 +81,9 @@ class JwtUtilTest {
             Autoridad.ENFERMERO
         );
         String token = jwtUtil.generateToken(usuario);
-        
+
         Autoridad autoridad = jwtUtil.getAutoridadFromToken(token);
-        
+
         assertEquals(Autoridad.ENFERMERO, autoridad);
     }
 
@@ -95,18 +95,18 @@ class JwtUtilTest {
             Autoridad.MEDICO
         );
         String token = jwtUtil.generateToken(usuario);
-        
+
         boolean valido = jwtUtil.validateToken(token);
-        
+
         assertTrue(valido);
     }
 
     @Test
     void debeRechazarTokenInvalido() {
         String tokenInvalido = "token.invalido.aqui";
-        
+
         boolean valido = jwtUtil.validateToken(tokenInvalido);
-        
+
         assertFalse(valido);
     }
 
@@ -119,23 +119,23 @@ class JwtUtilTest {
         );
         String token = jwtUtil.generateToken(usuario);
         String tokenManipulado = token.substring(0, token.length() - 5) + "XXXXX";
-        
+
         boolean valido = jwtUtil.validateToken(tokenManipulado);
-        
+
         assertFalse(valido);
     }
 
     @Test
     void debeRechazarTokenVacio() {
         boolean valido = jwtUtil.validateToken("");
-        
+
         assertFalse(valido);
     }
 
     @Test
     void debeRechazarTokenNull() {
         boolean valido = jwtUtil.validateToken(null);
-        
+
         assertFalse(valido);
     }
 
@@ -147,9 +147,9 @@ class JwtUtilTest {
             Autoridad.MEDICO
         );
         String token = jwtUtil.generateToken(usuario);
-        
+
         Date expiration = jwtUtil.getExpirationFromToken(token);
-        
+
         assertNotNull(expiration);
         assertTrue(expiration.after(new Date()));
     }
@@ -162,9 +162,9 @@ class JwtUtilTest {
             Autoridad.MEDICO
         );
         String token = jwtUtil.generateToken(usuario);
-        
+
         boolean expirado = jwtUtil.isTokenExpired(token);
-        
+
         assertFalse(expirado);
     }
 
@@ -172,22 +172,22 @@ class JwtUtilTest {
     void debeDetectarTokenExpirado() {
         jwtConfig.setExpirationTime(1L);
         JwtUtil jwtUtilCorto = new JwtUtil(jwtConfig);
-        
+
         Usuario usuario = new Usuario(
             Email.from("medico@hospital.com"),
             "hash",
             Autoridad.MEDICO
         );
         String token = jwtUtilCorto.generateToken(usuario);
-        
+
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {
             fail("Test interrumpido");
         }
-        
+
         boolean expirado = jwtUtilCorto.isTokenExpired(token);
-        
+
         assertTrue(expirado);
     }
 
@@ -198,7 +198,7 @@ class JwtUtilTest {
             "hash",
             Autoridad.MEDICO
         );
-        
+
         String token1 = jwtUtil.generateToken(usuario);
         try {
             Thread.sleep(1000);
@@ -206,14 +206,14 @@ class JwtUtilTest {
             fail("Test interrumpido");
         }
         String token2 = jwtUtil.generateToken(usuario);
-        
+
         assertNotEquals(token1, token2);
     }
 
     @Test
     void getEmailFromTokenDebeLanzarExcepcionParaTokenInvalido() {
         String tokenInvalido = "token.invalido.aqui";
-        
+
         assertThrows(
             JwtException.class,
             () -> jwtUtil.getEmailFromToken(tokenInvalido)
@@ -223,7 +223,7 @@ class JwtUtilTest {
     @Test
     void getAutoridadFromTokenDebeLanzarExcepcionParaTokenInvalido() {
         String tokenInvalido = "token.invalido.aqui";
-        
+
         assertThrows(
             JwtException.class,
             () -> jwtUtil.getAutoridadFromToken(tokenInvalido)
@@ -237,11 +237,11 @@ class JwtUtilTest {
             "hash",
             Autoridad.ENFERMERO
         );
-        
+
         String token = jwtUtil.generateToken(usuario);
         String email = jwtUtil.getEmailFromToken(token);
         Autoridad autoridad = jwtUtil.getAutoridadFromToken(token);
-        
+
         assertEquals("enfermera@hospital.com", email);
         assertEquals(Autoridad.ENFERMERO, autoridad);
     }

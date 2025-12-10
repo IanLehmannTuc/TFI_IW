@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Repository
 @Profile("memory")
 public class UsuarioRepositoryImpl implements UsuarioRepository {
-    
+
     private final Map<String, Usuario> usuarios = new ConcurrentHashMap<>();
 
     @Override
@@ -31,28 +31,28 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (usuario.getEmail() == null) {
             throw new IllegalArgumentException("El email del usuario no puede ser nulo");
         }
-        
+
         String emailKey = usuario.getEmail().getValue().toLowerCase();
-        
+
         if (usuarios.containsKey(emailKey)) {
             throw new IllegalArgumentException("Ya existe un usuario con el email: " + usuario.getEmail().getValue());
         }
-        
-        
+
+
         if (usuario.getCuilVO() != null && existsByCuil(usuario.getCuil())) {
             throw new IllegalArgumentException("Ya existe un usuario con el CUIL: " + usuario.getCuil());
         }
-        
-        
+
+
         if (usuario.getMatricula() != null && existsByMatricula(usuario.getMatricula())) {
             throw new IllegalArgumentException("Ya existe un usuario con la matrícula: " + usuario.getMatricula());
         }
-        
-        
+
+
         if (usuario.getId() == null) {
             usuario.setId(java.util.UUID.randomUUID().toString());
         }
-        
+
         usuarios.put(emailKey, usuario);
         return usuario;
     }
@@ -62,7 +62,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (id == null || id.trim().isEmpty()) {
             return Optional.empty();
         }
-        
+
         return usuarios.values().stream()
             .filter(u -> u.getId() != null && u.getId().equals(id))
             .findFirst();
@@ -73,7 +73,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (email == null || email.trim().isEmpty()) {
             return Optional.empty();
         }
-        
+
         String emailKey = email.toLowerCase();
         return Optional.ofNullable(usuarios.get(emailKey));
     }
@@ -83,7 +83,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (cuil == null || cuil.trim().isEmpty()) {
             return Optional.empty();
         }
-        
+
         return usuarios.values().stream()
             .filter(u -> u.getCuil() != null && u.getCuil().equals(cuil))
             .findFirst();
@@ -94,7 +94,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (matricula == null || matricula.trim().isEmpty()) {
             return Optional.empty();
         }
-        
+
         return usuarios.values().stream()
             .filter(u -> u.getMatricula() != null && u.getMatricula().equals(matricula))
             .findFirst();
@@ -105,7 +105,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (email == null || email.trim().isEmpty()) {
             return false;
         }
-        
+
         String emailKey = email.toLowerCase();
         return usuarios.containsKey(emailKey);
     }
@@ -115,7 +115,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (cuil == null || cuil.trim().isEmpty()) {
             return false;
         }
-        
+
         return usuarios.values().stream()
             .anyMatch(u -> u.getCuil() != null && u.getCuil().equals(cuil));
     }
@@ -125,7 +125,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (matricula == null || matricula.trim().isEmpty()) {
             return false;
         }
-        
+
         return usuarios.values().stream()
             .anyMatch(u -> u.getMatricula() != null && u.getMatricula().equals(matricula));
     }
@@ -140,7 +140,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (autoridad == null) {
             throw new IllegalArgumentException("La autoridad no puede ser nula");
         }
-        
+
         return usuarios.values().stream()
             .filter(u -> u.getAutoridad() == autoridad)
             .collect(Collectors.toList());
@@ -154,13 +154,13 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (usuario.getEmail() == null) {
             throw new IllegalArgumentException("El email del usuario no puede ser nulo");
         }
-        
+
         String emailKey = usuario.getEmail().getValue().toLowerCase();
-        
+
         if (!usuarios.containsKey(emailKey)) {
             throw new IllegalArgumentException("No existe un usuario con el email: " + usuario.getEmail().getValue());
         }
-        
+
         usuarios.put(emailKey, usuario);
         return usuario;
     }
@@ -170,14 +170,14 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("El email no puede ser nulo o vacío");
         }
-        
+
         String emailKey = email.toLowerCase();
         Usuario usuario = usuarios.remove(emailKey);
-        
+
         if (usuario == null) {
             throw new IllegalArgumentException("No existe un usuario con el email: " + email);
         }
-        
+
         return usuario;
     }
 

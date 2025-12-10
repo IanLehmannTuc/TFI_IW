@@ -26,10 +26,10 @@ import java.util.List;
  */
 @Component
 public class ObraSocialApiClient implements ObraSocialPort {
-    
+
     private final RestTemplate restTemplate;
     private final String apiBaseUrl;
-    
+
     /**
      * Constructor con inyección de dependencias
      * 
@@ -37,11 +37,11 @@ public class ObraSocialApiClient implements ObraSocialPort {
      * @param apiBaseUrl URL base de la API de obras sociales (configurada en application.properties)
      */
     public ObraSocialApiClient(RestTemplate restTemplate,
-                               @Value("${obras-sociales.api.url:http://localhost:8001}") String apiBaseUrl) {
+                               @Value("${obras-sociales.api.url:http://localhost:8080}") String apiBaseUrl) {
         this.restTemplate = restTemplate;
         this.apiBaseUrl = apiBaseUrl;
     }
-    
+
     /**
      * Lista todas las obras sociales disponibles.
      * 
@@ -56,47 +56,47 @@ public class ObraSocialApiClient implements ObraSocialPort {
                     .path("/api/obras-sociales")
                     .build()
                     .toUri();
-            
+
             ResponseEntity<List<ObraSocialResponse>> response = restTemplate.exchange(
                     uri,
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<List<ObraSocialResponse>>() {}
             );
-            
+
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 return response.getBody();
             } else {
                 throw new ObraSocialException("La API de obras sociales retornó una respuesta inesperada");
             }
-            
+
         } catch (HttpClientErrorException e) {
-            
+
             throw new ObraSocialException(
                     String.format("Error al listar obras sociales: %s", e.getMessage()),
                     e
             );
         } catch (HttpServerErrorException e) {
-            
+
             throw new ObraSocialException(
                     "El servicio de obras sociales no está disponible temporalmente. Por favor, intente más tarde.",
                     e
             );
         } catch (ResourceAccessException e) {
-            
+
             throw new ObraSocialException(
                     "No se pudo conectar con el servicio de obras sociales. Verifique que el servicio esté disponible.",
                     e
             );
         } catch (Exception e) {
-            
+
             throw new ObraSocialException(
                     "Error inesperado al listar las obras sociales",
                     e
             );
         }
     }
-    
+
     /**
      * Verifica si un paciente está afiliado a una obra social específica.
      * 
@@ -109,7 +109,7 @@ public class ObraSocialApiClient implements ObraSocialPort {
     @Override
     public VerificacionAfiliacionResponse verificarAfiliacion(int obraSocialId, String numeroAfiliado) {
         try {
-            
+
             URI uri = UriComponentsBuilder
                     .fromHttpUrl(apiBaseUrl)
                     .path("/api/obras-sociales/verificar")
@@ -117,45 +117,45 @@ public class ObraSocialApiClient implements ObraSocialPort {
                     .queryParam("numero_afiliado", numeroAfiliado)
                     .build()
                     .toUri();
-            
-            
+
+
             ResponseEntity<VerificacionAfiliacionResponse> response = restTemplate.getForEntity(
                     uri, 
                     VerificacionAfiliacionResponse.class
             );
-            
+
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 return response.getBody();
             } else {
                 throw new ObraSocialException("La API de obras sociales retornó una respuesta inesperada");
             }
-            
+
         } catch (HttpClientErrorException.NotFound e) {
-            
+
             throw new ObraSocialException(
                     String.format("La obra social con ID %d no existe", obraSocialId),
                     e
             );
         } catch (HttpClientErrorException e) {
-            
+
             throw new ObraSocialException(
                     String.format("Error al verificar afiliación: %s", e.getMessage()),
                     e
             );
         } catch (HttpServerErrorException e) {
-            
+
             throw new ObraSocialException(
                     "El servicio de verificación de obras sociales no está disponible temporalmente. Por favor, intente más tarde.",
                     e
             );
         } catch (ResourceAccessException e) {
-            
+
             throw new ObraSocialException(
                     "No se pudo conectar con el servicio de verificación de obras sociales. Verifique que el servicio esté disponible.",
                     e
             );
         } catch (Exception e) {
-            
+
             throw new ObraSocialException(
                     "Error inesperado al verificar la afiliación a la obra social",
                     e

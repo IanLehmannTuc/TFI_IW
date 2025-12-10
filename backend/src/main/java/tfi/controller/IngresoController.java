@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ingresos")
 public class IngresoController {
-    
+
     private final IngresoService ingresoService;
 
     /**
@@ -52,9 +52,9 @@ public class IngresoController {
     public ResponseEntity<IngresoResponse> registrarIngreso(
             @Valid @RequestBody RegistroIngresoRequest request,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
-        
+
         IngresoResponse ingresoResponse = ingresoService.registrarIngreso(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ingresoResponse);
     }
@@ -73,9 +73,9 @@ public class IngresoController {
     @GetMapping
     public ResponseEntity<List<IngresoResponse>> obtenerTodosLosIngresos(
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         List<IngresoResponse> responses = ingresoService.obtenerTodosLosIngresos();
         return ResponseEntity.ok(responses);
     }
@@ -97,9 +97,9 @@ public class IngresoController {
     public ResponseEntity<IngresoResponse> obtenerIngresoPorId(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         try {
             IngresoResponse response = ingresoService.obtenerIngresoPorId(id);
             return ResponseEntity.ok(response);
@@ -130,9 +130,9 @@ public class IngresoController {
             @PathVariable String id,
             @Valid @RequestBody RegistroIngresoRequest request,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
-        
+
         try {
             IngresoResponse response = ingresoService.actualizarIngreso(id, request);
             return ResponseEntity.ok(response);
@@ -159,9 +159,9 @@ public class IngresoController {
     public ResponseEntity<Void> eliminarIngreso(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
-        
+
         try {
             ingresoService.eliminarIngreso(id);
             return ResponseEntity.ok().build();

@@ -57,17 +57,17 @@ public class IngresoService {
      * @return el ingreso registrado como IngresoResponse
      */
     public IngresoResponse registrarIngreso(RegistroIngresoRequest ingresoDto) {
-        
+
         Paciente paciente = pacientesRepository.findByCuil(ingresoDto.getPacienteCuil())
             .orElseGet(() -> {
-                
+
                 String cuil = ingresoDto.getPacienteCuil();
                 String nombre = ingresoDto.getPacienteNombre();
                 String apellido = ingresoDto.getPacienteApellido();
                 String email = ingresoDto.getPacienteEmail();
                 RegistroPacienteRequest.DomicilioRequest domicilioDto = ingresoDto.getPacienteDomicilio();
                 RegistroPacienteRequest.AfiliadoRequest obraSocialDto = ingresoDto.getPacienteObraSocial();
-                
+
                 Domicilio domicilio = null;
                 if (domicilioDto != null && domicilioDto.getCalle() != null && 
                     domicilioDto.getNumero() != null && domicilioDto.getLocalidad() != null) {
@@ -78,10 +78,10 @@ public class IngresoService {
                             domicilioDto.getLocalidad()
                         );
                     } catch (IllegalArgumentException e) {
-                        
+
                     }
                 }
-                
+
                 Afiliado afiliado = null;
                 if (obraSocialDto != null && obraSocialDto.getObraSocial() != null && 
                     obraSocialDto.getObraSocial().getId() != null &&
@@ -95,7 +95,7 @@ public class IngresoService {
                     );
                     afiliado = new Afiliado(obraSocial, obraSocialDto.getNumeroAfiliado());
                 }
-                
+
                 Paciente nuevoPaciente;
                 if (nombre != null && apellido != null && email != null && domicilio != null && afiliado != null) {
                     nuevoPaciente = Paciente.crearCompleto(cuil, nombre, apellido, email, domicilio, afiliado);
@@ -108,13 +108,13 @@ public class IngresoService {
                 } else {
                     nuevoPaciente = Paciente.crearConDatosBasicos(cuil, "Desconocido", "Desconocido");
                 }
-                
+
                 return pacientesRepository.add(nuevoPaciente);
             });
-        
+
         Usuario enfermero = usuarioRepository.findByCuil(ingresoDto.getEnfermeroCuil())
             .orElseThrow(() -> new IllegalArgumentException("Enfermero no encontrado con CUIL: " + ingresoDto.getEnfermeroCuil()));
-        
+
         Temperatura temperatura = new Temperatura(ingresoDto.getTemperatura());
         TensionArterial tensionArterial = new TensionArterial(
             new Presion(ingresoDto.getTensionSistolica()),
@@ -122,7 +122,7 @@ public class IngresoService {
         );
         FrecuenciaCardiaca frecuenciaCardiaca = new FrecuenciaCardiaca(ingresoDto.getFrecuenciaCardiaca());
         FrecuenciaRespiratoria frecuenciaRespiratoria = new FrecuenciaRespiratoria(ingresoDto.getFrecuenciaRespiratoria());
-        
+
         Ingreso ingreso = new Ingreso(
             paciente,
             enfermero,
@@ -135,7 +135,7 @@ public class IngresoService {
         );
 
         Ingreso ingresoGuardado = ingresoRepository.add(ingreso);
-        
+
         colaAtencionService.agregarACola(ingresoGuardado);
 
         IngresoResponse ingresoResponse = ingresoMapper.toResponse(ingresoGuardado);
@@ -157,7 +157,7 @@ public class IngresoService {
             .map(ingresoMapper::toResponse)
             .collect(Collectors.toList());
     }
-    
+
     /**
      * Atiende al siguiente paciente en la cola (el de mayor prioridad).
      * Remueve el ingreso de la cola, inicia su atención (cambia estado a EN_PROCESO) y lo persiste.
@@ -167,18 +167,18 @@ public class IngresoService {
      */
     public IngresoResponse atenderSiguientePaciente() {
         Ingreso ingreso = colaAtencionService.atenderSiguiente();
-        
+
         if (ingreso != null) {
-            // Usar método de negocio en lugar de setter directo
+
             ingreso.iniciarAtencion();
-            
+
             ingresoRepository.update(ingreso);
             return ingresoMapper.toResponse(ingreso);
         }
-        
+
         return null;
     }
-    
+
     /**
      * Elimina un ingreso del sistema (método interno).
      * Útil cuando un paciente es dado de alta o transferido.
@@ -193,7 +193,7 @@ public class IngresoService {
         colaAtencionService.removerDeCola(ingreso);
         return ingresoRepository.delete(ingreso);
     }
-    
+
     /**
      * Actualiza un ingreso existente (método interno).
      * Si cambió la prioridad, actualiza su posición en la cola.
@@ -211,7 +211,7 @@ public class IngresoService {
         colaAtencionService.actualizarEnCola(ingresoViejo, ingresoActualizado);
         return ingresoActualizado;
     }
-    
+
     /**
      * Consulta el siguiente paciente a atender sin removerlo de la cola.
      * 
@@ -253,10 +253,10 @@ public class IngresoService {
         if (id == null || id.trim().isEmpty()) {
             throw new IllegalArgumentException("El ID del ingreso no puede ser nulo o vacío");
         }
-        
+
         Ingreso ingreso = ingresoRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("No se encontró un ingreso con ID: " + id));
-        
+
         return ingresoMapper.toResponse(ingreso);
     }
 
@@ -274,19 +274,19 @@ public class IngresoService {
         if (id == null || id.trim().isEmpty()) {
             throw new IllegalArgumentException("El ID del ingreso no puede ser nulo o vacío");
         }
-        
+
         Ingreso ingresoExistente = ingresoRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("No se encontró un ingreso con ID: " + id));
-        
-        // Buscar paciente
+
+
         Paciente paciente = pacientesRepository.findByCuil(request.getPacienteCuil())
             .orElseThrow(() -> new IllegalArgumentException("No se encontró un paciente con CUIL: " + request.getPacienteCuil()));
-        
-        // Buscar enfermero
+
+
         Usuario enfermero = usuarioRepository.findByCuil(request.getEnfermeroCuil())
             .orElseThrow(() -> new IllegalArgumentException("No se encontró un enfermero con CUIL: " + request.getEnfermeroCuil()));
-        
-        // Crear value objects
+
+
         Temperatura temperatura = new Temperatura(request.getTemperatura());
         TensionArterial tensionArterial = new TensionArterial(
             new Presion(request.getTensionSistolica()),
@@ -294,18 +294,18 @@ public class IngresoService {
         );
         FrecuenciaCardiaca frecuenciaCardiaca = new FrecuenciaCardiaca(request.getFrecuenciaCardiaca());
         FrecuenciaRespiratoria frecuenciaRespiratoria = new FrecuenciaRespiratoria(request.getFrecuenciaRespiratoria());
-        
-        // Usar métodos de negocio de la entidad para actualizar
+
+
         ingresoExistente.actualizarPaciente(paciente);
         ingresoExistente.actualizarEnfermero(enfermero);
         ingresoExistente.actualizarDescripcion(request.getDescripcion());
         ingresoExistente.actualizarVitales(temperatura, tensionArterial, frecuenciaCardiaca, frecuenciaRespiratoria);
         ingresoExistente.actualizarNivelEmergencia(request.getNivelEmergencia());
-        
-        // Actualizar en repositorio y cola
+
+
         Ingreso ingresoGuardado = ingresoRepository.update(ingresoExistente);
         colaAtencionService.actualizarEnCola(ingresoExistente, ingresoGuardado);
-        
+
         return ingresoMapper.toResponse(ingresoGuardado);
     }
 
@@ -319,10 +319,10 @@ public class IngresoService {
         if (id == null || id.trim().isEmpty()) {
             throw new IllegalArgumentException("El ID del ingreso no puede ser nulo o vacío");
         }
-        
+
         Ingreso ingreso = ingresoRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("No se encontró un ingreso con ID: " + id));
-        
+
         colaAtencionService.removerDeCola(ingreso);
         ingresoRepository.delete(ingreso);
     }

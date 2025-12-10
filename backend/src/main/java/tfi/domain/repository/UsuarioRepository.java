@@ -11,7 +11,7 @@ import java.util.Optional;
  * Define las operaciones CRUD básicas para la entidad Usuario.
  */
 public interface UsuarioRepository {
-    
+
     /**
      * Agrega un nuevo usuario al repositorio.
      * 
@@ -20,7 +20,7 @@ public interface UsuarioRepository {
      * @throws IllegalArgumentException Si ya existe un usuario con ese email
      */
     Usuario add(Usuario usuario);
-    
+
     /**
      * Busca un usuario por su ID.
      * 
@@ -28,7 +28,7 @@ public interface UsuarioRepository {
      * @return Un Optional con el usuario si existe, vacío si no se encuentra
      */
     Optional<Usuario> findById(String id);
-    
+
     /**
      * Busca un usuario por su email.
      * 
@@ -36,7 +36,7 @@ public interface UsuarioRepository {
      * @return Un Optional con el usuario si existe, vacío si no se encuentra
      */
     Optional<Usuario> findByEmail(String email);
-    
+
     /**
      * Busca un usuario por su CUIL.
      * 
@@ -44,7 +44,7 @@ public interface UsuarioRepository {
      * @return Un Optional con el usuario si existe, vacío si no se encuentra
      */
     Optional<Usuario> findByCuil(String cuil);
-    
+
     /**
      * Busca un usuario por su matrícula profesional.
      * 
@@ -52,7 +52,7 @@ public interface UsuarioRepository {
      * @return Un Optional con el usuario si existe, vacío si no se encuentra
      */
     Optional<Usuario> findByMatricula(String matricula);
-    
+
     /**
      * Verifica si existe un usuario con el email especificado.
      * 
@@ -60,7 +60,7 @@ public interface UsuarioRepository {
      * @return true si existe un usuario con ese email, false en caso contrario
      */
     boolean existsByEmail(String email);
-    
+
     /**
      * Verifica si existe un usuario con el CUIL especificado.
      * 
@@ -68,7 +68,7 @@ public interface UsuarioRepository {
      * @return true si existe un usuario con ese CUIL, false en caso contrario
      */
     boolean existsByCuil(String cuil);
-    
+
     /**
      * Verifica si existe un usuario con la matrícula especificada.
      * 
@@ -76,14 +76,14 @@ public interface UsuarioRepository {
      * @return true si existe un usuario con esa matrícula, false en caso contrario
      */
     boolean existsByMatricula(String matricula);
-    
+
     /**
      * Obtiene todos los usuarios registrados.
      * 
      * @return Lista de todos los usuarios
      */
     List<Usuario> findAll();
-    
+
     /**
      * Obtiene todos los usuarios con una autoridad específica.
      * 
@@ -91,7 +91,7 @@ public interface UsuarioRepository {
      * @return Lista de usuarios con la autoridad especificada
      */
     List<Usuario> findByAutoridad(Autoridad autoridad);
-    
+
     /**
      * Actualiza los datos de un usuario existente.
      * 
@@ -100,7 +100,7 @@ public interface UsuarioRepository {
      * @throws IllegalArgumentException Si el usuario no existe
      */
     Usuario update(Usuario usuario);
-    
+
     /**
      * Elimina un usuario del repositorio.
      * 
@@ -109,7 +109,7 @@ public interface UsuarioRepository {
      * @throws IllegalArgumentException Si el usuario no existe
      */
     Usuario delete(String email);
-    
+
     /**
      * Elimina todos los usuarios del repositorio.
      * Útil para testing.

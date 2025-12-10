@@ -82,7 +82,7 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
 
         String sql = "INSERT INTO usuarios (email, password_hash, autoridad, cuil, nombre, apellido, matricula) " +
                      "VALUES (?, ?, ?::text, ?, ?, ?, ?) RETURNING id";
-        
+
         String generatedId = jdbcTemplate.queryForObject(sql, String.class,
             emailKey,
             usuario.getPasswordHash(),
@@ -92,7 +92,7 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
             usuario.getApellido(),
             usuario.getMatricula()
         );
-        
+
         usuario.setId(generatedId);
         return usuario;
     }
@@ -105,9 +105,9 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
 
         String sql = "SELECT id, email, password_hash, autoridad, cuil, nombre, apellido, matricula " +
                      "FROM usuarios WHERE id = ?::uuid";
-        
+
         List<Usuario> results = jdbcTemplate.query(sql, new UsuarioRowMapper(), id);
-        
+
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
@@ -120,9 +120,9 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
         String emailKey = email.toLowerCase();
         String sql = "SELECT id, email, password_hash, autoridad, cuil, nombre, apellido, matricula " +
                      "FROM usuarios WHERE email = ?";
-        
+
         List<Usuario> results = jdbcTemplate.query(sql, new UsuarioRowMapper(), emailKey);
-        
+
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
@@ -134,9 +134,9 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
 
         String sql = "SELECT id, email, password_hash, autoridad, cuil, nombre, apellido, matricula " +
                      "FROM usuarios WHERE cuil = ?";
-        
+
         List<Usuario> results = jdbcTemplate.query(sql, new UsuarioRowMapper(), cuil);
-        
+
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
@@ -148,9 +148,9 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
 
         String sql = "SELECT id, email, password_hash, autoridad, cuil, nombre, apellido, matricula " +
                      "FROM usuarios WHERE matricula = ?";
-        
+
         List<Usuario> results = jdbcTemplate.query(sql, new UsuarioRowMapper(), matricula);
-        
+
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
@@ -222,7 +222,7 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
 
         String sql = "UPDATE usuarios SET password_hash = ?, autoridad = ?::text, cuil = ?, " +
                      "nombre = ?, apellido = ?, matricula = ? WHERE email = ?";
-        
+
         jdbcTemplate.update(sql,
             usuario.getPasswordHash(),
             usuario.getAutoridad().name(),
@@ -244,7 +244,7 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
 
         String emailKey = email.toLowerCase();
 
-        
+
         Optional<Usuario> usuario = findByEmail(emailKey);
         if (usuario.isEmpty()) {
             throw new IllegalArgumentException("No existe un usuario con el email: " + email);

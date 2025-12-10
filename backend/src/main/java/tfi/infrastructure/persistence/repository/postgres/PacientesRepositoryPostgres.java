@@ -46,7 +46,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             String apellido = rs.getString("apellido");
             String email = rs.getString("email");
 
-            
+
             Domicilio domicilio = null;
             String calle = rs.getString("domicilio_calle");
             if (calle != null) {
@@ -55,13 +55,13 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
                 domicilio = new Domicilio(calle, numero, localidad);
             }
 
-            
-            
-            
+
+
+
             Afiliado afiliado = null;
             Integer obraSocialId = (Integer) rs.getObject("obra_social_id");
             if (obraSocialId != null) {
-                
+
                 String nombreObraSocial = rs.getString("nombre_obra_social");
                 if (nombreObraSocial == null) {
                     nombreObraSocial = "Obra Social " + obraSocialId;
@@ -72,13 +72,13 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             }
 
             Paciente paciente;
-            
+
             if (nombre == null) {
                 paciente = Paciente.crearConDomicilioYObraSocial(cuil, domicilio, afiliado);
             } else {
                 paciente = Paciente.crearCompleto(cuil, nombre, apellido, email, domicilio, afiliado);
             }
-            
+
             paciente.setId(id);
             return paciente;
         }
@@ -86,7 +86,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
 
     @Override
     public PaginatedResult<Paciente> findAll(PaginationRequest request) {
-        
+
         StringBuilder sql = new StringBuilder(
             "SELECT p.id, p.cuil, p.nombre, p.apellido, p.email, " +
             "p.domicilio_calle, p.domicilio_numero, p.domicilio_localidad, " +
@@ -94,7 +94,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             "FROM pacientes p"
         );
 
-        
+
         if (request.hasSorting()) {
             sql.append(" ORDER BY ");
             List<String> orderByClauses = request.getSortOrders().stream()
@@ -107,19 +107,19 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
                 .toList();
             sql.append(String.join(", ", orderByClauses));
         } else {
-            
+
             sql.append(" ORDER BY p.cuil ASC");
         }
 
-        
+
         sql.append(" LIMIT ? OFFSET ?");
 
-        
+
         int pageSize = request.getSize();
         int offset = request.getOffset();
         List<Paciente> content = jdbcTemplate.query(sql.toString(), new PacienteRowMapper(), pageSize, offset);
 
-        
+
         String countSql = "SELECT COUNT(*) FROM pacientes p";
         Long total = jdbcTemplate.queryForObject(countSql, Long.class);
 
@@ -158,9 +158,9 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
                      "p.obra_social_id, p.numero_afiliado, NULL AS nombre_obra_social " +
                      "FROM pacientes p " +
                      "WHERE p.cuil = ?";
-        
+
         List<Paciente> results = jdbcTemplate.query(sql, new PacienteRowMapper(), cuil);
-        
+
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
@@ -187,19 +187,19 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             throw new IllegalStateException("Ya existe un paciente con el CUIL: " + paciente.getCuil());
         }
 
-        
-        
+
+
         Integer obraSocialId = null;
         if (paciente.getObraSocial() != null && paciente.getObraSocial().getObraSocial() != null) {
             obraSocialId = paciente.getObraSocial().getObraSocial().getId();
         }
 
-        
+
         String sql = "INSERT INTO pacientes (cuil, nombre, apellido, email, " +
                      "domicilio_calle, domicilio_numero, domicilio_localidad, " +
                      "obra_social_id, numero_afiliado) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
-        
+
         String generatedId = jdbcTemplate.queryForObject(sql, String.class,
             paciente.getCuil(),
             paciente.getNombre(),
@@ -211,7 +211,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             obraSocialId,
             paciente.getObraSocial() != null ? paciente.getObraSocial().getNumeroAfiliado() : null
         );
-        
+
         paciente.setId(generatedId);
         return paciente;
     }
@@ -228,8 +228,8 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             throw new IllegalStateException("No existe un paciente con el CUIL: " + paciente.getCuil());
         }
 
-        
-        
+
+
         Integer obraSocialId = null;
         if (paciente.getObraSocial() != null && paciente.getObraSocial().getObraSocial() != null) {
             obraSocialId = paciente.getObraSocial().getObraSocial().getId();
@@ -239,7 +239,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
                      "domicilio_calle = ?, domicilio_numero = ?, domicilio_localidad = ?, " +
                      "obra_social_id = ?, numero_afiliado = ? " +
                      "WHERE cuil = ?";
-        
+
         jdbcTemplate.update(sql,
             paciente.getNombre(),
             paciente.getApellido(),
@@ -264,7 +264,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             throw new IllegalArgumentException("El CUIL del paciente no puede ser nulo o vacío");
         }
 
-        
+
         Paciente existing = findByCuil(paciente.getCuil())
             .orElseThrow(() -> new IllegalStateException("No existe un paciente con el CUIL: " + paciente.getCuil()));
 

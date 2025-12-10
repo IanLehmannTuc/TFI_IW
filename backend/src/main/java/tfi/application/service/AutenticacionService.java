@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 @Service
 public class AutenticacionService {
-    
+
     private final UsuarioRepository usuarioRepository;
     private final JwtUtil jwtUtil;
     private final JwtConfig jwtConfig;
@@ -62,14 +62,14 @@ public class AutenticacionService {
      */
     @Transactional
     public RegistroResponse registrar(@NonNull RegistroRequest request) {
-        
-        
-        
-        
+
+
+
+
         Email email;
         Password password;
         Cuil cuil;
-        
+
         try {
             email = Email.from(request.getEmail());
             password = Password.from(request.getPassword());
@@ -77,7 +77,7 @@ public class AutenticacionService {
         } catch (IllegalArgumentException e) {
             throw new RegistroException(e.getMessage());
         }
-        
+
         if (usuarioRepository.existsByEmail(email.getValue())) {
             throw new RegistroException(MensajesError.EMAIL_YA_REGISTRADO);
         }
@@ -87,9 +87,9 @@ public class AutenticacionService {
         if (usuarioRepository.existsByMatricula(request.getMatricula())) {
             throw new RegistroException("Ya existe un usuario con la matrícula: " + request.getMatricula());
         }
-        
+
         String passwordHash = PasswordHasher.hashPassword(password.getValue());
-        
+
         Usuario usuario = new Usuario(
             email, 
             passwordHash, 
@@ -99,9 +99,9 @@ public class AutenticacionService {
             request.getApellido(),
             request.getMatricula()
         );
-        
+
         usuarioRepository.add(usuario);
-        
+
         return new RegistroResponse(
             usuario.getId(),
             usuario.getNombre(),
@@ -123,37 +123,37 @@ public class AutenticacionService {
      * @throws IllegalArgumentException Si el request es null
      */
     public AuthResponse login(@NonNull LoginRequest request) {
-        
+
         Email email;
         try {
             email = Email.from(request.getEmail());
         } catch (IllegalArgumentException e) {
             throw new AutenticacionException(MensajesError.USUARIO_CONTRASENA_INVALIDOS);
         }
-        
+
         if (request.getPassword() == null || request.getPassword().isEmpty()) {
             throw new AutenticacionException(MensajesError.USUARIO_CONTRASENA_INVALIDOS);
         }
-        
+
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email.getValue());
-        
+
         if (usuarioOpt.isEmpty()) {
             throw new AutenticacionException(MensajesError.USUARIO_CONTRASENA_INVALIDOS);
         }
-        
+
         Usuario usuario = usuarioOpt.get();
-        
+
         boolean passwordValida = PasswordHasher.checkPassword(
             request.getPassword(), 
             usuario.getPasswordHash()
         );
-        
+
         if (!passwordValida) {
             throw new AutenticacionException(MensajesError.USUARIO_CONTRASENA_INVALIDOS);
         }
-        
+
         String token = jwtUtil.generateToken(usuario);
-        
+
         return new AuthResponse(
             token,
             usuario.getEmail().getValue(),
@@ -175,15 +175,15 @@ public class AutenticacionService {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("El email no puede ser nulo o vacío");
         }
-        
+
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
-        
+
         if (usuarioOpt.isEmpty()) {
             throw new AutenticacionException("Usuario no encontrado");
         }
-        
+
         Usuario usuario = usuarioOpt.get();
-        
+
         return new PerfilUsuarioResponse(
             usuario.getId(),
             usuario.getEmail().getValue(),
@@ -208,15 +208,15 @@ public class AutenticacionService {
         if (cuil == null || cuil.trim().isEmpty()) {
             throw new IllegalArgumentException("El CUIL no puede ser nulo o vacío");
         }
-        
+
         Optional<Usuario> usuarioOpt = usuarioRepository.findByCuil(cuil);
-        
+
         if (usuarioOpt.isEmpty()) {
             throw new AutenticacionException("Usuario no encontrado con CUIL: " + cuil);
         }
-        
+
         Usuario usuario = usuarioOpt.get();
-        
+
         return new PerfilUsuarioResponse(
             usuario.getId(),
             usuario.getEmail().getValue(),
@@ -241,15 +241,15 @@ public class AutenticacionService {
         if (id == null || id.trim().isEmpty()) {
             throw new IllegalArgumentException("El ID no puede ser nulo o vacío");
         }
-        
+
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
-        
+
         if (usuarioOpt.isEmpty()) {
             throw new AutenticacionException("Usuario no encontrado con ID: " + id);
         }
-        
+
         Usuario usuario = usuarioOpt.get();
-        
+
         return new PerfilUsuarioResponse(
             usuario.getId(),
             usuario.getEmail().getValue(),

@@ -9,20 +9,20 @@ import jakarta.validation.constraints.NotNull;
  * Contiene los datos necesarios para crear un paciente en el sistema.
  */
 public class RegistroPacienteRequest {
-    
+
     @NotBlank(message = "El CUIL es obligatorio")
     private String cuil;
-    
+
     @NotBlank(message = "El apellido es obligatorio")
     private String apellido;
-    
+
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
-    
+
     @NotNull(message = "El domicilio es obligatorio")
     @Valid
     private DomicilioRequest domicilio;
-    
+
     @Valid
     private AfiliadoRequest obraSocial;
 
@@ -90,10 +90,10 @@ public class RegistroPacienteRequest {
     public static class DomicilioRequest {
         @NotBlank(message = "La calle es obligatoria")
         private String calle;
-        
+
         @NotNull(message = "El número es obligatorio")
         private Integer numero;
-        
+
         @NotBlank(message = "La localidad es obligatoria")
         private String localidad;
 
@@ -137,7 +137,7 @@ public class RegistroPacienteRequest {
     public static class ObraSocialRequest {
         @NotNull(message = "El ID de la obra social es obligatorio")
         private Integer id;
-        
+
         private String nombre;
 
         public ObraSocialRequest() {
@@ -176,7 +176,7 @@ public class RegistroPacienteRequest {
         @NotNull(message = "La obra social es obligatoria cuando se especifica afiliación")
         @Valid
         private ObraSocialRequest obraSocial;
-        
+
         @NotBlank(message = "El número de afiliado es obligatorio")
         private String numeroAfiliado;
 

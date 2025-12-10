@@ -21,7 +21,7 @@ import tfi.util.SecurityContext;
 @RestController
 @RequestMapping("/api/auth")
 public class AutenticacionController {
-    
+
     private final AutenticacionService autenticacionService;
 
     /**
@@ -123,7 +123,7 @@ public class AutenticacionController {
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         PerfilUsuarioResponse usuario = autenticacionService.obtenerUsuarioPorId(id);
         return ResponseEntity.ok(usuario);
     }

@@ -18,8 +18,8 @@ public class Usuario {
     private Email email;
     private String passwordHash;
     private Autoridad autoridad;
-    
-    
+
+
     private Cuil cuil;
     private String nombre;
     private String apellido;
@@ -53,7 +53,7 @@ public class Usuario {
         if (matricula == null || matricula.isEmpty()) {
             throw new IllegalArgumentException("La matrícula no puede ser nula o vacía");
         }
-        
+
         this.email = email;
         this.passwordHash = passwordHash;
         this.autoridad = autoridad;
@@ -62,7 +62,7 @@ public class Usuario {
         this.apellido = apellido;
         this.matricula = matricula;
     }
-    
+
     /**
      * Constructor básico para autenticación (sin datos personales completos).
      * Útil para casos donde solo se necesita autenticación.
@@ -81,7 +81,7 @@ public class Usuario {
         if (autoridad == null) {
             throw new IllegalArgumentException("La autoridad no puede ser nula");
         }
-        
+
         this.email = email;
         this.passwordHash = passwordHash;
         this.autoridad = autoridad;
@@ -90,7 +90,7 @@ public class Usuario {
     public Email getEmail() {
         return email;
     }
-    
+
     public String getId() {
         return id;
     }
@@ -98,12 +98,12 @@ public class Usuario {
     public void setId(String id) {
         this.id = id;
     }
-    
+
     public Email getEmailVO() {
         return email;
     }
 
-    // Getters
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -111,11 +111,11 @@ public class Usuario {
     public Autoridad getAutoridad() {
         return autoridad;
     }
-    
+
     public Cuil getCuilVO() {
         return cuil;
     }
-    
+
     public String getCuil() {
         return cuil != null ? cuil.getValor() : null;
     }
@@ -132,7 +132,7 @@ public class Usuario {
         return matricula;
     }
 
-    // Setters deprecated - solo para uso del repositorio
+
     /**
      * Setter para email - SOLO para uso interno del repositorio al recuperar desde BD.
      * @deprecated Usar actualizarEmail() en su lugar.
@@ -210,7 +210,7 @@ public class Usuario {
         }
         this.matricula = matricula;
     }
-    
+
     /**
      * Método de negocio: Verifica si el usuario tiene datos personales completos.
      * 

@@ -5,7 +5,7 @@ package tfi.exception;
  * Puede contener mensajes específicos sobre problemas de validación, duplicados o estados inválidos.
  */
 public class AtencionException extends RuntimeException {
-    
+
     /**
      * Constructor con mensaje
      * 

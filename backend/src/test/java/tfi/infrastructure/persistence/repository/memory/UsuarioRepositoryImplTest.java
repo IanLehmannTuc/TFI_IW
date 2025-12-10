@@ -31,9 +31,9 @@ class UsuarioRepositoryImplTest {
             "hash",
             Autoridad.MEDICO
         );
-        
+
         Usuario resultado = repository.add(usuario);
-        
+
         assertNotNull(resultado);
         assertEquals(usuario, resultado);
         assertTrue(repository.existsByEmail("medico@hospital.com"));
@@ -47,9 +47,9 @@ class UsuarioRepositoryImplTest {
             Autoridad.MEDICO
         );
         repository.add(usuario);
-        
+
         Optional<Usuario> resultado = repository.findByEmail("medico@hospital.com");
-        
+
         assertTrue(resultado.isPresent());
         assertEquals(usuario, resultado.get());
     }
@@ -62,10 +62,10 @@ class UsuarioRepositoryImplTest {
             Autoridad.MEDICO
         );
         repository.add(usuario);
-        
+
         Optional<Usuario> resultado1 = repository.findByEmail("MEDICO@HOSPITAL.COM");
         Optional<Usuario> resultado2 = repository.findByEmail("MeDiCo@HoSpItAl.CoM");
-        
+
         assertTrue(resultado1.isPresent());
         assertTrue(resultado2.isPresent());
         assertEquals(usuario, resultado1.get());
@@ -75,21 +75,21 @@ class UsuarioRepositoryImplTest {
     @Test
     void findByEmailDebeRetornarVacioSiNoExiste() {
         Optional<Usuario> resultado = repository.findByEmail("noexiste@hospital.com");
-        
+
         assertTrue(resultado.isEmpty());
     }
 
     @Test
     void findByEmailDebeRetornarVacioParaEmailNull() {
         Optional<Usuario> resultado = repository.findByEmail(null);
-        
+
         assertTrue(resultado.isEmpty());
     }
 
     @Test
     void findByEmailDebeRetornarVacioParaEmailVacio() {
         Optional<Usuario> resultado = repository.findByEmail("");
-        
+
         assertTrue(resultado.isEmpty());
     }
 
@@ -101,7 +101,7 @@ class UsuarioRepositoryImplTest {
             Autoridad.MEDICO
         );
         repository.add(usuario);
-        
+
         assertTrue(repository.existsByEmail("medico@hospital.com"));
     }
 
@@ -118,8 +118,8 @@ class UsuarioRepositoryImplTest {
             Autoridad.MEDICO
         );
         repository.add(usuario);
-        
- 
+
+
         assertTrue(repository.existsByEmail("MEDICO@HOSPITAL.COM"));
         assertTrue(repository.existsByEmail("MeDiCo@HoSpItAl.CoM"));
     }
@@ -137,13 +137,13 @@ class UsuarioRepositoryImplTest {
             Autoridad.ENFERMERO
         );
         repository.add(usuario1);
-        
- 
+
+
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> repository.add(usuario2)
         );
-        
+
         assertTrue(exception.getMessage().contains("Ya existe un usuario con el email"));
     }
 
@@ -160,8 +160,8 @@ class UsuarioRepositoryImplTest {
             Autoridad.ENFERMERO
         );
         repository.add(usuario1);
-        
- 
+
+
         assertThrows(
             IllegalArgumentException.class,
             () -> repository.add(usuario2)
@@ -170,19 +170,19 @@ class UsuarioRepositoryImplTest {
 
     @Test
     void addDebeLanzarExcepcionSiUsuarioEsNull() {
- 
+
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> repository.add(null)
         );
-        
+
         assertEquals("El usuario no puede ser nulo", exception.getMessage());
     }
 
     @Test
     void findAllDebeRetornarListaVaciaSiNoHayUsuarios() {
         List<Usuario> usuarios = repository.findAll();
-        
+
         assertNotNull(usuarios);
         assertTrue(usuarios.isEmpty());
     }
@@ -192,13 +192,13 @@ class UsuarioRepositoryImplTest {
         Usuario usuario1 = new Usuario(Email.from("medico1@hospital.com"), "hash1", Autoridad.MEDICO);
         Usuario usuario2 = new Usuario(Email.from("medico2@hospital.com"), "hash2", Autoridad.MEDICO);
         Usuario usuario3 = new Usuario(Email.from("enfermera@hospital.com"), "hash3", Autoridad.ENFERMERO);
-        
+
         repository.add(usuario1);
         repository.add(usuario2);
         repository.add(usuario3);
-        
+
         List<Usuario> usuarios = repository.findAll();
-        
+
         assertEquals(3, usuarios.size());
         assertTrue(usuarios.contains(usuario1));
         assertTrue(usuarios.contains(usuario2));
@@ -210,11 +210,11 @@ class UsuarioRepositoryImplTest {
         Email email = Email.from("medico@hospital.com");
         Usuario usuario = new Usuario(email, "hashOriginal", Autoridad.MEDICO);
         repository.add(usuario);
-        
+
         Usuario usuarioActualizado = new Usuario(email, "hashNuevo", Autoridad.MEDICO);
-        
+
         Usuario resultado = repository.update(usuarioActualizado);
-        
+
         assertEquals(usuarioActualizado, resultado);
         Optional<Usuario> encontrado = repository.findByEmail("medico@hospital.com");
         assertTrue(encontrado.isPresent());
@@ -228,8 +228,8 @@ class UsuarioRepositoryImplTest {
             "hash",
             Autoridad.MEDICO
         );
-        
- 
+
+
         assertThrows(
             IllegalArgumentException.class,
             () -> repository.update(usuario)
@@ -238,7 +238,7 @@ class UsuarioRepositoryImplTest {
 
     @Test
     void updateDebeLanzarExcepcionSiUsuarioEsNull() {
- 
+
         assertThrows(
             IllegalArgumentException.class,
             () -> repository.update(null)
@@ -253,16 +253,16 @@ class UsuarioRepositoryImplTest {
             Autoridad.MEDICO
         );
         repository.add(usuario);
-        
+
         Usuario eliminado = repository.delete("medico@hospital.com");
-        
+
         assertEquals(usuario, eliminado);
         assertFalse(repository.existsByEmail("medico@hospital.com"));
     }
 
     @Test
     void deleteDebeLanzarExcepcionSiEmailNoExiste() {
- 
+
         assertThrows(
             IllegalArgumentException.class,
             () -> repository.delete("noexiste@hospital.com")
@@ -271,7 +271,7 @@ class UsuarioRepositoryImplTest {
 
     @Test
     void deleteDebeLanzarExcepcionSiEmailEsNull() {
- 
+
         assertThrows(
             IllegalArgumentException.class,
             () -> repository.delete(null)
@@ -286,9 +286,9 @@ class UsuarioRepositoryImplTest {
             Autoridad.MEDICO
         );
         repository.add(usuario);
-        
+
         Usuario eliminado = repository.delete("MEDICO@HOSPITAL.COM");
-        
+
         assertNotNull(eliminado);
         assertFalse(repository.existsByEmail("medico@hospital.com"));
     }
@@ -298,9 +298,9 @@ class UsuarioRepositoryImplTest {
         repository.add(new Usuario(Email.from("medico1@hospital.com"), "hash1", Autoridad.MEDICO));
         repository.add(new Usuario(Email.from("medico2@hospital.com"), "hash2", Autoridad.MEDICO));
         repository.add(new Usuario(Email.from("enfermera@hospital.com"), "hash3", Autoridad.ENFERMERO));
-        
+
         repository.deleteAll();
-        
+
         List<Usuario> usuarios = repository.findAll();
         assertTrue(usuarios.isEmpty());
     }

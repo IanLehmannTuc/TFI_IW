@@ -11,18 +11,18 @@ const AdmissionsHistory: React.FC = () => {
   const [filteredAdmissions, setFilteredAdmissions] = useState<Admission[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Modal State
+
+
   const [selectedAdmission, setSelectedAdmission] = useState<Admission | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
   const fetchAdmissions = async () => {
     setLoading(true);
     try {
-      // 6.1 Listar Todos los Ingresos
+
       const data = await apiRequest<Admission[]>('/ingresos');
-      
-      // Sort by date descending (newest first)
+
+
       const sorted = data.sort((a, b) => new Date(b.fechaHoraIngreso).getTime() - new Date(a.fechaHoraIngreso).getTime());
       setAdmissions(sorted);
       setFilteredAdmissions(sorted);
@@ -41,18 +41,18 @@ const AdmissionsHistory: React.FC = () => {
     const term = searchTerm.toLowerCase();
     const filtered = admissions.filter(
       (adm) =>
-        (adm.paciente?.nombre?.toLowerCase() || '').includes(term) ||
-        (adm.paciente?.apellido?.toLowerCase() || '').includes(term) ||
-        (adm.paciente?.cuil || '').includes(term)
+        (adm.pacienteNombre?.toLowerCase() || '').includes(term) ||
+        (adm.pacienteApellido?.toLowerCase() || '').includes(term) ||
+        (adm.pacienteCuil || '').includes(term)
     );
     setFilteredAdmissions(filtered);
   }, [searchTerm, admissions]);
 
   const handleOpenDetail = async (admission: Admission) => {
-      setSelectedAdmission(admission); // Set initial data
+      setSelectedAdmission(admission); 
       setDetailLoading(true);
       try {
-          // Fetch full detail to ensure we have nurse name (Option 1 as per user request)
+
           const detail = await apiRequest<Admission>(`/ingresos/${admission.id}`);
           setSelectedAdmission(detail);
       } catch (e) {
@@ -76,8 +76,8 @@ const AdmissionsHistory: React.FC = () => {
   };
 
   const getBloodPressure = (adm: Admission) => {
-    if (adm.signosVitales) {
-      return `${adm.signosVitales.tensionSistolica}/${adm.signosVitales.tensionDiastolica}`;
+    if (adm.tensionSistolica && adm.tensionDiastolica) {
+      return `${adm.tensionSistolica}/${adm.tensionDiastolica}`;
     }
     return '-/-';
   };
@@ -148,10 +148,10 @@ const AdmissionsHistory: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                                {admission.paciente?.nombre ? `${admission.paciente.nombre} ${admission.paciente.apellido}` : 'Cargando...'}
+                                {admission.pacienteNombre ? `${admission.pacienteNombre} ${admission.pacienteApellido}` : 'Cargando...'}
                             </div>
                             <div className="text-xs text-gray-500">
-                                {admission.paciente?.cuil || 'S/D'}
+                                {admission.pacienteCuil || 'S/D'}
                             </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -179,17 +179,14 @@ const AdmissionsHistory: React.FC = () => {
         </div>
       </div>
 
-      {/* Detail Modal */}
       {selectedAdmission && (
           <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                {/* Background overlay */}
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setSelectedAdmission(null)}></div>
 
                 <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
-                    {/* Header */}
                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-100">
                         <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
@@ -198,12 +195,12 @@ const AdmissionsHistory: React.FC = () => {
                                 </div>
                                 <div>
                                     <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                        {selectedAdmission.paciente?.nombre 
-                                            ? `${selectedAdmission.paciente.nombre} ${selectedAdmission.paciente.apellido}` 
+                                        {selectedAdmission.pacienteNombre 
+                                            ? `${selectedAdmission.pacienteNombre} ${selectedAdmission.pacienteApellido}` 
                                             : 'Cargando Paciente...'}
                                     </h3>
                                     <p className="text-sm text-gray-500">
-                                        {selectedAdmission.paciente?.cuil || 'S/D'}
+                                        {selectedAdmission.pacienteCuil || 'S/D'}
                                     </p>
                                 </div>
                             </div>
@@ -216,9 +213,8 @@ const AdmissionsHistory: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Content */}
                     <div className="px-4 py-5 sm:p-6 bg-gray-50 h-full max-h-[70vh] overflow-y-auto">
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                                 <div className="flex items-center gap-2 mb-3 text-gray-900 font-semibold">
@@ -253,17 +249,17 @@ const AdmissionsHistory: React.FC = () => {
                                         <span className="text-gray-500">Enfermero (Triage):</span>
                                         <span className={`font-medium ${detailLoading ? 'text-gray-400' : ''}`}>
                                             {detailLoading ? 'Cargando...' : 
-                                              selectedAdmission.enfermero?.apellido 
-                                                ? `${selectedAdmission.enfermero.apellido}, ${selectedAdmission.enfermero.nombre || ''}`
-                                                : (selectedAdmission.enfermero?.cuil || 'No registrado')
+                                              selectedAdmission.enfermeroCuil 
+                                                ? `CUIL: ${selectedAdmission.enfermeroCuil} (Mat: ${selectedAdmission.enfermeroMatricula || 'N/A'})`
+                                                : 'No registrado'
                                             }
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">Médico Atendiente:</span>
                                         <span className="font-medium">
-                                            {selectedAdmission.atencion?.medico?.apellido
-                                                ? `${selectedAdmission.atencion.medico.apellido}, ${selectedAdmission.atencion.medico.nombre}`
+                                            {selectedAdmission.atencion?.medicoId
+                                                ? `ID: ${selectedAdmission.atencion.medicoId}`
                                                 : 'Pendiente de atención'}
                                         </span>
                                     </div>
@@ -271,7 +267,7 @@ const AdmissionsHistory: React.FC = () => {
                             </div>
                         </div>
 
-                        {selectedAdmission.signosVitales && (
+                        {selectedAdmission.temperatura && (
                             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                                 <div className="flex items-center gap-2 mb-3 text-gray-900 font-semibold">
                                     <Activity className="w-4 h-4 text-gray-400" />
@@ -280,7 +276,7 @@ const AdmissionsHistory: React.FC = () => {
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     <div className="bg-gray-50 p-2 rounded text-center">
                                         <span className="block text-xs text-gray-500 uppercase">Temp</span>
-                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.signosVitales.temperatura}°C</span>
+                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.temperatura}°C</span>
                                     </div>
                                     <div className="bg-gray-50 p-2 rounded text-center">
                                         <span className="block text-xs text-gray-500 uppercase">Presión</span>
@@ -290,11 +286,11 @@ const AdmissionsHistory: React.FC = () => {
                                     </div>
                                     <div className="bg-gray-50 p-2 rounded text-center">
                                         <span className="block text-xs text-gray-500 uppercase">Pulso</span>
-                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.signosVitales.frecuenciaCardiaca}</span>
+                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.frecuenciaCardiaca}</span>
                                     </div>
                                     <div className="bg-gray-50 p-2 rounded text-center">
                                         <span className="block text-xs text-gray-500 uppercase">Resp.</span>
-                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.signosVitales.frecuenciaRespiratoria}</span>
+                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.frecuenciaRespiratoria}</span>
                                     </div>
                                 </div>
                             </div>
@@ -308,22 +304,21 @@ const AdmissionsHistory: React.FC = () => {
                             <div className="p-3 bg-gray-50 rounded-md text-sm text-gray-700 leading-relaxed mb-4">
                                 {selectedAdmission.descripcion}
                             </div>
-                            
-                            {/* Medical Report Section - Only visible to MEDICO or if exists */}
+
                             {selectedAdmission.atencion && (
                                 <div className="mt-4 pt-4 border-t border-gray-100 animate-fade-in">
                                     <div className="flex items-center gap-2 mb-3 text-primary-700 font-semibold">
                                         <FileText className="w-4 h-4" />
                                         <span>Informe Médico (Atención Finalizada)</span>
                                     </div>
-                                    
+
                                     <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-md text-sm text-gray-800 leading-relaxed">
                                         {selectedAdmission.atencion.informeMedico}
                                         <div className="mt-2 text-xs text-gray-400 text-right">
                                             Atendido el: {new Date(selectedAdmission.atencion.fechaAtencion).toLocaleString()}
                                         </div>
                                     </div>
-                                    
+
                                     <p className="mt-4 text-xs text-green-600 font-medium flex items-center gap-1">
                                         <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                                         El paciente ha sido atendido y el proceso ha finalizado.
@@ -333,8 +328,7 @@ const AdmissionsHistory: React.FC = () => {
                         </div>
 
                     </div>
-                    
-                    {/* Footer */}
+
                     <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
                         <button
                             type="button"

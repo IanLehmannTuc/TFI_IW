@@ -23,15 +23,15 @@ public final class Cuil {
         if (valor == null || valor.trim().isEmpty()) {
             throw new IllegalArgumentException("El CUIL no puede ser nulo o vacío");
         }
-        
+
         String cuilLimpio = valor.trim();
-        
+
         if (!CUIL_PATTERN.matcher(cuilLimpio).matches()) {
             throw new IllegalArgumentException(
                 "El CUIL debe tener el formato XX-XXXXXXXX-X (ejemplo: 20-12345678-9)"
             );
         }
-        
+
         String prefijo = cuilLimpio.substring(0, 2);
         boolean prefijoValido = false;
         for (String p : PREFIJOS_VALIDOS) {
@@ -45,13 +45,13 @@ public final class Cuil {
                 "El CUIL debe comenzar con un prefijo válido: 20, 23, 24, 27, 30, 33 o 34"
             );
         }
-        
+
         if (!validarDigitoVerificador(cuilLimpio)) {
             throw new IllegalArgumentException(
                 "El CUIL tiene un dígito verificador inválido"
             );
         }
-        
+
         this.valor = cuilLimpio;
     }
 
@@ -64,26 +64,26 @@ public final class Cuil {
     private boolean validarDigitoVerificador(String cuil) {
         try {
             String sinGuiones = cuil.replace("-", "");
-            
+
             String base = sinGuiones.substring(0, 10);
             int digitoVerificador = Integer.parseInt(sinGuiones.substring(10, 11));
-            
+
             int[] multiplicadores = {5, 4, 3, 2, 7, 6, 5, 4, 3, 2};
             int suma = 0;
-            
+
             for (int i = 0; i < 10; i++) {
                 suma += Character.getNumericValue(base.charAt(i)) * multiplicadores[i];
             }
-            
+
             int resto = suma % 11;
             int digitoCalculado = 11 - resto;
-            
+
             if (digitoCalculado == 11) {
                 digitoCalculado = 0;
             } else if (digitoCalculado == 10) {
                 digitoCalculado = 9;
             }
-            
+
             return digitoCalculado == digitoVerificador;
         } catch (Exception e) {
             return false;

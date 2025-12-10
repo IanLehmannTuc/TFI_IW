@@ -6,7 +6,7 @@ package tfi.exception;
  * ataques de enumeración de usuarios.
  */
 public class AutenticacionException extends RuntimeException {
-    
+
     /**
      * Constructor con mensaje
      * 

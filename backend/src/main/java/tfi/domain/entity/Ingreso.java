@@ -27,7 +27,7 @@ public class Ingreso {
     private FrecuenciaCardiaca frecuenciaCardiaca;
     private FrecuenciaRespiratoria frecuenciaRespiratoria;
     private NivelEmergencia nivelEmergencia;
-    private Estado estado; // Estado privado, solo modificable mediante métodos de negocio
+    private Estado estado; 
 
     public Ingreso(Atencion atencion, Paciente paciente, Usuario enfermero, String descripcion, LocalDateTime fechaHoraIngreso,
                    Temperatura temperatura, TensionArterial tensionArterial, FrecuenciaCardiaca frecuenciaCardiaca,
@@ -298,7 +298,7 @@ public class Ingreso {
     public void restoreAtencionFromPersistence(Atencion atencion) {
         this.atencion = atencion;
     }
-    
+
     /**
      * Método específico para repositorios: Restaura la fecha de ingreso desde la base de datos.
      * SOLO debe usarse por repositorios al recuperar entidades desde BD.
@@ -308,7 +308,7 @@ public class Ingreso {
     public void restoreFechaHoraIngresoFromPersistence(LocalDateTime fechaHoraIngreso) {
         this.fechaHoraIngreso = fechaHoraIngreso;
     }
-    
+
     /**
      * Setter para estado - SOLO para uso interno del repositorio al recuperar desde BD.
      * NO debe usarse para cambiar el estado del negocio. Usar métodos de negocio en su lugar.
@@ -330,7 +330,7 @@ public class Ingreso {
     public void setAtencion(Atencion atencion) {
         restoreAtencionFromPersistence(atencion);
     }
-    
+
     /**
      * Setter para fecha de ingreso - SOLO para uso interno del repositorio al recuperar desde BD.
      * 

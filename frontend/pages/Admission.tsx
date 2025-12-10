@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Clock, AlertTriangle, Search, UserPlus, UserCheck, X, Zap, ThumbsUp, ChevronDown } from 'lucide-react';
 
 interface AdmissionFormData {
-  // Patient Info
+
   pacienteCuil: string;
   pacienteNombre: string;
   pacienteApellido: string;
@@ -17,13 +17,13 @@ interface AdmissionFormData {
   calle?: string;
   numero?: number;
   localidad?: string;
-  
-  // Obra Social Info
+
+
   obraSocialId?: number; 
   obraSocialNombre?: string;
   numeroAfiliado?: string;
 
-  // Triage Info
+
   descripcion: string;
   temperatura: number;
   tensionSistolica: number;
@@ -101,7 +101,7 @@ const Admission: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Obra Social Search/Dropdown State
+
   const [obrasSocialesList, setObrasSocialesList] = useState<ObraSocialRef[]>([]);
   const [osQuery, setOsQuery] = useState('');
   const [isOsDropdownOpen, setIsOsDropdownOpen] = useState(false);
@@ -149,8 +149,8 @@ const Admission: React.FC = () => {
   }, []);
 
   const inputClass = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-500";
-  
-  // Helper to visually lock inputs if patient found
+
+
   const getEditableInputClass = (isLocked: boolean) => 
     `${inputClass} ${isLocked ? 'bg-gray-100 text-gray-600 cursor-not-allowed focus:ring-0 focus:border-gray-300' : 'bg-gray-50 focus:bg-white'}`;
 
@@ -160,14 +160,14 @@ const Admission: React.FC = () => {
         setSubmitError("Por favor ingrese un CUIL válido para buscar.");
         return;
     }
-    
+
     setSearching(true);
     setSubmitError('');
-    
+
     try {
         const patient = await apiRequest<Patient>(`/pacientes/${cuil}`);
-        
-        // Patient found
+
+
         setValue('pacienteNombre', patient.nombre);
         setValue('pacienteApellido', patient.apellido);
         setValue('pacienteFechaNacimiento', patient.fechaNacimiento || '');
@@ -179,7 +179,7 @@ const Admission: React.FC = () => {
             setValue('numero', patient.domicilio.numero);
             setValue('localidad', patient.domicilio.localidad);
         }
-        
+
         if (patient.obraSocial) {
             setOsQuery(patient.obraSocial.obraSocial.nombre);
             setValue('obraSocialId', patient.obraSocial.obraSocial.id);
@@ -191,16 +191,16 @@ const Admission: React.FC = () => {
             setValue('obraSocialNombre', '');
             setValue('numeroAfiliado', '');
         }
-        
+
         setIsNewPatient(false);
         setSearchPerformed(true);
     } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-            // Patient not found: IS2025-001 - Allow creation on the fly
+
             setIsNewPatient(true);
             setSearchPerformed(true);
-            
-            // Clear fields so nurse can enter them
+
+
             setValue('pacienteNombre', '');
             setValue('pacienteApellido', '');
             setValue('pacienteFechaNacimiento', '');
@@ -222,11 +222,11 @@ const Admission: React.FC = () => {
   };
 
   const handleResetSearch = () => {
-    // Reset but keep triage values if typed
+
     const currentValues = getValues();
     reset({
         ...currentValues,
-        pacienteCuil: currentValues.pacienteCuil, // Keep typed cuil
+        pacienteCuil: currentValues.pacienteCuil, 
         pacienteNombre: '',
         pacienteApellido: '',
         calle: '',
@@ -252,10 +252,10 @@ const Admission: React.FC = () => {
     }
 
     try {
-        // Prepare payload according to IS2025-001
-        
+
+
         let osPayload = undefined;
-        // Logic for OS
+
         const finalOsName = osQuery;
         const finalOsId = data.obraSocialId || obrasSocialesList.find(o => o.nombre === finalOsName)?.id;
 
@@ -268,7 +268,7 @@ const Admission: React.FC = () => {
 
         const admissionPayload: AdmissionRequest = {
             pacienteCuil: data.pacienteCuil,
-            // Only send these if it's a new patient (or if API allows updates)
+
             pacienteNombre: data.pacienteNombre,
             pacienteApellido: data.pacienteApellido,
             pacienteFechaNacimiento: data.pacienteFechaNacimiento || undefined,
@@ -281,8 +281,8 @@ const Admission: React.FC = () => {
             } : undefined,
             pacienteObraSocial: osPayload,
 
-            enfermeroCuil: user.cuil, // Mandatory
-            
+            enfermeroCuil: user.cuil, 
+
             descripcion: data.descripcion,
             temperatura: Math.abs(Number(data.temperatura)),
             tensionSistolica: Math.abs(Number(data.tensionSistolica)),
@@ -306,7 +306,7 @@ const Admission: React.FC = () => {
     }
   };
 
-  // Filtered list for the dropdown
+
   const filteredOS = obrasSocialesList.filter(os => 
     os.nombre.toLowerCase().includes(osQuery.toLowerCase())
   );
@@ -321,7 +321,7 @@ const Admission: React.FC = () => {
              : 'Complete los detalles del triage y signos vitales.'}
         </p>
       </div>
-      
+
       <div className="px-4 py-5 sm:p-6">
         {submitError && (
             <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4">
@@ -335,10 +335,9 @@ const Admission: React.FC = () => {
                 </div>
             </div>
         )}
-        
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          
-          {/* Patient Identification Section */}
+
           <div>
             <div className="flex justify-between items-center mb-4 pb-2 border-b">
                  <h4 className="text-md font-bold text-gray-900">Identificación del Paciente</h4>
@@ -389,7 +388,6 @@ const Admission: React.FC = () => {
               </div>
             </div>
 
-            {/* Status Messages after Search */}
             {searchPerformed && (
                 <div className={`mt-6 p-4 rounded-md ${isNewPatient ? 'bg-yellow-50 border border-yellow-200' : 'bg-blue-50 border border-blue-200'}`}>
                     <div className="flex justify-between items-center">
@@ -439,8 +437,7 @@ const Admission: React.FC = () => {
                             />
                              {errors.pacienteApellido && <span className="text-red-500 text-xs">Requerido</span>}
                         </div>
-                         
-                         {/* Optional fields for creation */}
+
                          <div className="sm:col-span-2">
                              <label className="block text-sm font-medium text-gray-700">Fecha Nacimiento</label>
                              <input 
@@ -472,7 +469,7 @@ const Admission: React.FC = () => {
                             />
                          </div>
                     </div>
-                    
+
                     <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                         <div className="sm:col-span-3">
                             <label className="block text-sm font-medium text-gray-700">Calle {isNewPatient && '*'}</label>
@@ -505,7 +502,6 @@ const Admission: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Obra Social Section (Only relevant if creating new, or if existing patient needs update - assuming updates allowed on creation) */}
                     <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                          <div className="sm:col-span-3 relative" ref={osDropdownRef}>
                              <label className="block text-sm font-medium text-gray-700">Obra Social</label>
@@ -572,12 +568,11 @@ const Admission: React.FC = () => {
             )}
           </div>
 
-          {/* Vitals & Triage Section - Only visible after search */}
           {searchPerformed && (
           <>
             <div>
                 <h4 className="text-md font-bold text-gray-900 mb-4 pb-2 border-b">Signos Vitales</h4>
-                
+
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 mb-6">
                     <div>
                         <label className="block text-xs font-medium text-gray-500 uppercase">Temp (°C)</label>
@@ -636,13 +631,12 @@ const Admission: React.FC = () => {
                 </div>
             </div>
 
-            {/* Triage Section */}
             <div>
                 <h4 className="text-md font-bold text-gray-900 mb-4 pb-2 border-b flex justify-between items-center">
                     <span>Nivel de Emergencia (Triage)</span>
                     {errors.nivelEmergencia && <span className="text-red-500 text-xs font-normal">Seleccione una opción</span>}
                 </h4>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {TRIAGE_OPTIONS.map((option) => {
                     const isSelected = currentTriageLevel === option.value;

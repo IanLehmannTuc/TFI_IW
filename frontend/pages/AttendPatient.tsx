@@ -12,7 +12,7 @@ const AttendPatient: React.FC = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Restore session on mount (check if we have a locally stored active session and validate status)
+
   useEffect(() => {
       const restoreSession = async () => {
           const savedAdmissionId = localStorage.getItem('activePatientId');
@@ -23,9 +23,9 @@ const AttendPatient: React.FC = () => {
 
           setRestoringSession(true);
           try {
-              // Fetch admission details to check status using IS2025 detail endpoint
+
               const admission = await apiRequest<Admission>(`/ingresos/${savedAdmissionId}`);
-              
+
               if (admission.estado === AdmissionStatus.EN_PROCESO) {
                   setCurrentPatient(admission);
               } else {
@@ -48,20 +48,20 @@ const AttendPatient: React.FC = () => {
     setSuccessMessage('');
     setMedicalReport('');
     try {
-      // IS2025-003: Reclamar próximo paciente
-      // Endpoint: POST /api/cola-atencion/atender
+
+
       const patientAdmission = await apiRequest<Admission>('/cola-atencion/atender', {
           method: 'POST'
       });
-      
-      // If 200, we get the Admission object with status EN_PROCESO
-      // We assume patientAdmission has all necessary details. If nurse name is missing,
-      // we might want to fetch detail again, but let's stick to the flow.
+
+
+
+
       localStorage.setItem('activePatientId', patientAdmission.id);
       setCurrentPatient(patientAdmission);
-      
+
     } catch (e) {
-      // Handle cases where queue is empty (400 or 404 depending on implementation, prompt says 400: "No hay pacientes...")
+
       setError(e instanceof Error ? e.message : 'No hay pacientes en espera.');
       setCurrentPatient(null);
     } finally {
@@ -78,10 +78,10 @@ const AttendPatient: React.FC = () => {
 
       setLoading(true);
       setError('');
-      
+
       try {
-          // IS2025-004: Finalizar atención
-          // POST /api/atenciones
+
+
           await apiRequest<Attention>('/atenciones', {
               method: 'POST',
               body: JSON.stringify({
@@ -91,13 +91,13 @@ const AttendPatient: React.FC = () => {
           });
 
           setSuccessMessage('Atención finalizada correctamente.');
-          
-          // Clear persistence
+
+
           localStorage.removeItem('activePatientId');
-          
+
           setCurrentPatient(null);
           setMedicalReport('');
-          
+
           setTimeout(() => {
              setSuccessMessage('');
           }, 3000);
@@ -110,8 +110,8 @@ const AttendPatient: React.FC = () => {
   }
 
   const getBloodPressure = () => {
-    if (currentPatient?.signosVitales) {
-        return `${currentPatient.signosVitales.tensionSistolica}/${currentPatient.signosVitales.tensionDiastolica}`;
+    if (currentPatient?.tensionSistolica && currentPatient?.tensionDiastolica) {
+        return `${currentPatient.tensionSistolica}/${currentPatient.tensionDiastolica}`;
     }
     return 'No registrado';
   };
@@ -180,19 +180,18 @@ const AttendPatient: React.FC = () => {
           <div className="px-4 py-5 sm:px-6 flex justify-between items-start bg-gray-50">
             <div>
                 <h3 className="text-xl leading-6 font-bold text-gray-900">
-                {currentPatient.paciente?.nombre ? `${currentPatient.paciente.nombre} ${currentPatient.paciente.apellido}` : 'Cargando datos...'}
+                {currentPatient.pacienteNombre ? `${currentPatient.pacienteNombre} ${currentPatient.pacienteApellido}` : 'Cargando datos...'}
                 </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">CUIL: {currentPatient.paciente?.cuil || 'S/D'}</p>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">CUIL: {currentPatient.pacienteCuil || 'S/D'}</p>
                 <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
                     EN PROCESO DE ATENCIÓN
                 </div>
             </div>
             <TriageBadge level={currentPatient.nivelEmergencia} />
           </div>
-          
+
           <div className="border-t border-gray-200">
              <div className="grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-200">
-                 {/* Left Column: Patient Info */}
                  <div className="p-4 sm:p-6">
                     <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Información de Ingreso</h4>
                     <dl className="space-y-4">
@@ -200,7 +199,7 @@ const AttendPatient: React.FC = () => {
                             <dt className="text-sm font-medium text-gray-500">Motivo de consulta</dt>
                             <dd className="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded-md border border-gray-100">{currentPatient.descripcion}</dd>
                         </div>
-                        {currentPatient.signosVitales && (
+                        {currentPatient.temperatura && (
                             <div>
                                 <dt className="text-sm font-medium text-gray-500 mb-2">Signos Vitales</dt>
                                 <dd className="grid grid-cols-2 gap-3">
@@ -210,15 +209,15 @@ const AttendPatient: React.FC = () => {
                                     </div>
                                     <div className="bg-gray-50 p-2 rounded border border-gray-100">
                                         <span className="block text-xs text-gray-500">Frec. Cardíaca</span>
-                                        <span className="font-semibold">{currentPatient.signosVitales.frecuenciaCardiaca} bpm</span>
+                                        <span className="font-semibold">{currentPatient.frecuenciaCardiaca} bpm</span>
                                     </div>
                                     <div className="bg-gray-50 p-2 rounded border border-gray-100">
                                         <span className="block text-xs text-gray-500">Temperatura</span>
-                                        <span className="font-semibold">{currentPatient.signosVitales.temperatura} °C</span>
+                                        <span className="font-semibold">{currentPatient.temperatura} °C</span>
                                     </div>
                                     <div className="bg-gray-50 p-2 rounded border border-gray-100">
                                         <span className="block text-xs text-gray-500">Frec. Resp.</span>
-                                        <span className="font-semibold">{currentPatient.signosVitales.frecuenciaRespiratoria} rpm</span>
+                                        <span className="font-semibold">{currentPatient.frecuenciaRespiratoria} rpm</span>
                                     </div>
                                 </dd>
                             </div>
@@ -226,23 +225,18 @@ const AttendPatient: React.FC = () => {
                          <div>
                             <dt className="text-sm font-medium text-gray-500">Ingresado por</dt>
                             <dd className="mt-1 text-xs text-gray-400">
-                                {currentPatient.enfermero?.apellido ? (
-                                    `${currentPatient.enfermero.apellido}, ${currentPatient.enfermero.nombre || ''}`
-                                ) : (
-                                    <span className="italic">Información no disponible</span>
-                                )}
+                                Enfermero CUIL: {currentPatient.enfermeroCuil || 'N/A'} (Mat: {currentPatient.enfermeroMatricula || 'N/A'})
                             </dd>
                         </div>
                     </dl>
                  </div>
 
-                 {/* Right Column: Medical Report */}
                  <div className="p-4 sm:p-6 bg-blue-50/30">
                      <h4 className="text-sm font-bold text-primary-700 uppercase tracking-wider mb-4 flex items-center gap-2">
                          <FileText className="w-4 h-4" />
                          Informe Médico
                      </h4>
-                     
+
                      <div className="space-y-4">
                          <div>
                              <label htmlFor="report" className="block text-sm font-medium text-gray-700 mb-1">
@@ -257,7 +251,7 @@ const AttendPatient: React.FC = () => {
                                 onChange={(e) => setMedicalReport(e.target.value)}
                              ></textarea>
                          </div>
-                         
+
                          <div className="flex items-center justify-end pt-4">
                              <button
                                 onClick={handleFinish}

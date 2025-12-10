@@ -9,7 +9,7 @@ import java.util.Objects;
 public class Password {
     private static final int MIN_LENGTH = 8;
     private static final int MAX_LENGTH = 128; 
-    
+
     private final String value;
 
     /**
@@ -32,19 +32,19 @@ public class Password {
         if (password == null || password.isEmpty()) {
             throw new IllegalArgumentException("La contraseña no puede ser nula o vacía");
         }
-        
+
         if (password.length() < MIN_LENGTH) {
             throw new IllegalArgumentException(
                 "La contraseña debe tener al menos " + MIN_LENGTH + " caracteres"
             );
         }
-        
+
         if (password.length() > MAX_LENGTH) {
             throw new IllegalArgumentException(
                 "La contraseña no puede tener más de " + MAX_LENGTH + " caracteres"
             );
         }
-        
+
         return new Password(password);
     }
 

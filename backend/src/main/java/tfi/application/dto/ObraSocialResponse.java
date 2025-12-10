@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Usado para listar obras sociales disponibles.
  */
 public class ObraSocialResponse {
-    
+
     private Integer id;
     private String nombre;
 

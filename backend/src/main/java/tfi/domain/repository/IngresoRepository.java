@@ -35,7 +35,7 @@ public interface IngresoRepository {
      * @return el ingreso actualizado
      */
     Ingreso update(Ingreso ingreso);
-    
+
     /**
      * Busca un ingreso por un identificador único, si existe.
      * @param ingresoId identificador del ingreso

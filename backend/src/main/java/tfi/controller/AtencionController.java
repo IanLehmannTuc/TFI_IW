@@ -52,17 +52,17 @@ public class AtencionController {
     public ResponseEntity<AtencionResponse> registrarAtencion(
             @RequestBody RegistroAtencionRequest request,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.requireAutoridad(httpRequest, Autoridad.MEDICO);
-        
+
         UsuarioAutenticado usuario = SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         AtencionResponse response = atencionService.registrarAtencion(
             request.getIngresoId(),
             usuario.getId(),
             request.getInforme()
         );
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -83,9 +83,9 @@ public class AtencionController {
     public ResponseEntity<AtencionResponse> obtenerAtencionPorIngresoId(
             @PathVariable String ingresoId,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         try {
             AtencionResponse response = atencionService.obtenerAtencionPorIngresoId(ingresoId);
             return ResponseEntity.ok(response);
@@ -111,9 +111,9 @@ public class AtencionController {
     public ResponseEntity<AtencionResponse> obtenerAtencionPorId(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
-        
+
         SecurityContext.getUsuarioAutenticado(httpRequest);
-        
+
         try {
             AtencionResponse response = atencionService.obtenerAtencionPorId(id);
             return ResponseEntity.ok(response);

@@ -7,13 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Mapea la respuesta de la API externa de obras sociales.
  */
 public class VerificacionAfiliacionResponse {
-    
+
     @JsonProperty("esta_afiliado")
     private boolean estaAfiliado;
-    
+
     @JsonProperty("numero_afiliado")
     private String numeroAfiliado;
-    
+
     @JsonProperty("obra_social")
     private ObraSocialResponse obraSocial;
 

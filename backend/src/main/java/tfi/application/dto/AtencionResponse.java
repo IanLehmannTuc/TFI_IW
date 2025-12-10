@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  * Contiene todos los datos de una atención registrada.
  */
 public class AtencionResponse {
-    
+
     private String id;
     private String ingresoId;
     private String medicoId;
