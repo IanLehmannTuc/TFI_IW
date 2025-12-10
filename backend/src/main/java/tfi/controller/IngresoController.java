@@ -7,23 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tfi.application.dto.IngresoResponse;
 import tfi.application.dto.RegistroIngresoRequest;
-import tfi.domain.entity.Usuario;
-import tfi.domain.entity.Ingreso;
-import tfi.domain.entity.Paciente;
 import tfi.domain.enums.Autoridad;
-import tfi.domain.valueObject.FrecuenciaCardiaca;
-import tfi.domain.valueObject.FrecuenciaRespiratoria;
-import tfi.domain.valueObject.Presion;
-import tfi.domain.valueObject.Temperatura;
-import tfi.domain.valueObject.TensionArterial;
-import tfi.application.mapper.IngresoMapper;
-import tfi.domain.repository.UsuarioRepository;
-import tfi.domain.repository.PacientesRepository;
 import tfi.application.service.IngresoService;
 import tfi.util.SecurityContext;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controlador REST para endpoints de gestión de ingresos.
@@ -34,26 +22,14 @@ import java.util.stream.Collectors;
 public class IngresoController {
     
     private final IngresoService ingresoService;
-    private final PacientesRepository pacientesRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final IngresoMapper ingresoMapper;
 
     /**
      * Constructor con inyección de dependencias
      * 
      * @param ingresoService Servicio de ingresos
-     * @param pacientesRepository Repositorio de pacientes
-     * @param usuarioRepository Repositorio de usuarios (personal médico)
-     * @param ingresoMapper Mapper para convertir Ingreso a IngresoResponse
      */
-    public IngresoController(IngresoService ingresoService,
-                            PacientesRepository pacientesRepository,
-                            UsuarioRepository usuarioRepository,
-                            IngresoMapper ingresoMapper) {
+    public IngresoController(IngresoService ingresoService) {
         this.ingresoService = ingresoService;
-        this.pacientesRepository = pacientesRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.ingresoMapper = ingresoMapper;
     }
 
     /**
@@ -100,11 +76,7 @@ public class IngresoController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        List<Ingreso> ingresos = ingresoService.obtenerTodosLosIngresos();
-        List<IngresoResponse> responses = ingresos.stream()
-            .map(ingresoMapper::toResponse)
-            .collect(Collectors.toList());
-        
+        List<IngresoResponse> responses = ingresoService.obtenerTodosLosIngresos();
         return ResponseEntity.ok(responses);
     }
 
@@ -128,18 +100,12 @@ public class IngresoController {
         
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        List<Ingreso> ingresos = ingresoService.obtenerTodosLosIngresos();
-        Ingreso ingreso = ingresos.stream()
-            .filter(i -> i.getId() != null && i.getId().equals(id))
-            .findFirst()
-            .orElse(null);
-        
-        if (ingreso == null) {
+        try {
+            IngresoResponse response = ingresoService.obtenerIngresoPorId(id);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-        
-        IngresoResponse response = ingresoMapper.toResponse(ingreso);
-        return ResponseEntity.ok(response);
     }
 
     /**
@@ -167,56 +133,10 @@ public class IngresoController {
         
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
-        List<Ingreso> ingresos = ingresoService.obtenerTodosLosIngresos();
-        Ingreso ingresoExistente = ingresos.stream()
-            .filter(i -> i.getId() != null && i.getId().equals(id))
-            .findFirst()
-            .orElse(null);
-        
-        if (ingresoExistente == null) {
-            return ResponseEntity.notFound().build();
-        }
-        
-        Paciente paciente = pacientesRepository.findByCuil(request.getPacienteCuil())
-            .orElse(null);
-        if (paciente == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        
-        Usuario enfermero = usuarioRepository.findByCuil(request.getEnfermeroCuil())
-            .orElse(null);
-        if (enfermero == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        
         try {
-            Temperatura temperatura = new Temperatura(request.getTemperatura());
-            TensionArterial tensionArterial = new TensionArterial(
-                new Presion(request.getTensionSistolica()),
-                new Presion(request.getTensionDiastolica())
-            );
-            FrecuenciaCardiaca frecuenciaCardiaca = new FrecuenciaCardiaca(request.getFrecuenciaCardiaca());
-            FrecuenciaRespiratoria frecuenciaRespiratoria = new FrecuenciaRespiratoria(request.getFrecuenciaRespiratoria());
-            
-            Ingreso ingresoActualizado = new Ingreso(
-                ingresoExistente.getAtencion(),
-                paciente,
-                enfermero,
-                request.getDescripcion(),
-                ingresoExistente.getFechaHoraIngreso(),
-                temperatura,
-                tensionArterial,
-                frecuenciaCardiaca,
-                frecuenciaRespiratoria,
-                request.getNivelEmergencia()
-            );
-            ingresoActualizado.setId(id);
-            
-            Ingreso ingresoGuardado = ingresoService.actualizarIngreso(ingresoActualizado);
-            IngresoResponse response = ingresoMapper.toResponse(ingresoGuardado);
-            
+            IngresoResponse response = ingresoService.actualizarIngreso(id, request);
             return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -242,18 +162,12 @@ public class IngresoController {
         
         SecurityContext.requireAutoridad(httpRequest, Autoridad.ENFERMERO);
         
-        List<Ingreso> ingresos = ingresoService.obtenerTodosLosIngresos();
-        Ingreso ingreso = ingresos.stream()
-            .filter(i -> i.getId() != null && i.getId().equals(id))
-            .findFirst()
-            .orElse(null);
-        
-        if (ingreso == null) {
+        try {
+            ingresoService.eliminarIngreso(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-        
-        ingresoService.eliminarIngreso(ingreso);
-        return ResponseEntity.ok().build();
     }
 }
 

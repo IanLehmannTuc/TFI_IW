@@ -20,6 +20,7 @@ import tfi.domain.valueObject.Temperatura;
 import tfi.domain.valueObject.TensionArterial;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Servicio para gestionar ingresos de pacientes.
@@ -173,25 +174,31 @@ public class IngresoService {
     }
     
     /**
-     * Elimina un ingreso del sistema (repositorio y cola de atención).
+     * Elimina un ingreso del sistema (método interno).
      * Útil cuando un paciente es dado de alta o transferido.
      * 
      * @param ingreso el ingreso a eliminar
      * @return el ingreso eliminado
+     * @deprecated Usar eliminarIngreso(String id) en su lugar.
+     *             Este método se mantiene para compatibilidad interna.
      */
-    public Ingreso eliminarIngreso(Ingreso ingreso) {
+    @Deprecated
+    private Ingreso eliminarIngresoInterno(Ingreso ingreso) {
         colaAtencionService.removerDeCola(ingreso);
         return ingresoRepository.delete(ingreso);
     }
     
     /**
-     * Actualiza un ingreso existente.
+     * Actualiza un ingreso existente (método interno).
      * Si cambió la prioridad, actualiza su posición en la cola.
      * 
      * @param ingreso el ingreso con datos actualizados
      * @return el ingreso actualizado
+     * @deprecated Usar actualizarIngreso(String id, RegistroIngresoRequest request) en su lugar.
+     *             Este método se mantiene para compatibilidad interna.
      */
-    public Ingreso actualizarIngreso(Ingreso ingreso) {
+    @Deprecated
+    private Ingreso actualizarIngresoInterno(Ingreso ingreso) {
         Ingreso ingresoViejo = ingresoRepository.findById(ingreso.getId())
             .orElseThrow(() -> new IllegalStateException("Ingreso no encontrado"));
         Ingreso ingresoActualizado = ingresoRepository.update(ingreso);
@@ -210,10 +217,110 @@ public class IngresoService {
 
     /**
      * Obtiene todos los ingresos registrados sin ordenar.
-     * @return lista de todos los ingresos
+     * @return lista de todos los ingresos como DTOs
      */
-    public List<Ingreso> obtenerTodosLosIngresos() {
-        return ingresoRepository.findAll();
+    public List<IngresoResponse> obtenerTodosLosIngresos() {
+        List<Ingreso> ingresos = ingresoRepository.findAll();
+        return ingresos.stream()
+            .map(ingresoMapper::toResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene un ingreso por su ID.
+     * 
+     * @param id ID del ingreso a buscar
+     * @return IngresoResponse con los datos del ingreso
+     * @throws IllegalArgumentException si el ingreso no existe
+     */
+    public IngresoResponse obtenerIngresoPorId(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El ID del ingreso no puede ser nulo o vacío");
+        }
+        
+        Ingreso ingreso = ingresoRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("No se encontró un ingreso con ID: " + id));
+        
+        return ingresoMapper.toResponse(ingreso);
+    }
+
+    /**
+     * Actualiza un ingreso existente.
+     * Valida que el ingreso exista y que los datos sean válidos.
+     * 
+     * @param id ID del ingreso a actualizar
+     * @param request Datos actualizados del ingreso
+     * @return IngresoResponse con los datos del ingreso actualizado
+     * @throws IllegalArgumentException si el ingreso no existe o los datos son inválidos
+     */
+    public IngresoResponse actualizarIngreso(String id, RegistroIngresoRequest request) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El ID del ingreso no puede ser nulo o vacío");
+        }
+        
+        Ingreso ingresoExistente = ingresoRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("No se encontró un ingreso con ID: " + id));
+        
+        // Buscar paciente
+        Paciente paciente = pacientesRepository.findByCuil(request.getPacienteCuil())
+            .orElseThrow(() -> new IllegalArgumentException("No se encontró un paciente con CUIL: " + request.getPacienteCuil()));
+        
+        // Buscar enfermero
+        Usuario enfermero = usuarioRepository.findByCuil(request.getEnfermeroCuil())
+            .orElseThrow(() -> new IllegalArgumentException("No se encontró un enfermero con CUIL: " + request.getEnfermeroCuil()));
+        
+        // Validar que el usuario es enfermero
+        if (!enfermero.esEnfermero()) {
+            throw new IllegalArgumentException("El usuario con CUIL " + request.getEnfermeroCuil() + " no es un enfermero");
+        }
+        
+        // Crear value objects
+        Temperatura temperatura = new Temperatura(request.getTemperatura());
+        TensionArterial tensionArterial = new TensionArterial(
+            new Presion(request.getTensionSistolica()),
+            new Presion(request.getTensionDiastolica())
+        );
+        FrecuenciaCardiaca frecuenciaCardiaca = new FrecuenciaCardiaca(request.getFrecuenciaCardiaca());
+        FrecuenciaRespiratoria frecuenciaRespiratoria = new FrecuenciaRespiratoria(request.getFrecuenciaRespiratoria());
+        
+        // Crear nuevo ingreso con los datos actualizados
+        Ingreso ingresoActualizado = new Ingreso(
+            ingresoExistente.getAtencion(),
+            paciente,
+            enfermero,
+            request.getDescripcion(),
+            ingresoExistente.getFechaHoraIngreso(),
+            temperatura,
+            tensionArterial,
+            frecuenciaCardiaca,
+            frecuenciaRespiratoria,
+            request.getNivelEmergencia()
+        );
+        ingresoActualizado.setId(id);
+        
+        // Actualizar en repositorio y cola
+        Ingreso ingresoGuardado = ingresoRepository.update(ingresoActualizado);
+        colaAtencionService.actualizarEnCola(ingresoExistente, ingresoGuardado);
+        
+        return ingresoMapper.toResponse(ingresoGuardado);
+    }
+
+    /**
+     * Elimina un ingreso del sistema por su ID.
+     * 
+     * @param id ID del ingreso a eliminar
+     * @throws IllegalArgumentException si el ingreso no existe
+     */
+    public void eliminarIngreso(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El ID del ingreso no puede ser nulo o vacío");
+        }
+        
+        Ingreso ingreso = ingresoRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("No se encontró un ingreso con ID: " + id));
+        
+        colaAtencionService.removerDeCola(ingreso);
+        ingresoRepository.delete(ingreso);
     }
 }
 
