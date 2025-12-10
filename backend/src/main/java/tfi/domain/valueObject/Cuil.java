@@ -139,7 +139,7 @@ public final class Cuil {
             case "34":
                 return "F";
             default:
-                return null; // No debería llegar aquí por validación
+                return null; 
         }
     }
 

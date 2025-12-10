@@ -89,7 +89,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
             throw new IllegalArgumentException("La atención debe tener un informe médico");
         }
 
-        // Verificar que no exista ya una atención para este ingreso
+        
         if (findByIngresoId(atencion.getIngresoId()).isPresent()) {
             throw new IllegalStateException("Ya existe una atención registrada para este ingreso");
         }
@@ -99,7 +99,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
             fechaAtencion = LocalDateTime.now();
         }
 
-        // El ID se genera automáticamente en la base de datos
+        
         String sql = "INSERT INTO atenciones (ingreso_id, medico_id, informe_medico, fecha_atencion) " +
                      "VALUES (CAST(? AS UUID), CAST(? AS UUID), ?, ?) RETURNING id::text";
 
@@ -160,7 +160,7 @@ public class AtencionRepositoryPostgres implements AtencionRepository {
             throw new IllegalArgumentException("La atención debe tener un ID para ser eliminada");
         }
 
-        // Primero verificamos que existe y la obtenemos
+        
         Optional<Atencion> existing = findById(atencion.getId());
         if (existing.isEmpty()) {
             throw new IllegalStateException("No existe una atención con el ID: " + atencion.getId());

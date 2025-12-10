@@ -47,7 +47,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             String apellido = rs.getString("apellido");
             String email = rs.getString("email");
 
-            // Domicilio
+            
             Domicilio domicilio = null;
             String calle = rs.getString("domicilio_calle");
             if (calle != null) {
@@ -56,13 +56,13 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
                 domicilio = new Domicilio(calle, numero, localidad);
             }
 
-            // Obra Social
-            // Nota: El nombre de la obra social ya no está en la BD, se obtiene de la API externa
-            // Usamos un nombre temporal basado en el ID. El nombre real se puede obtener de la API cuando sea necesario.
+            
+            
+            
             Afiliado afiliado = null;
             Integer obraSocialId = (Integer) rs.getObject("obra_social_id");
             if (obraSocialId != null) {
-                // Usamos un nombre temporal. En producción, esto debería obtenerse de la API cuando sea necesario
+                
                 String nombreObraSocial = rs.getString("nombre_obra_social");
                 if (nombreObraSocial == null) {
                     nombreObraSocial = "Obra Social " + obraSocialId;
@@ -73,7 +73,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             }
 
             Paciente paciente;
-            // Si nombre es null, crear paciente con constructor básico
+            
             if (nombre == null) {
                 paciente = new Paciente(cuil, domicilio, afiliado);
             } else {
@@ -87,7 +87,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
 
     @Override
     public Page<Paciente> findAll(Pageable pageable) {
-        // Construir la consulta base
+        
         StringBuilder sql = new StringBuilder(
             "SELECT p.id, p.cuil, p.nombre, p.apellido, p.email, " +
             "p.domicilio_calle, p.domicilio_numero, p.domicilio_localidad, " +
@@ -95,13 +95,13 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             "FROM pacientes p"
         );
 
-        // Agregar ordenamiento si existe
+        
         if (pageable.getSort().isSorted()) {
             sql.append(" ORDER BY ");
             List<String> orderByClauses = pageable.getSort().stream()
                 .map(order -> {
                     String property = order.getProperty();
-                    // Mapear propiedades de la entidad a columnas de la BD
+                    
                     String column = mapPropertyToColumn(property);
                     String direction = order.getDirection() == Sort.Direction.ASC ? "ASC" : "DESC";
                     return column + " " + direction;
@@ -109,19 +109,19 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
                 .toList();
             sql.append(String.join(", ", orderByClauses));
         } else {
-            // Ordenamiento por defecto por CUIL
+            
             sql.append(" ORDER BY p.cuil ASC");
         }
 
-        // Agregar paginación
+        
         sql.append(" LIMIT ? OFFSET ?");
 
-        // Ejecutar consulta paginada
+        
         int pageSize = pageable.getPageSize();
         int offset = (int) pageable.getOffset();
         List<Paciente> content = jdbcTemplate.query(sql.toString(), new PacienteRowMapper(), pageSize, offset);
 
-        // Contar el total de registros
+        
         String countSql = "SELECT COUNT(*) FROM pacientes p";
         Long total = jdbcTemplate.queryForObject(countSql, Long.class);
 
@@ -140,7 +140,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             case "apellido" -> "p.apellido";
             case "email" -> "p.email";
             case "id" -> "p.id";
-            default -> "p.cuil"; // Por defecto ordenar por CUIL
+            default -> "p.cuil"; 
         };
     }
 
@@ -184,14 +184,14 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             throw new IllegalStateException("Ya existe un paciente con el CUIL: " + paciente.getCuil());
         }
 
-        // Obtener el ID de la obra social directamente del objeto
-        // Nota: Ya no creamos obras sociales en la BD, vienen de la API externa
+        
+        
         Integer obraSocialId = null;
         if (paciente.getObraSocial() != null && paciente.getObraSocial().getObraSocial() != null) {
             obraSocialId = paciente.getObraSocial().getObraSocial().getId();
         }
 
-        // El ID se genera automáticamente en la base de datos
+        
         String sql = "INSERT INTO pacientes (cuil, nombre, apellido, email, " +
                      "domicilio_calle, domicilio_numero, domicilio_localidad, " +
                      "obra_social_id, numero_afiliado) " +
@@ -225,8 +225,8 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             throw new IllegalStateException("No existe un paciente con el CUIL: " + paciente.getCuil());
         }
 
-        // Obtener el ID de la obra social directamente del objeto
-        // Nota: Ya no creamos obras sociales en la BD, vienen de la API externa
+        
+        
         Integer obraSocialId = null;
         if (paciente.getObraSocial() != null && paciente.getObraSocial().getObraSocial() != null) {
             obraSocialId = paciente.getObraSocial().getObraSocial().getId();
@@ -261,7 +261,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
             throw new IllegalArgumentException("El CUIL del paciente no puede ser nulo o vacío");
         }
 
-        // Primero verificamos que existe y lo obtenemos
+        
         Paciente existing = findByCuil(paciente.getCuil())
             .orElseThrow(() -> new IllegalStateException("No existe un paciente con el CUIL: " + paciente.getCuil()));
 

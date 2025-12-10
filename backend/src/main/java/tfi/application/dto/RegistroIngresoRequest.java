@@ -16,9 +16,9 @@ public class RegistroIngresoRequest {
     private String pacienteNombre;
     private String pacienteApellido;
     private String pacienteEmail;
-    // Domicilio opcional - no se valida para permitir campos parciales
+    
     private RegistroPacienteRequest.DomicilioRequest pacienteDomicilio;
-    // Obra social opcional - no se valida para permitir campos parciales
+    
     private RegistroPacienteRequest.AfiliadoRequest pacienteObraSocial;
     
     @NotBlank(message = "El CUIL del enfermero es obligatorio")

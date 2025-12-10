@@ -244,7 +244,7 @@ public class UsuarioRepositoryPostgres implements UsuarioRepository {
 
         String emailKey = email.toLowerCase();
 
-        // Primero obtenemos el usuario
+        
         Optional<Usuario> usuario = findByEmail(emailKey);
         if (usuario.isEmpty()) {
             throw new IllegalArgumentException("No existe un usuario con el email: " + email);

@@ -62,10 +62,10 @@ public class AutenticacionService {
      */
     @Transactional
     public RegistroResponse registrar(@NonNull RegistroRequest request) {
-        // Las validaciones de campos obligatorios y formato se manejan en el DTO con @Valid
-        // Aquí solo validamos lógica de negocio
         
-        // Convertir datos a Value Objects (validan formato)
+        
+        
+        
         Email email;
         Password password;
         Cuil cuil;

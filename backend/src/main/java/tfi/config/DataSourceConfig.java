@@ -41,14 +41,14 @@ public class DataSourceConfig {
         config.setPassword(password);
         config.setDriverClassName(driverClassName);
         
-        // Configuración del pool de conexiones
+        
         config.setMaximumPoolSize(10);
         config.setMinimumIdle(5);
         config.setConnectionTimeout(30000);
         config.setIdleTimeout(600000);
         config.setMaxLifetime(1800000);
         
-        // Configuraciones adicionales para PostgreSQL
+        
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

@@ -1,166 +1,344 @@
-# Backend - Sistema de Gestión de Urgencias
+# 🏥 Sistema de Gestión de Urgencias Médicas
 
-Backend desarrollado en Spring Boot para el sistema de gestión de urgencias hospitalarias.
+Sistema backend para la gestión de ingresos y atención de pacientes en el área de urgencias de un hospital.
 
-## 📚 Documentación de la API
+---
 
-**La documentación completa de todos los endpoints está disponible en:**
-- **[API.md](./API.md)**
+## 📋 Descripción
 
-## 🚀 Inicio Rápido
+Sistema desarrollado en **Spring Boot** que permite:
 
-### Requisitos
-- Java 22
-- Maven 3.6+
-- PostgreSQL (opcional, también soporta repositorio en memoria)
+- 👥 **Gestión de Pacientes**: Registro, actualización y consulta de datos de pacientes
+- 🚑 **Registro de Ingresos**: Ingreso de pacientes a urgencias con signos vitales
+- 📋 **Cola de Atención**: Cola automatizada por prioridad de emergencia
+- 🩺 **Atenciones Médicas**: Registro de diagnósticos e informes médicos
+- 🔐 **Autenticación JWT**: Sistema seguro de autenticación y autorización
+- 🏢 **Obras Sociales**: Integración con API externa para verificación
 
-### Configuración
-
-1. **Clonar el repositorio y navegar al directorio backend:**
-```bash
-cd backend
-```
-
-2. **Configurar la base de datos (opcional):**
-```bash
-# Iniciar PostgreSQL con Docker Compose
-docker-compose up -d
-
-# Inicializar la base de datos
-./scripts/init-db.sh
-
-# Poblar con datos de prueba (opcional)
-./scripts/populate-db.sh
-```
-
-3. **Ejecutar la aplicación:**
-```bash
-./mvnw spring-boot:run
-```
-
-La aplicación estará disponible en `http://localhost:8080`
-
-## 📋 Endpoints Disponibles
-
-### Autenticación (`/api/auth`)
-- `POST /api/auth/registro` - Registrar nuevo usuario
-- `POST /api/auth/login` - Iniciar sesión
-- `GET /api/auth/perfil` - Obtener perfil del usuario
-- `GET /api/auth/verificar` - Verificar autenticación
-
-### Pacientes (`/api/pacientes`)
-- `POST /api/pacientes` - Crear paciente (requiere ENFERMERO)
-- `GET /api/pacientes` - Listar pacientes con paginación
-- `GET /api/pacientes/{cuil}` - Buscar paciente por CUIL
-
-### Ingresos (`/api/ingresos`)
-- `POST /api/ingresos` - Registrar ingreso (requiere ENFERMERO)
-- `GET /api/ingresos` - Obtener todos los ingresos
-- `GET /api/ingresos/{id}` - Obtener ingreso por ID
-- `PUT /api/ingresos/{id}` - Actualizar ingreso (requiere ENFERMERO)
-- `DELETE /api/ingresos/{id}` - Eliminar ingreso (requiere ENFERMERO)
-
-### Cola de Atención (`/api/cola-atencion`)
-- `GET /api/cola-atencion` - Obtener cola ordenada por prioridad
-- `GET /api/cola-atencion/siguiente` - Ver siguiente paciente sin removerlo
-- `POST /api/cola-atencion/atender` - Atender siguiente paciente (requiere MEDICO)
-- `GET /api/cola-atencion/cantidad` - Cantidad de pacientes en espera
-
-### Atenciones (`/api/atenciones`)
-- `POST /api/atenciones` - Registrar atención médica (requiere MEDICO)
-- `GET /api/atenciones/{id}` - Obtener atención por ID
-- `GET /api/atenciones/ingreso/{ingresoId}` - Obtener atención por ID de ingreso
-
-### Obras Sociales (`/api/obras-sociales`)
-- `GET /api/obras-sociales` - Listar obras sociales disponibles
-
-**Para detalles completos, ejemplos y validaciones, consulta [API.md](./API.md)**
-
-## 🧪 Scripts de Prueba
-
-El directorio `scripts/` contiene varios scripts útiles:
-
-- `init-db.sh` - Inicializa la base de datos PostgreSQL
-- `populate-db.sh` - Pobla la base de datos con 100 pacientes de prueba
-- `script_setup_completo.sh` - Script completo de configuración inicial
-- `test_listar_pacientes.sh` - Prueba el endpoint de listado de pacientes
-- `test_registrar_ingreso.sh` - Prueba el endpoint de registro de ingresos
+---
 
 ## 🏗️ Arquitectura
 
-El proyecto sigue una arquitectura limpia (Clean Architecture) con las siguientes capas:
+El sistema está desarrollado siguiendo principios de:
 
-- **Domain**: Entidades, value objects, enums y repositorios (interfaces)
-- **Application**: DTOs, servicios y mappers
-- **Infrastructure**: Implementaciones de repositorios (PostgreSQL y memoria)
-- **Controller**: Endpoints REST
+- **Clean Architecture** (Arquitectura Limpia)
+- **Domain-Driven Design (DDD)** (Diseño Orientado al Dominio)
+- **SOLID Principles** (Principios SOLID)
 
-## 🔐 Autenticación
-
-La API utiliza JWT (JSON Web Tokens) para autenticación. Los tokens se obtienen mediante login y deben incluirse en el header:
+### Capas
 
 ```
-Authorization: Bearer <token>
+┌─────────────────────────────────────────┐
+│         Controllers (API REST)          │ ← Endpoints HTTP
+├─────────────────────────────────────────┤
+│      Application Services & DTOs        │ ← Orquestación
+├─────────────────────────────────────────┤
+│    Domain (Entities & Value Objects)    │ ← Lógica de Negocio
+├─────────────────────────────────────────┤
+│   Infrastructure (Repositories & DB)    │ ← Persistencia
+└─────────────────────────────────────────┘
 ```
 
-## 📦 Dependencias Principales
+---
 
-- Spring Boot 3.5.5
-- Spring JDBC (sin JPA/ORM)
-- JWT (JSON Web Tokens) - jjwt 0.12.3
-- PostgreSQL Driver
-- BCrypt para hasheo de contraseñas
-- HikariCP para pool de conexiones
-- Cucumber para tests BDD
-- JUnit 5 para tests unitarios
-- Maven
+## 🛠️ Tecnologías
 
-## 🔧 Configuración
+- **Java 22** - Lenguaje de programación
+- **Spring Boot 3.x** - Framework backend
+- **PostgreSQL** - Base de datos
+- **JWT (JSON Web Tokens)** - Autenticación
+- **Maven** - Gestor de dependencias
+- **JDBC** - Acceso a base de datos (sin ORM)
+- **Cucumber** - Tests BDD
+- **JUnit 5** - Tests unitarios
 
-La configuración se encuentra en `src/main/resources/application.properties`. Se pueden configurar:
+---
 
-- Puerto de la aplicación
-- Configuración de base de datos
-- Configuración de JWT (secret, expiración)
-- Perfiles de Spring (postgres, memory)
+## 🚀 Quick Start
 
-## 📝 Flujo de Trabajo
+### Requisitos
 
-### Ciclo de vida de un paciente en urgencias
+- Java 22+
+- PostgreSQL 16+ (o usar perfil `memory`)
+- Maven 3.6+ (incluido como `./mvnw`)
 
-1. **Registro de Paciente** (ENFERMERO)
-   - Se registra un nuevo paciente o se busca uno existente
-   - Si tiene obra social, se verifica automáticamente la afiliación
+### Opción 1: Modo Memoria (Sin BD) - RECOMENDADO PARA INICIO RÁPIDO
 
-2. **Registro de Ingreso** (ENFERMERO)
-   - Se registra el ingreso del paciente con signos vitales
-   - Se asigna un nivel de emergencia (BAJA, MEDIA, ALTA, CRITICA)
-   - El ingreso se crea en estado `PENDIENTE`
-   - Se agrega automáticamente a la cola de atención ordenada por prioridad
+```bash
+# 1. Compilar
+./mvnw clean compile
 
-3. **Cola de Atención**
-   - Los pacientes se ordenan por nivel de emergencia y fecha de ingreso
-   - Los médicos pueden consultar la cola y ver el siguiente paciente
+# 2. Levantar el servidor
+./mvnw spring-boot:run -Dspring-boot.run.profiles=memory
 
-4. **Atender Paciente** (MEDICO)
-   - El médico reclama al siguiente paciente de la cola
-   - El ingreso cambia a estado `EN_PROCESO`
-   - Se remueve de la cola de espera
+# 3. La API estará disponible en http://localhost:8080
+```
 
-5. **Registrar Atención** (MEDICO)
-   - El médico registra un informe de la atención realizada
-   - El ingreso cambia a estado `FINALIZADO`
-   - La atención queda asociada al ingreso
+### Opción 2: Modo PostgreSQL
 
-### Estados de un Ingreso
+```bash
+# 1. Crear base de datos
+sudo -u postgres psql
+CREATE DATABASE tfi_urgencias;
+CREATE USER tfi_user WITH PASSWORD 'tfi_password';
+GRANT ALL PRIVILEGES ON DATABASE tfi_urgencias TO tfi_user;
+\q
 
-- `PENDIENTE`: Ingreso recién registrado, esperando en cola
-- `EN_PROCESO`: Paciente siendo atendido por un médico
-- `FINALIZADO`: Atención completada con informe médico
+# 2. Ejecutar script de BD
+psql -U tfi_user -d tfi_urgencias -f src/main/resources/schema.sql
 
-## 📝 Notas
+# 3. Levantar servidor
+./mvnw spring-boot:run -Dspring-boot.run.profiles=postgres
+```
 
-- Por defecto, la aplicación usa el perfil "memory" (repositorio en memoria)
-- Para usar PostgreSQL, activa el perfil "postgres" y configura la conexión
-- Los tokens JWT expiran después de 24 horas por defecto
-- La verificación de obras sociales se realiza contra una API externa configurada en `application.properties`
+---
+
+## 📚 Documentación
+
+| Documento | Descripción |
+|-----------|-------------|
+| [GUIA_PRUEBAS_MANUAL.md](./GUIA_PRUEBAS_MANUAL.md) | Guía completa para probar el sistema manualmente |
+| [FLUJOS_PRUEBA.md](./FLUJOS_PRUEBA.md) | Ejemplos de requests y responses para cada endpoint |
+| [API_REFERENCE.md](./API_REFERENCE.md) | Referencia técnica completa de la API |
+| [ARQUITECTURA.md](./ARQUITECTURA.md) | Documentación de la arquitectura del sistema |
+
+---
+
+## 🧪 Testing
+
+### Ejecutar Tests
+
+```bash
+# Todos los tests (unitarios + integración + BDD)
+./mvnw test
+
+# Solo tests unitarios
+./mvnw test -Dtest="*Test"
+
+# Solo tests BDD (Cucumber)
+./mvnw test -Dtest="RunCucumberTest"
+```
+
+### Cobertura de Tests
+
+```
+✅ Tests Unitarios: 111 tests
+✅ Tests BDD (Cucumber): 11 escenarios
+✅ Cobertura: Domain entities, services, repositories
+```
+
+---
+
+## 🔐 Seguridad
+
+### Autenticación
+
+- Sistema basado en **JWT (JSON Web Tokens)**
+- Token válido por **1 hora**
+- Endpoints públicos: `/auth/registro` y `/auth/login`
+- Todos los demás endpoints requieren token
+
+### Autorización
+
+| Rol | Permisos |
+|-----|----------|
+| **ENFERMERO** | Registrar pacientes, ingresos, gestionar cola |
+| **MEDICO** | Registrar atenciones médicas, consultar información |
+
+---
+
+## 📊 Modelo de Datos
+
+### Entidades Principales
+
+- **Usuario**: Médicos y Enfermeros
+- **Paciente**: Datos personales y médicos
+- **Ingreso**: Registro de ingreso a urgencias
+- **Atencion**: Diagnóstico y tratamiento médico
+
+### Value Objects
+
+- **Email**: Validación de formato de email
+- **Cuil**: Validación de CUIL argentino
+- **Temperatura**: Rangos válidos de temperatura
+- **TensionArterial**: Validación de presión arterial
+- **Telefono**: Validación de formato telefónico
+
+---
+
+## 🌟 Características Destacadas
+
+### ✅ Implementadas
+
+- 🔐 **Autenticación JWT** completa
+- 👥 **Gestión de pacientes** con datos completos (teléfono, edad, sexo)
+- 📊 **Edad calculada automáticamente** desde fecha de nacimiento
+- 🚑 **Cola automática** por prioridad de emergencia
+- 📋 **Signos vitales** con validaciones médicas
+- 🏢 **Integración API externa** (obras sociales)
+- 🎯 **Domain-Driven Design** con entidades ricas
+- ✅ **Tests completos** (111 tests pasando)
+
+### 🔄 Flujo de Trabajo
+
+```
+1. Enfermero registra ingreso
+   ↓
+2. Paciente entra a cola (ordenado por prioridad)
+   ↓
+3. Enfermero llama al siguiente paciente
+   ↓
+4. Estado cambia a EN_PROCESO
+   ↓
+5. Médico registra atención
+   ↓
+6. Estado cambia a FINALIZADO
+```
+
+---
+
+## 📂 Estructura del Proyecto
+
+```
+backend/
+├── src/
+│   ├── main/
+│   │   ├── java/tfi/
+│   │   │   ├── controller/          # REST Controllers
+│   │   │   ├── application/         # Services & DTOs
+│   │   │   │   ├── service/         # Application Services
+│   │   │   │   ├── dto/             # Data Transfer Objects
+│   │   │   │   └── mapper/          # Entity ↔ DTO Mappers
+│   │   │   ├── domain/              # Domain Layer
+│   │   │   │   ├── entity/          # Domain Entities
+│   │   │   │   ├── valueObject/     # Value Objects
+│   │   │   │   ├── enums/           # Enumerations
+│   │   │   │   ├── repository/      # Repository Interfaces
+│   │   │   │   └── port/            # Ports (Hexagonal)
+│   │   │   ├── infrastructure/      # Infrastructure Layer
+│   │   │   │   ├── persistence/     # DB Implementations
+│   │   │   │   ├── external/        # External APIs
+│   │   │   │   └── security/        # Security Config
+│   │   │   ├── exception/           # Custom Exceptions
+│   │   │   └── util/                # Utilities
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── schema.sql           # Database Schema
+│   └── test/
+│       ├── java/                    # Unit Tests
+│       └── resources/
+│           └── moduloUrgencias.feature  # BDD Tests
+├── GUIA_PRUEBAS_MANUAL.md          # Testing Guide
+├── FLUJOS_PRUEBA.md                # API Examples
+├── API_REFERENCE.md                # API Reference
+└── README.md                       # This file
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Puerto 8080 ocupado
+
+```bash
+# Cambiar puerto en application.properties
+server.port=8081
+```
+
+### Error al conectar a PostgreSQL
+
+```bash
+# Verificar que PostgreSQL está corriendo
+sudo systemctl status postgresql
+
+# Verificar credenciales en application-postgres.properties
+```
+
+### Tests fallan
+
+```bash
+# Limpiar y recompilar
+./mvnw clean install -DskipTests
+```
+
+---
+
+## 👥 Roles del Sistema
+
+### ENFERMERO
+- Registrar pacientes
+- Registrar ingresos a urgencias
+- Ver cola de atención
+- Llamar al siguiente paciente
+- Consultar información
+
+### MEDICO
+- Registrar atenciones médicas
+- Crear informes médicos
+- Consultar información
+
+---
+
+## 📈 Estado del Proyecto
+
+```
+✅ Compilación: SUCCESS
+✅ Tests: 111/111 PASSED
+✅ Cobertura: Alta
+✅ Arquitectura: Clean Architecture + DDD
+✅ Seguridad: JWT implementado
+✅ API: RESTful completa
+```
+
+---
+
+## 🔜 Próximas Mejoras
+
+- [ ] Swagger/OpenAPI para documentación interactiva
+- [ ] Colección de Postman lista para importar
+- [ ] Docker Compose para levantar todo el stack
+- [ ] Logs estructurados (ELK Stack)
+- [ ] Metrics y monitoring (Prometheus + Grafana)
+- [ ] Tests de performance (JMeter)
+
+---
+
+## 📝 Convenciones de Código
+
+- **Nombres**: camelCase para métodos, PascalCase para clases
+- **Idioma**: Español para dominio, inglés para técnico
+- **Comentarios**: Javadoc en métodos públicos
+- **Tests**: Nombre descriptivo de lo que prueban
+- **Commits**: Mensajes claros y descriptivos
+
+---
+
+## 📞 Soporte
+
+Para iniciar con las pruebas manuales, sigue estos pasos:
+
+1. Lee [GUIA_PRUEBAS_MANUAL.md](./GUIA_PRUEBAS_MANUAL.md)
+2. Levanta el servidor en modo memoria
+3. Sigue los ejemplos en [FLUJOS_PRUEBA.md](./FLUJOS_PRUEBA.md)
+4. Consulta [API_REFERENCE.md](./API_REFERENCE.md) para detalles técnicos
+
+---
+
+## 📜 Licencia
+
+Este proyecto es parte del Trabajo Final Integrador de Ingeniería de Software.
+
+---
+
+## 🎓 Créditos
+
+Desarrollado como Trabajo Final Integrador (TFI) - Ingeniería de Software
+
+**Tecnologías principales:**
+- Spring Boot
+- PostgreSQL
+- JWT
+- Clean Architecture
+- Domain-Driven Design
+
+**Año:** 2025

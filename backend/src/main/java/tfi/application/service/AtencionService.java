@@ -46,12 +46,12 @@ public class AtencionService {
      * @throws AtencionException si hay algún error de validación
      */
     public Atencion registrarAtencion(String ingresoId, String medicoId, String informe) {
-        // Validar que el informe no esté vacío
+        
         if (informe == null || informe.trim().isEmpty()) {
             throw new AtencionException("El informe del paciente es obligatorio");
         }
 
-        // Buscar el ingreso
+        
         Optional<Ingreso> ingresoOpt = ingresoRepository.findById(ingresoId);
         if (ingresoOpt.isEmpty()) {
             throw new AtencionException("No se encontró el ingreso con ID: " + ingresoId);
@@ -59,22 +59,22 @@ public class AtencionService {
 
         Ingreso ingreso = ingresoOpt.get();
 
-        // Validar que el ingreso esté en estado EN_PROCESO
+        
         if (ingreso.getEstado() != Estado.EN_PROCESO) {
             throw new AtencionException("El ingreso debe estar en estado EN_PROCESO para registrar una atención. Estado actual: " + ingreso.getEstado());
         }
 
-        // Verificar que no exista ya una atención para este ingreso
+        
         Optional<Atencion> atencionExistente = atencionRepository.findByIngresoId(ingresoId);
         if (atencionExistente.isPresent()) {
             throw new AtencionException("Ya existe una atención registrada para este ingreso");
         }
 
-        // Crear la atención
+        
         Atencion atencion = new Atencion(ingresoId, medicoId, informe);
         Atencion atencionGuardada = atencionRepository.add(atencion);
 
-        // Actualizar el ingreso: cambiar estado a FINALIZADO
+        
         ingreso.setEstado(Estado.FINALIZADO);
         ingresoRepository.update(ingreso);
 

@@ -40,19 +40,19 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
     private class IngresoRowMapper implements RowMapper<Ingreso> {
         @Override
         public Ingreso mapRow(@org.springframework.lang.NonNull ResultSet rs, int rowNum) throws SQLException {
-            // Datos básicos del ingreso
+            
             String id = rs.getString("id");
             String descripcion = rs.getString("descripcion");
             Timestamp timestamp = rs.getTimestamp("fecha_hora_ingreso");
             LocalDateTime fechaHoraIngreso = timestamp != null ? timestamp.toLocalDateTime() : null;
 
-            // Paciente
+            
             Paciente paciente = mapPaciente(rs);
 
-            // Enfermero (Usuario con rol ENFERMERO)
+            
             Usuario enfermero = mapUsuario(rs, "enfermero_");
 
-            // Signos vitales
+            
             Temperatura temperatura = null;
             Double tempValor = (Double) rs.getObject("temperatura");
             if (tempValor != null) {
@@ -81,18 +81,18 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                 frecuenciaRespiratoria = new FrecuenciaRespiratoria(frValor);
             }
 
-            // Nivel de emergencia
+            
             String nivelStr = rs.getString("nivel_emergencia");
             NivelEmergencia nivelEmergencia = NivelEmergencia.valueOf(nivelStr);
 
-            // Estado
+            
             String estadoStr = rs.getString("estado");
             Estado estado = Estado.valueOf(estadoStr);
 
-            // Atención - Ya no se obtiene del ingreso, se consulta desde AtencionRepository si es necesario
+            
             Atencion atencion = null;
 
-            // Crear ingreso
+            
             Ingreso ingreso = new Ingreso(
                 atencion,
                 paciente,
@@ -119,7 +119,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             String apellido = rs.getString("paciente_apellido");
             String email = rs.getString("paciente_email");
 
-            // Domicilio
+            
             Domicilio domicilio = null;
             String calle = rs.getString("paciente_domicilio_calle");
             if (calle != null) {
@@ -128,13 +128,13 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                 domicilio = new Domicilio(calle, numero, localidad);
             }
 
-            // Obra Social
-            // Nota: El nombre de la obra social ya no está en la BD, se obtiene de la API externa
-            // Usamos un nombre temporal basado en el ID. El nombre real se puede obtener de la API cuando sea necesario.
+            
+            
+            
             Afiliado afiliado = null;
             Integer obraSocialId = (Integer) rs.getObject("paciente_obra_social_id");
             if (obraSocialId != null) {
-                // Usamos un nombre temporal. En producción, esto debería obtenerse de la API cuando sea necesario
+                
                 String nombreObraSocial = "Obra Social " + obraSocialId;
                 String numeroAfiliado = rs.getString("paciente_numero_afiliado");
                 ObraSocial obraSocial = new ObraSocial(obraSocialId, nombreObraSocial);
@@ -196,7 +196,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             ingreso.setFechaHoraIngreso(LocalDateTime.now());
         }
 
-        // Validar que los campos obligatorios no sean null
+        
         if (ingreso.getNivelEmergencia() == null) {
             throw new IllegalArgumentException("El nivel de emergencia no puede ser nulo");
         }
@@ -204,7 +204,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             ingreso.setEstado(Estado.PENDIENTE);
         }
 
-        // El ID se genera automáticamente en la base de datos
+        
         String sql = "INSERT INTO ingresos (paciente_id, enfermero_id, " +
                      "descripcion, fecha_hora_ingreso, temperatura, " +
                      "presion_sistolica, presion_diastolica, frecuencia_cardiaca, frecuencia_respiratoria, " +
@@ -277,7 +277,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
             throw new IllegalArgumentException("El ingreso debe tener un ID");
         }
 
-        // Primero verificamos que existe y lo obtenemos
+        
         Optional<Ingreso> existing = findById(ingreso.getId());
         if (existing.isEmpty()) {
             throw new IllegalStateException("No existe un ingreso con el ID: " + ingreso.getId());
@@ -319,7 +319,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                "i.temperatura, i.presion_sistolica, i.presion_diastolica, " +
                "i.frecuencia_cardiaca, i.frecuencia_respiratoria, " +
                "i.nivel_emergencia, i.estado, " +
-               // Paciente
+               
                "p.id AS paciente_id, p.cuil AS paciente_cuil, p.nombre AS paciente_nombre, " +
                "p.apellido AS paciente_apellido, p.email AS paciente_email, " +
                "p.domicilio_calle AS paciente_domicilio_calle, " +
@@ -327,7 +327,7 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
                "p.domicilio_localidad AS paciente_domicilio_localidad, " +
                "p.obra_social_id AS paciente_obra_social_id, " +
                "p.numero_afiliado AS paciente_numero_afiliado, " +
-               // Enfermero (Usuario)
+               
                "e.id AS enfermero_id, e.email AS enfermero_email, e.password_hash AS enfermero_password_hash, " +
                "e.autoridad AS enfermero_autoridad, e.cuil AS enfermero_cuil, " +
                "e.nombre AS enfermero_nombre, e.apellido AS enfermero_apellido, " +

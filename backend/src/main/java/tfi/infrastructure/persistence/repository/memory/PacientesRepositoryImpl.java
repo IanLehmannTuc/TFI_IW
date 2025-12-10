@@ -37,7 +37,7 @@ public class PacientesRepositoryImpl implements PacientesRepository {
     public Page<Paciente> findAll(Pageable pageable) {
         List<Paciente> allPacientes = new ArrayList<>(store.values());
         
-        // Aplicar ordenamiento si existe
+        
         if (pageable.getSort().isSorted()) {
             Comparator<Paciente> comparator = null;
             for (Sort.Order order : pageable.getSort()) {
@@ -54,13 +54,13 @@ public class PacientesRepositoryImpl implements PacientesRepository {
                     .collect(Collectors.toList());
             }
         } else {
-            // Ordenamiento por defecto por CUIL
+            
             allPacientes = allPacientes.stream()
                 .sorted(Comparator.comparing(Paciente::getCuil))
                 .collect(Collectors.toList());
         }
         
-        // Aplicar paginación
+        
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), allPacientes.size());
         List<Paciente> pageContent = start < allPacientes.size() 
@@ -118,7 +118,7 @@ public class PacientesRepositoryImpl implements PacientesRepository {
             throw new IllegalStateException("Ya existe un paciente con el CUIL: " + paciente.getCuil());
         }
         
-        // Generar ID único si no tiene
+        
         if (paciente.getId() == null) {
             paciente.setId(java.util.UUID.randomUUID().toString());
         }

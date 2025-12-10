@@ -18,7 +18,7 @@ public class CacheInitializer implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
-        // Precargar el cache de obras sociales al iniciar la aplicación
+        
         obraSocialCacheService.precargarCache();
     }
 }

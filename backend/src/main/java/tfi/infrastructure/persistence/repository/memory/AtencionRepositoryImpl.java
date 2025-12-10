@@ -36,12 +36,12 @@ public class AtencionRepositoryImpl implements AtencionRepository {
             throw new IllegalArgumentException("La atención no puede ser nula");
         }
         
-        // Verificar que no exista ya una atención para este ingreso
+        
         if (findByIngresoId(atencion.getIngresoId()).isPresent()) {
             throw new IllegalStateException("Ya existe una atención registrada para este ingreso");
         }
         
-        // Generar ID si no tiene
+        
         if (atencion.getId() == null) {
             atencion.setId(UUID.randomUUID().toString());
         }

@@ -8,7 +8,7 @@ import java.util.Objects;
  */
 public class Password {
     private static final int MIN_LENGTH = 8;
-    private static final int MAX_LENGTH = 128; // Prevenir ataques DoS con passwords muy largas
+    private static final int MAX_LENGTH = 128; 
     
     private final String value;
 
@@ -86,7 +86,7 @@ public class Password {
 
     @Override
     public String toString() {
-        return "***********"; // Nunca mostrar la contraseña en texto plano
+        return "***********"; 
     }
 }
 

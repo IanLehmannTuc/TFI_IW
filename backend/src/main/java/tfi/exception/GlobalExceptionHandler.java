@@ -149,14 +149,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         String mensaje;
         
-        // Extraer mensaje más legible del error
+        
         if (ex.getMessage() != null && ex.getMessage().contains("Required request body is missing")) {
             mensaje = "El cuerpo de la petición es obligatorio";
         } else if (ex.getMessage() != null && ex.getMessage().contains("JSON parse error")) {
-            // Intentar extraer el mensaje específico del error de parsing
+            
             String originalMsg = ex.getMessage();
             if (originalMsg.contains("Cannot deserialize")) {
-                // Error de deserialización (ej: enum inválido)
+                
                 if (originalMsg.contains("Autoridad")) {
                     mensaje = "Autoridad inválida. Valores permitidos: MEDICO, ENFERMERO";
                 } else {
@@ -218,7 +218,7 @@ public class GlobalExceptionHandler {
             HttpRequestMethodNotSupportedException ex,
             HttpServletRequest request) {
         
-        // Log detallado para debugging
+        
         System.err.println("ERROR: Método HTTP no soportado");
         System.err.println("URL: " + request.getRequestURI());
         System.err.println("Método usado: " + request.getMethod());
@@ -246,7 +246,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
-        // Si tiene mensaje, lo usamos; si no, mensaje genérico
+        
         String mensaje = ex.getMessage() != null && !ex.getMessage().trim().isEmpty()
             ? ex.getMessage()
             : "Error de validación: " + ex.getClass().getSimpleName();
@@ -267,7 +267,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        // Log del error para debugging (en producción usar un logger apropiado)
+        
         System.err.println("ERROR NO MANEJADO: " + ex.getClass().getName() + " - " + ex.getMessage());
         ex.printStackTrace();
         

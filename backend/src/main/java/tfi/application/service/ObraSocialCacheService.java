@@ -23,7 +23,7 @@ public class ObraSocialCacheService {
     private final Map<Integer, CacheEntry> cache = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     
-    // TTL por defecto: 1 hora
+    
     private static final long DEFAULT_TTL_MINUTES = 60;
     
     /**
@@ -50,7 +50,7 @@ public class ObraSocialCacheService {
     public ObraSocialCacheService(ObraSocialPort obraSocialPort) {
         this.obraSocialPort = obraSocialPort;
         
-        // Limpiar cache expirado cada 10 minutos
+        
         scheduler.scheduleAtFixedRate(this::cleanExpiredEntries, 10, 10, TimeUnit.MINUTES);
     }
     
@@ -66,37 +66,37 @@ public class ObraSocialCacheService {
             return null;
         }
         
-        // Buscar en cache
+        
         CacheEntry entry = cache.get(obraSocialId);
         if (entry != null && !entry.isExpired()) {
             return entry.getNombre();
         }
         
-        // Si no está en cache o está expirado, consultar API
+        
         try {
-            // Obtener todas las obras sociales de la API y actualizar cache completo
-            // Esto es eficiente porque normalmente hay pocas obras sociales
+            
+            
             var obrasSociales = obraSocialPort.listarObrasSociales();
             
-            // Actualizar cache con todas las obras sociales obtenidas
+            
             for (ObraSocialResponse os : obrasSociales) {
                 cache.put(os.getId(), new CacheEntry(os.getNombre(), DEFAULT_TTL_MINUTES));
             }
             
-            // Buscar la obra social específica
+            
             for (ObraSocialResponse os : obrasSociales) {
                 if (os.getId().equals(obraSocialId)) {
                     return os.getNombre();
                 }
             }
             
-            // Si no se encuentra, usar nombre por defecto
+            
             String nombreDefault = "Obra Social " + obraSocialId;
             cache.put(obraSocialId, new CacheEntry(nombreDefault, DEFAULT_TTL_MINUTES));
             return nombreDefault;
             
         } catch (Exception e) {
-            // Si falla la API, usar nombre por defecto y no cachear
+            
             return "Obra Social " + obraSocialId;
         }
     }
@@ -112,7 +112,7 @@ public class ObraSocialCacheService {
                 cache.put(os.getId(), new CacheEntry(os.getNombre(), DEFAULT_TTL_MINUTES));
             }
         } catch (Exception e) {
-            // Si falla, no hacer nada. El cache se llenará bajo demanda
+            
         }
     }
     

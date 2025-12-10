@@ -61,12 +61,12 @@ public class ModuloUrgenciasCompletoStepDefinitions {
         this.repoPacientes = new PacientesRepositoryImpl();
         this.repoIngresos = new IngresoRepositoryImpl();
         
-        // Crear mock de ObraSocialPort para los tests
+        
         this.obraSocialPort = Mockito.mock(ObraSocialPort.class);
         
-        // Crear mock de ObraSocialCacheService para los tests
+        
         this.obraSocialCacheService = Mockito.mock(ObraSocialCacheService.class);
-        // Configurar el mock para que retorne nombres por defecto cuando sea necesario
+        
         Mockito.when(obraSocialCacheService.getNombreObraSocial(Mockito.anyInt()))
             .thenAnswer(invocation -> {
                 Integer id = invocation.getArgument(0);
@@ -179,7 +179,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
                 Integer.parseInt(pacienteData.get("Frecuencia Respiratoria"))
             );
             
-            // Crear RegistroIngresoRequest para registrar el ingreso
+            
             RegistroIngresoRequest request = new RegistroIngresoRequest();
             request.setPacienteCuil(paciente.getCuil());
             request.setEnfermeroCuil(this.enfermero.getCuil());
@@ -192,7 +192,7 @@ public class ModuloUrgenciasCompletoStepDefinitions {
             request.setNivelEmergencia(nivelEmergencia);
             
             var ingresoResponse = this.ingresoService.registrarIngreso(request);
-            // Buscar el ingreso registrado en el repositorio
+            
             this.ingreso = this.repoIngresos.findById(ingresoResponse.getId()).orElse(null);
         } catch (RuntimeException e) {
             ultimoError = e.getMessage();

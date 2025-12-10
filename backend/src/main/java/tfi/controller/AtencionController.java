@@ -60,20 +60,20 @@ public class AtencionController {
             @RequestBody RegistroAtencionRequest request,
             HttpServletRequest httpRequest) {
         
-        // Verificar que el usuario sea médico
+        
         SecurityContext.requireAutoridad(httpRequest, Autoridad.MEDICO);
         
-        // Obtener el usuario autenticado
+        
         UsuarioAutenticado usuario = SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        // Registrar la atención
+        
         Atencion atencion = atencionService.registrarAtencion(
             request.getIngresoId(),
             usuario.getId(),
             request.getInforme()
         );
         
-        // Convertir a DTO de respuesta
+        
         AtencionResponse response = atencionMapper.toResponse(atencion);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -97,10 +97,10 @@ public class AtencionController {
             @PathVariable String ingresoId,
             HttpServletRequest httpRequest) {
         
-        // Verificar autenticación
+        
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        // Buscar la atención
+        
         Optional<Atencion> atencionOpt = atencionService.obtenerAtencionPorIngresoId(ingresoId);
         
         if (atencionOpt.isEmpty()) {
@@ -129,10 +129,10 @@ public class AtencionController {
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         
-        // Verificar autenticación
+        
         SecurityContext.getUsuarioAutenticado(httpRequest);
         
-        // Buscar la atención
+        
         Optional<Atencion> atencionOpt = atencionService.obtenerAtencionPorId(id);
         
         if (atencionOpt.isEmpty()) {

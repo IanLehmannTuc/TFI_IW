@@ -80,7 +80,7 @@ public class PacienteService {
                 throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
             }
             
-            // Verificar afiliación con la API externa
+            
             int obraSocialId = dto.getObraSocial().getObraSocial().getId();
             String numeroAfiliado = dto.getObraSocial().getNumeroAfiliado();
             
@@ -99,7 +99,7 @@ public class PacienteService {
                 );
             }
             
-            // Usar los datos de la verificación para asegurar consistencia
+            
             ObraSocial obraSocial = new ObraSocial(
                 verificacion.getObraSocial().getId(),
                 verificacion.getObraSocial().getNombre()
@@ -166,11 +166,11 @@ public class PacienteService {
             throw new PacienteException("El CUIL no puede ser nulo o vacío");
         }
         
-        // Verificar que el paciente existe
+        
         Paciente pacienteExistente = pacientesRepository.findByCuil(cuil)
             .orElseThrow(() -> new PacienteException("No existe un paciente con el CUIL: " + cuil));
         
-        // Validar que el CUIL del DTO coincida con el del path
+        
         if (!cuil.equals(dto.getCuil())) {
             throw new PacienteException("El CUIL en el body debe coincidir con el CUIL en la URL");
         }
@@ -193,7 +193,7 @@ public class PacienteService {
                 throw new PacienteException("El número de afiliado es obligatorio cuando se especifica obra social");
             }
             
-            // Verificar afiliación con la API externa
+            
             int obraSocialId = dto.getObraSocial().getObraSocial().getId();
             String numeroAfiliado = dto.getObraSocial().getNumeroAfiliado();
             
@@ -212,7 +212,7 @@ public class PacienteService {
                 );
             }
             
-            // Usar los datos de la verificación para asegurar consistencia
+            
             ObraSocial obraSocial = new ObraSocial(
                 verificacion.getObraSocial().getId(),
                 verificacion.getObraSocial().getNombre()
@@ -221,12 +221,12 @@ public class PacienteService {
             afiliado = new Afiliado(obraSocial, verificacion.getNumeroAfiliado());
         }
         
-        // Crear paciente actualizado manteniendo el ID original
+        
         Paciente pacienteActualizado = new Paciente(
             dto.getCuil(),
             dto.getNombre(),
             dto.getApellido(),
-            pacienteExistente.getEmail(), // Mantener el email existente si no se proporciona
+            pacienteExistente.getEmail(), 
             domicilio,
             afiliado
         );

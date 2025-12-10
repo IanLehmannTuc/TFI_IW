@@ -54,10 +54,10 @@ public class IngresoService {
      * @return el ingreso registrado como IngresoResponse
      */
     public IngresoResponse registrarIngreso(RegistroIngresoRequest ingresoDto) {
-        // Buscar paciente o crearlo si no existe (una sola consulta)
+        
         Paciente paciente = pacientesRepository.findByCuil(ingresoDto.getPacienteCuil())
             .orElseGet(() -> {
-                // Solo se ejecuta si el paciente NO existe
+                
                 String cuil = ingresoDto.getPacienteCuil();
                 String nombre = ingresoDto.getPacienteNombre();
                 String apellido = ingresoDto.getPacienteApellido();
@@ -75,7 +75,7 @@ public class IngresoService {
                             domicilioDto.getLocalidad()
                         );
                     } catch (IllegalArgumentException e) {
-                        // Si el domicilio es inválido, se deja como null
+                        
                     }
                 }
                 
@@ -162,9 +162,9 @@ public class IngresoService {
         Ingreso ingreso = colaAtencionService.atenderSiguiente();
         
         if (ingreso != null) {
-            // Cambiar el estado a EN_PROCESO
+            
             ingreso.setEstado(tfi.domain.enums.Estado.EN_PROCESO);
-            // Persistir el cambio en el repositorio
+            
             ingresoRepository.update(ingreso);
         }
         

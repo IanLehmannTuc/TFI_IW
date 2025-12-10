@@ -38,17 +38,17 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
             throw new IllegalArgumentException("Ya existe un usuario con el email: " + usuario.getEmail().getValue());
         }
         
-        // Verificar CUIL único
+        
         if (usuario.getCuilVO() != null && existsByCuil(usuario.getCuil())) {
             throw new IllegalArgumentException("Ya existe un usuario con el CUIL: " + usuario.getCuil());
         }
         
-        // Verificar matrícula única
+        
         if (usuario.getMatricula() != null && existsByMatricula(usuario.getMatricula())) {
             throw new IllegalArgumentException("Ya existe un usuario con la matrícula: " + usuario.getMatricula());
         }
         
-        // Generar ID único si no tiene
+        
         if (usuario.getId() == null) {
             usuario.setId(java.util.UUID.randomUUID().toString());
         }

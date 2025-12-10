@@ -43,8 +43,8 @@ class PacienteServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Mock del cache service para que retorne nombres por defecto cuando sea necesario
-        // Usamos lenient() porque no todos los tests necesitan este stub
+        
+        
         lenient().when(obraSocialCacheService.getNombreObraSocial(anyInt())).thenAnswer(invocation -> {
             Integer id = invocation.getArgument(0);
             return "Obra Social " + id;
@@ -62,7 +62,7 @@ class PacienteServiceTest {
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         when(pacientesRepository.add(any(Paciente.class))).thenAnswer(invocation -> {
             Paciente p = invocation.getArgument(0);
-            p.setId("test-uuid-1234"); // Simular ID generado por BD
+            p.setId("test-uuid-1234"); 
             return p;
         });
         
@@ -91,7 +91,7 @@ class PacienteServiceTest {
         
         when(pacientesRepository.existsByCuil(anyString())).thenReturn(false);
         
-        // Mock de la verificación de afiliación
+        
         tfi.application.dto.VerificacionAfiliacionResponse verificacion = 
             new tfi.application.dto.VerificacionAfiliacionResponse();
         verificacion.setEstaAfiliado(true);
@@ -106,7 +106,7 @@ class PacienteServiceTest {
         
         when(pacientesRepository.add(any(Paciente.class))).thenAnswer(invocation -> {
             Paciente p = invocation.getArgument(0);
-            p.setId("test-uuid-5678"); // Simular ID generado por BD
+            p.setId("test-uuid-5678"); 
             return p;
         });
         

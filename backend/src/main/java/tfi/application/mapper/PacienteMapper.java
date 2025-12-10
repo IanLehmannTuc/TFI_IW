@@ -46,12 +46,12 @@ public class PacienteMapper {
             Integer obraSocialId = paciente.getObraSocial().getObraSocial().getId();
             String nombreObraSocial = paciente.getObraSocial().getObraSocial().getNombre();
             
-            // Si el nombre es temporal (formato "Obra Social {id}"), obtenerlo del cache
-            // Esto ocurre cuando el paciente viene de la BD y no tenemos el nombre real
+            
+            
             if (nombreObraSocial != null && nombreObraSocial.matches("^Obra Social \\d+$")) {
                 nombreObraSocial = obraSocialCacheService.getNombreObraSocial(obraSocialId);
             } else if (nombreObraSocial == null || nombreObraSocial.trim().isEmpty()) {
-                // Si el nombre es null o vacío, obtenerlo del cache
+                
                 nombreObraSocial = obraSocialCacheService.getNombreObraSocial(obraSocialId);
             }
             

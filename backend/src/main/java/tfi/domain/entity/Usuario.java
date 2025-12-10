@@ -19,7 +19,7 @@ public class Usuario {
     private String passwordHash;
     private Autoridad autoridad;
     
-    // Datos personales del personal médico
+    
     private Cuil cuil;
     private String nombre;
     private String apellido;
