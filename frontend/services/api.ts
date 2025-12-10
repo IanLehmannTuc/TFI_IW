@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../constants';
+import { ErrorResponse } from '../types';
 
 interface RequestOptions extends RequestInit {
   headers?: Record<string, string>;
@@ -6,9 +7,12 @@ interface RequestOptions extends RequestInit {
 
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  timestamp?: string;
+  
+  constructor(message: string, status: number, timestamp?: string) {
     super(message);
     this.status = status;
+    this.timestamp = timestamp;
   }
 }
 
@@ -30,7 +34,8 @@ export const apiRequest = async <T>(endpoint: string, options: RequestOptions = 
   try {
     const response = await fetch(url, { ...options, headers });
 
-    if (response.status === 401) {
+    // Handle session expiration (except login)
+    if (response.status === 401 && !endpoint.includes('/auth/login')) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.hash = '#/login';
@@ -43,6 +48,7 @@ export const apiRequest = async <T>(endpoint: string, options: RequestOptions = 
 
     if (!response.ok) {
       let errorMessage = `Error ${response.status}`;
+      let timestamp = undefined;
       
       try {
         const errorText = await response.text();
@@ -50,33 +56,30 @@ export const apiRequest = async <T>(endpoint: string, options: RequestOptions = 
              try {
                  const errorJson = JSON.parse(errorText);
                  
-                 // 0. Check for specific 'mensaje' field (User custom API format)
+                 // Standard ErrorResponse format: { mensaje, timestamp, status }
                  if (errorJson.mensaje) {
                      errorMessage = errorJson.mensaje;
+                     timestamp = errorJson.timestamp;
                  }
-                 // 1. Check for standard 'message' field
+                 // Fallbacks
                  else if (errorJson.message) {
                      errorMessage = errorJson.message;
-                 } 
-                 // 2. Check for 'error' field (sometimes used as message or type)
-                 else if (errorJson.error && typeof errorJson.error === 'string') {
+                 } else if (errorJson.error && typeof errorJson.error === 'string') {
                      errorMessage = errorJson.error;
                  }
                  
-                 // 3. Check for array of validation errors (common in Spring Boot @Valid)
+                 // Spring Validation errors
                  if (errorJson.errors && Array.isArray(errorJson.errors)) {
                      const validationMessages = errorJson.errors
-                        .map((e: any) => e.message || e.defaultMessage || e.field + ' inválido')
+                        .map((e: any) => e.message || e.defaultMessage)
                         .filter(Boolean)
                         .join(', ');
                      
                      if (validationMessages) {
-                         // If we have specific validation messages, use them
                          errorMessage = validationMessages;
                      }
                  }
              } catch {
-                 // If not JSON, use text if it's short/readable (avoid printing full HTML pages)
                  if (!errorText.trim().startsWith('<') && errorText.length < 300) {
                      errorMessage = errorText;
                  }
@@ -86,7 +89,7 @@ export const apiRequest = async <T>(endpoint: string, options: RequestOptions = 
           console.error("Error reading error response", e);
       }
       
-      throw new ApiError(errorMessage, response.status);
+      throw new ApiError(errorMessage, response.status, timestamp);
     }
 
     return await response.json();

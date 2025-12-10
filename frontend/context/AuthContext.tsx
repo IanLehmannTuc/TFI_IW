@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, UserRole, AuthResponse } from '../types';
+import { User, AuthResponse } from '../types';
 import { apiRequest } from '../services/api';
 
 interface AuthContextType {
@@ -18,19 +18,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const fetchProfile = async () => {
+    try {
+       // IS2025-005: Load profile to get CUIL/Matricula
+       const profile = await apiRequest<User>('/auth/perfil');
+       setUser(profile);
+    } catch (error) {
+       console.error("Could not fetch full profile details", error);
+       // If profile fetch fails, user might be invalid or token expired
+       logout();
+    }
+  };
+
   useEffect(() => {
     const initAuth = async () => {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
-        try {
-           // We try to fetch the profile to validate token
-           const profile = await apiRequest<User>('/auth/perfil');
-           setUser(profile);
-           setToken(storedToken);
-        } catch (error) {
-           console.error("Token invalid", error);
-           logout();
-        }
+         setToken(storedToken);
+         await fetchProfile();
       }
       setIsLoading(false);
     };
@@ -41,22 +46,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = (data: AuthResponse) => {
     localStorage.setItem('token', data.token);
     setToken(data.token);
-    // Construct user from response data mostly, or fetch profile
-    const minimalUser: User = {
-        id: 'current', // Backend doesn't return ID on login, but we need structure
+    
+    // Set minimal user initially to allow UI to react, but immediately fetch full profile
+    setUser({
+        id: 'current',
         email: data.email,
-        autoridad: data.autoridad
-    };
-    setUser(minimalUser);
+        autoridad: data.autoridad,
+        // Name and CUIL will come from profile
+    });
 
-    // Fetch full profile to ensure we have name and surname
-    apiRequest<User>('/auth/perfil').then(profile => {
-      setUser(profile);
-    }).catch(e => console.error("Could not fetch full profile details", e));
+    // Immediately fetch full profile to fill CUIL and matricula
+    fetchProfile();
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('activePatientId'); // Clear active session if any
     setToken(null);
     setUser(null);
   };

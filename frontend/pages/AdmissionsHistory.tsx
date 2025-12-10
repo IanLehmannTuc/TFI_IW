@@ -1,21 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../services/api';
-import { Admission, AdmissionStatus } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { Admission, AdmissionStatus, Attention, UserRole } from '../types';
 import TriageBadge from '../components/TriageBadge';
-import { RefreshCcw, Eye, Search, X, Calendar, User, Stethoscope, Activity, FileText } from 'lucide-react';
+import { RefreshCcw, Eye, Search, X, Calendar, User as UserIcon, Stethoscope, Activity, FileText } from 'lucide-react';
 
 const AdmissionsHistory: React.FC = () => {
+  const { user } = useAuth();
   const [admissions, setAdmissions] = useState<Admission[]>([]);
   const [filteredAdmissions, setFilteredAdmissions] = useState<Admission[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Modal State
   const [selectedAdmission, setSelectedAdmission] = useState<Admission | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const fetchAdmissions = async () => {
     setLoading(true);
     try {
-      // GET /api/urgencias returns all admissions
-      const data = await apiRequest<Admission[]>('/urgencias');
+      // 6.1 Listar Todos los Ingresos
+      const data = await apiRequest<Admission[]>('/ingresos');
+      
       // Sort by date descending (newest first)
       const sorted = data.sort((a, b) => new Date(b.fechaHoraIngreso).getTime() - new Date(a.fechaHoraIngreso).getTime());
       setAdmissions(sorted);
@@ -35,12 +41,26 @@ const AdmissionsHistory: React.FC = () => {
     const term = searchTerm.toLowerCase();
     const filtered = admissions.filter(
       (adm) =>
-        adm.pacienteNombre.toLowerCase().includes(term) ||
-        adm.pacienteApellido.toLowerCase().includes(term) ||
-        adm.pacienteCuil.includes(term)
+        (adm.paciente?.nombre?.toLowerCase() || '').includes(term) ||
+        (adm.paciente?.apellido?.toLowerCase() || '').includes(term) ||
+        (adm.paciente?.cuil || '').includes(term)
     );
     setFilteredAdmissions(filtered);
   }, [searchTerm, admissions]);
+
+  const handleOpenDetail = async (admission: Admission) => {
+      setSelectedAdmission(admission); // Set initial data
+      setDetailLoading(true);
+      try {
+          // Fetch full detail to ensure we have nurse name (Option 1 as per user request)
+          const detail = await apiRequest<Admission>(`/ingresos/${admission.id}`);
+          setSelectedAdmission(detail);
+      } catch (e) {
+          console.error("Error fetching detail", e);
+      } finally {
+          setDetailLoading(false);
+      }
+  };
 
   const getStatusBadge = (status: AdmissionStatus) => {
     switch (status) {
@@ -53,6 +73,13 @@ const AdmissionsHistory: React.FC = () => {
       default:
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{status}</span>;
     }
+  };
+
+  const getBloodPressure = (adm: Admission) => {
+    if (adm.signosVitales) {
+      return `${adm.signosVitales.tensionSistolica}/${adm.signosVitales.tensionDiastolica}`;
+    }
+    return '-/-';
   };
 
   return (
@@ -104,7 +131,7 @@ const AdmissionsHistory: React.FC = () => {
                 {filteredAdmissions.length === 0 ? (
                     <tr>
                         <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
-                            No se encontraron ingresos.
+                            {loading ? 'Cargando registros...' : 'No se encontraron ingresos.'}
                         </td>
                     </tr>
                 ) : (
@@ -121,10 +148,10 @@ const AdmissionsHistory: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                                {admission.pacienteNombre} {admission.pacienteApellido}
+                                {admission.paciente?.nombre ? `${admission.paciente.nombre} ${admission.paciente.apellido}` : 'Cargando...'}
                             </div>
                             <div className="text-xs text-gray-500">
-                                {admission.pacienteCuil}
+                                {admission.paciente?.cuil || 'S/D'}
                             </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -137,7 +164,7 @@ const AdmissionsHistory: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button 
-                                onClick={() => setSelectedAdmission(admission)}
+                                onClick={() => handleOpenDetail(admission)}
                                 className="text-primary-600 hover:text-primary-900 bg-primary-50 p-2 rounded-full hover:bg-primary-100 transition-colors"
                                 title="Ver detalles"
                             >
@@ -167,13 +194,17 @@ const AdmissionsHistory: React.FC = () => {
                         <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
                                 <div className="bg-primary-100 rounded-full p-2">
-                                    <User className="h-6 w-6 text-primary-600" />
+                                    <UserIcon className="h-6 w-6 text-primary-600" />
                                 </div>
                                 <div>
                                     <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                        {selectedAdmission.pacienteNombre} {selectedAdmission.pacienteApellido}
+                                        {selectedAdmission.paciente?.nombre 
+                                            ? `${selectedAdmission.paciente.nombre} ${selectedAdmission.paciente.apellido}` 
+                                            : 'Cargando Paciente...'}
                                     </h3>
-                                    <p className="text-sm text-gray-500">{selectedAdmission.pacienteCuil}</p>
+                                    <p className="text-sm text-gray-500">
+                                        {selectedAdmission.paciente?.cuil || 'S/D'}
+                                    </p>
                                 </div>
                             </div>
                             <button 
@@ -220,58 +251,80 @@ const AdmissionsHistory: React.FC = () => {
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">Enfermero (Triage):</span>
-                                        <span className="font-medium">{selectedAdmission.enfermeroMatricula || 'N/A'}</span>
+                                        <span className={`font-medium ${detailLoading ? 'text-gray-400' : ''}`}>
+                                            {detailLoading ? 'Cargando...' : 
+                                              selectedAdmission.enfermero?.apellido 
+                                                ? `${selectedAdmission.enfermero.apellido}, ${selectedAdmission.enfermero.nombre || ''}`
+                                                : (selectedAdmission.enfermero?.cuil || 'No registrado')
+                                            }
+                                        </span>
                                     </div>
-                                    {/* Nota: La API actual no devuelve el médico explícito en el objeto Admission, pero si estuviera disponible se mostraría aquí. */}
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">Médico Atendiente:</span>
-                                        <span className="font-medium text-gray-400 italic">
-                                            {selectedAdmission.estado === 'FINALIZADO' ? 'Registrado en sistema' : 'Pendiente'}
+                                        <span className="font-medium">
+                                            {selectedAdmission.atencion?.medico?.apellido
+                                                ? `${selectedAdmission.atencion.medico.apellido}, ${selectedAdmission.atencion.medico.nombre}`
+                                                : 'Pendiente de atención'}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-                            <div className="flex items-center gap-2 mb-3 text-gray-900 font-semibold">
-                                <Activity className="w-4 h-4 text-gray-400" />
-                                <span>Signos Vitales</span>
+                        {selectedAdmission.signosVitales && (
+                            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+                                <div className="flex items-center gap-2 mb-3 text-gray-900 font-semibold">
+                                    <Activity className="w-4 h-4 text-gray-400" />
+                                    <span>Signos Vitales</span>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                    <div className="bg-gray-50 p-2 rounded text-center">
+                                        <span className="block text-xs text-gray-500 uppercase">Temp</span>
+                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.signosVitales.temperatura}°C</span>
+                                    </div>
+                                    <div className="bg-gray-50 p-2 rounded text-center">
+                                        <span className="block text-xs text-gray-500 uppercase">Presión</span>
+                                        <span className="block text-lg font-bold text-gray-800">
+                                            {getBloodPressure(selectedAdmission)}
+                                        </span>
+                                    </div>
+                                    <div className="bg-gray-50 p-2 rounded text-center">
+                                        <span className="block text-xs text-gray-500 uppercase">Pulso</span>
+                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.signosVitales.frecuenciaCardiaca}</span>
+                                    </div>
+                                    <div className="bg-gray-50 p-2 rounded text-center">
+                                        <span className="block text-xs text-gray-500 uppercase">Resp.</span>
+                                        <span className="block text-lg font-bold text-gray-800">{selectedAdmission.signosVitales.frecuenciaRespiratoria}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                <div className="bg-gray-50 p-2 rounded text-center">
-                                    <span className="block text-xs text-gray-500 uppercase">Temp</span>
-                                    <span className="block text-lg font-bold text-gray-800">{selectedAdmission.temperatura}°C</span>
-                                </div>
-                                <div className="bg-gray-50 p-2 rounded text-center">
-                                    <span className="block text-xs text-gray-500 uppercase">Presión</span>
-                                    <span className="block text-lg font-bold text-gray-800">
-                                        {selectedAdmission.tensionSistolica}/{selectedAdmission.tensionDiastolica}
-                                    </span>
-                                </div>
-                                <div className="bg-gray-50 p-2 rounded text-center">
-                                    <span className="block text-xs text-gray-500 uppercase">Pulso</span>
-                                    <span className="block text-lg font-bold text-gray-800">{selectedAdmission.frecuenciaCardiaca}</span>
-                                </div>
-                                <div className="bg-gray-50 p-2 rounded text-center">
-                                    <span className="block text-xs text-gray-500 uppercase">Resp.</span>
-                                    <span className="block text-lg font-bold text-gray-800">{selectedAdmission.frecuenciaRespiratoria}</span>
-                                </div>
-                            </div>
-                        </div>
+                        )}
 
                         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                             <div className="flex items-center gap-2 mb-3 text-gray-900 font-semibold">
                                 <FileText className="w-4 h-4 text-gray-400" />
-                                <span>Informe Clínico / Motivo</span>
+                                <span>Informe Triage / Motivo</span>
                             </div>
-                            <div className="p-3 bg-gray-50 rounded-md text-sm text-gray-700 leading-relaxed">
+                            <div className="p-3 bg-gray-50 rounded-md text-sm text-gray-700 leading-relaxed mb-4">
                                 {selectedAdmission.descripcion}
                             </div>
                             
-                            {selectedAdmission.estado === 'FINALIZADO' && (
-                                <div className="mt-4 pt-4 border-t border-gray-100">
-                                    <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                            {/* Medical Report Section - Only visible to MEDICO or if exists */}
+                            {selectedAdmission.atencion && (
+                                <div className="mt-4 pt-4 border-t border-gray-100 animate-fade-in">
+                                    <div className="flex items-center gap-2 mb-3 text-primary-700 font-semibold">
+                                        <FileText className="w-4 h-4" />
+                                        <span>Informe Médico (Atención Finalizada)</span>
+                                    </div>
+                                    
+                                    <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-md text-sm text-gray-800 leading-relaxed">
+                                        {selectedAdmission.atencion.informeMedico}
+                                        <div className="mt-2 text-xs text-gray-400 text-right">
+                                            Atendido el: {new Date(selectedAdmission.atencion.fechaAtencion).toLocaleString()}
+                                        </div>
+                                    </div>
+                                    
+                                    <p className="mt-4 text-xs text-green-600 font-medium flex items-center gap-1">
                                         <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                                         El paciente ha sido atendido y el proceso ha finalizado.
                                     </p>

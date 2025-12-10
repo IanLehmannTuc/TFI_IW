@@ -9,7 +9,8 @@ import {
   LogOut, 
   UserPlus,
   Activity,
-  FileText
+  FileText,
+  Users
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -60,6 +61,11 @@ const Sidebar: React.FC = () => {
             <Link to="/admissions" className={linkClass('/admissions')}>
                 <FileText className="w-5 h-5" />
                 Ingresos
+            </Link>
+            
+            <Link to="/patients" className={linkClass('/patients')}>
+                <Users className="w-5 h-5" />
+                Pacientes
             </Link>
 
             {user?.autoridad === UserRole.MEDICO && (

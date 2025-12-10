@@ -10,6 +10,7 @@ import Admission from './pages/Admission';
 import Queue from './pages/Queue';
 import AttendPatient from './pages/AttendPatient';
 import AdmissionsHistory from './pages/AdmissionsHistory';
+import Patients from './pages/Patients';
 import { UserRole } from './types';
 
 const App: React.FC = () => {
@@ -48,6 +49,14 @@ const App: React.FC = () => {
             <ProtectedRoute>
               <Layout>
                 <AdmissionsHistory />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
+           <Route path="/patients" element={
+            <ProtectedRoute>
+              <Layout>
+                <Patients />
               </Layout>
             </ProtectedRoute>
           } />

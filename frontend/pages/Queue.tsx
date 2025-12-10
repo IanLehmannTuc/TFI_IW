@@ -12,6 +12,7 @@ const Queue: React.FC = () => {
   const fetchQueue = async () => {
     setLoading(true);
     try {
+      // IS2025-003: Cola de atención (ordenada por prioridad)
       const data = await apiRequest<Admission[]>('/cola-atencion');
       setAdmissions(data);
     } catch (e) {
@@ -30,6 +31,13 @@ const Queue: React.FC = () => {
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  const getBloodPressure = (adm: Admission) => {
+    if (adm.signosVitales) {
+        return `${adm.signosVitales.tensionSistolica}/${adm.signosVitales.tensionDiastolica}`;
+    }
+    return '-/-';
   };
 
   return (
@@ -79,10 +87,10 @@ const Queue: React.FC = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm font-medium text-gray-900">
-                                    {admission.pacienteNombre} {admission.pacienteApellido}
+                                    {admission.paciente?.nombre ? `${admission.paciente.nombre} ${admission.paciente.apellido}` : 'Cargando...'}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                    CUIL: {admission.pacienteCuil}
+                                    CUIL: {admission.paciente?.cuil || 'S/D'}
                                 </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -115,47 +123,51 @@ const Queue: React.FC = () => {
                                         {/* Vitals & Details */}
                                         <div className="space-y-4">
                                             {/* Vitals */}
-                                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                                                <h4 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
-                                                    <Activity className="w-4 h-4 text-primary-500" />
-                                                    Signos Vitales
-                                                </h4>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                                        <Activity className="w-4 h-4 text-red-500" />
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 uppercase">Presión</p>
-                                                            <p className="text-sm font-bold">{admission.tensionSistolica}/{admission.tensionDiastolica}</p>
+                                            {admission.signosVitales && (
+                                                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                                                    <h4 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
+                                                        <Activity className="w-4 h-4 text-primary-500" />
+                                                        Signos Vitales
+                                                    </h4>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                                            <Activity className="w-4 h-4 text-red-500" />
+                                                            <div>
+                                                                <p className="text-xs text-gray-500 uppercase">Presión</p>
+                                                                <p className="text-sm font-bold">
+                                                                    {getBloodPressure(admission)}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                                        <Heart className="w-4 h-4 text-rose-500" />
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 uppercase">Pulso</p>
-                                                            <p className="text-sm font-bold">{admission.frecuenciaCardiaca} bpm</p>
+                                                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                                            <Heart className="w-4 h-4 text-rose-500" />
+                                                            <div>
+                                                                <p className="text-xs text-gray-500 uppercase">Pulso</p>
+                                                                <p className="text-sm font-bold">{admission.signosVitales.frecuenciaCardiaca} bpm</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                                        <Thermometer className="w-4 h-4 text-orange-500" />
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 uppercase">Temp</p>
-                                                            <p className="text-sm font-bold">{admission.temperatura}°C</p>
+                                                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                                            <Thermometer className="w-4 h-4 text-orange-500" />
+                                                            <div>
+                                                                <p className="text-xs text-gray-500 uppercase">Temp</p>
+                                                                <p className="text-sm font-bold">{admission.signosVitales.temperatura}°C</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                                        <Wind className="w-4 h-4 text-blue-500" />
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 uppercase">Resp</p>
-                                                            <p className="text-sm font-bold">{admission.frecuenciaRespiratoria} rpm</p>
+                                                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                                            <Wind className="w-4 h-4 text-blue-500" />
+                                                            <div>
+                                                                <p className="text-xs text-gray-500 uppercase">Resp</p>
+                                                                <p className="text-sm font-bold">{admission.signosVitales.frecuenciaRespiratoria} rpm</p>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            )}
                                             
                                             {/* Extra Info */}
                                             <div className="flex items-center gap-2 text-xs text-gray-500 px-1">
                                                 <User className="w-3 h-3" />
-                                                <span>Registrado por: {admission.enfermeroMatricula || 'N/A'}</span>
+                                                <span>Registrado por: {admission.enfermero?.apellido || 'N/A'}, {admission.enfermero?.nombre || ''}</span>
                                             </div>
                                         </div>
                                     </div>

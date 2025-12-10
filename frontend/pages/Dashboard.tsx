@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiRequest } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { UserRole, Admission } from '../types';
+import { UserRole, Admission, TriageLevel } from '../types';
 import { 
   Users, 
-  Clock, 
   AlertTriangle, 
   Activity, 
   UserPlus, 
@@ -25,18 +24,25 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const count = await apiRequest<number>('/cola-atencion/cantidad');
-        setPatientCount(count);
-        
-        // Calculate stats from queue and history
+        // 4.1 Ver Cola de Atención Completa
         const queue = await apiRequest<Admission[]>('/cola-atencion');
-        const crit = queue.filter(p => p.nivelEmergencia === 'CRITICA' || p.nivelEmergencia === 'EMERGENCIA').length;
+        setPatientCount(queue.length);
+        
+        // Count both CRITICA and EMERGENCIA as high priority
+        const crit = queue.filter(p => p.nivelEmergencia === TriageLevel.CRITICA || p.nivelEmergencia === TriageLevel.EMERGENCIA).length;
         setCriticalCount(crit);
 
-        // Calculate admissions today
-        const history = await apiRequest<Admission[]>('/urgencias');
-        const today = new Date().toISOString().split('T')[0];
-        const todayCount = history.filter(p => p.fechaHoraIngreso.startsWith(today)).length;
+        // 6.1 Listar Todos los Ingresos
+        const history = await apiRequest<Admission[]>('/ingresos');
+        
+        const now = new Date();
+        const todayCount = history.filter(p => {
+            const admissionDate = new Date(p.fechaHoraIngreso);
+            return admissionDate.getDate() === now.getDate() &&
+                   admissionDate.getMonth() === now.getMonth() &&
+                   admissionDate.getFullYear() === now.getFullYear();
+        }).length;
+        
         setAdmissionsToday(todayCount);
 
       } catch (e) {
@@ -59,7 +65,7 @@ const Dashboard: React.FC = () => {
       stat: criticalCount.toString(), 
       icon: AlertTriangle, 
       color: 'bg-red-500', 
-      desc: 'Nivel 1 y 2' 
+      desc: 'Crítica y Emergencia' 
     },
     { 
       name: 'Ingresos Hoy', 

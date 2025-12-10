@@ -11,7 +11,7 @@ const Register: React.FC = () => {
     nombre: '',
     apellido: '',
     cuil: '',
-    matricula: '', // Only strictly needed if validation on backend requires it
+    matricula: '', 
     autoridad: UserRole.ENFERMERO
   });
   const [error, setError] = useState('');
@@ -28,11 +28,12 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
+      // IS2025-005: Registro
       await apiRequest('/auth/registro', {
         method: 'POST',
         body: JSON.stringify(formData),
       });
-      // On success
+      // On success (201)
       navigate('/login');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al registrar usuario');
@@ -60,7 +61,7 @@ const Register: React.FC = () => {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
           <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
-              <div className="p-3 bg-red-100 text-red-700 text-sm rounded">
+              <div className="p-3 bg-red-100 text-red-700 text-sm rounded border border-red-200">
                 {error}
               </div>
             )}
@@ -87,8 +88,8 @@ const Register: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Contraseña</label>
-              <input name="password" type="password" required onChange={handleChange} className={inputClass} />
+              <label className="block text-sm font-medium text-gray-700">Contraseña (min 8 caracteres)</label>
+              <input name="password" type="password" required minLength={8} onChange={handleChange} className={inputClass} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -100,8 +101,8 @@ const Register: React.FC = () => {
                     </select>
                 </div>
                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Matrícula (Op.)</label>
-                    <input name="matricula" type="text" onChange={handleChange} className={inputClass} />
+                    <label className="block text-sm font-medium text-gray-700">Matrícula</label>
+                    <input name="matricula" type="text" required onChange={handleChange} className={inputClass} />
                 </div>
             </div>
 
@@ -109,7 +110,7 @@ const Register: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
               >
                 {loading ? 'Registrando...' : 'Registrar'}
               </button>
