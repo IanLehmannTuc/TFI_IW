@@ -12,6 +12,7 @@ import tfi.domain.entity.Paciente;
 import tfi.domain.repository.PacientesRepository;
 import tfi.domain.repository.UsuarioRepository;
 import tfi.domain.repository.IngresoRepository;
+import tfi.domain.service.ColaAtencionService;
 import tfi.domain.valueObject.Domicilio;
 import tfi.domain.valueObject.FrecuenciaCardiaca;
 import tfi.domain.valueObject.FrecuenciaRespiratoria;
@@ -38,12 +39,13 @@ public class IngresoService {
     public IngresoService(PacientesRepository pacientesRepository, 
                           UsuarioRepository usuarioRepository, 
                           IngresoRepository ingresoRepository,
+                          ColaAtencionService colaAtencionService,
                           IngresoMapper ingresoMapper) {
         this.pacientesRepository = pacientesRepository;
         this.usuarioRepository = usuarioRepository;
         this.ingresoRepository = ingresoRepository;
+        this.colaAtencionService = colaAtencionService;
         this.ingresoMapper = ingresoMapper;
-        this.colaAtencionService = ColaAtencionService.getInstance();
     }
 
     /**
@@ -261,6 +263,7 @@ public class IngresoService {
     /**
      * Actualiza un ingreso existente.
      * Valida que el ingreso exista y que los datos sean válidos.
+     * Usa métodos de negocio de la entidad para mantener las invariantes.
      * 
      * @param id ID del ingreso a actualizar
      * @param request Datos actualizados del ingreso
@@ -283,11 +286,6 @@ public class IngresoService {
         Usuario enfermero = usuarioRepository.findByCuil(request.getEnfermeroCuil())
             .orElseThrow(() -> new IllegalArgumentException("No se encontró un enfermero con CUIL: " + request.getEnfermeroCuil()));
         
-        // Validar que el usuario es enfermero
-        if (!enfermero.esEnfermero()) {
-            throw new IllegalArgumentException("El usuario con CUIL " + request.getEnfermeroCuil() + " no es un enfermero");
-        }
-        
         // Crear value objects
         Temperatura temperatura = new Temperatura(request.getTemperatura());
         TensionArterial tensionArterial = new TensionArterial(
@@ -297,23 +295,15 @@ public class IngresoService {
         FrecuenciaCardiaca frecuenciaCardiaca = new FrecuenciaCardiaca(request.getFrecuenciaCardiaca());
         FrecuenciaRespiratoria frecuenciaRespiratoria = new FrecuenciaRespiratoria(request.getFrecuenciaRespiratoria());
         
-        // Crear nuevo ingreso con los datos actualizados
-        Ingreso ingresoActualizado = new Ingreso(
-            ingresoExistente.getAtencion(),
-            paciente,
-            enfermero,
-            request.getDescripcion(),
-            ingresoExistente.getFechaHoraIngreso(),
-            temperatura,
-            tensionArterial,
-            frecuenciaCardiaca,
-            frecuenciaRespiratoria,
-            request.getNivelEmergencia()
-        );
-        ingresoActualizado.setId(id);
+        // Usar métodos de negocio de la entidad para actualizar
+        ingresoExistente.actualizarPaciente(paciente);
+        ingresoExistente.actualizarEnfermero(enfermero);
+        ingresoExistente.actualizarDescripcion(request.getDescripcion());
+        ingresoExistente.actualizarVitales(temperatura, tensionArterial, frecuenciaCardiaca, frecuenciaRespiratoria);
+        ingresoExistente.actualizarNivelEmergencia(request.getNivelEmergencia());
         
         // Actualizar en repositorio y cola
-        Ingreso ingresoGuardado = ingresoRepository.update(ingresoActualizado);
+        Ingreso ingresoGuardado = ingresoRepository.update(ingresoExistente);
         colaAtencionService.actualizarEnCola(ingresoExistente, ingresoGuardado);
         
         return ingresoMapper.toResponse(ingresoGuardado);

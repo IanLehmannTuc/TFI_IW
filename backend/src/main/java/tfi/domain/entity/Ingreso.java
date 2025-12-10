@@ -303,4 +303,92 @@ public class Ingreso {
     public void setAtencion(Atencion atencion) {
         this.atencion = atencion;
     }
+
+    /**
+     * Método de negocio: Actualiza los signos vitales del ingreso.
+     * Valida que los parámetros no sean nulos.
+     * 
+     * @param temperatura Nueva temperatura
+     * @param tensionArterial Nueva tensión arterial
+     * @param frecuenciaCardiaca Nueva frecuencia cardíaca
+     * @param frecuenciaRespiratoria Nueva frecuencia respiratoria
+     * @throws IllegalArgumentException si algún parámetro es nulo
+     */
+    public void actualizarVitales(Temperatura temperatura, 
+                                   TensionArterial tensionArterial,
+                                   FrecuenciaCardiaca frecuenciaCardiaca,
+                                   FrecuenciaRespiratoria frecuenciaRespiratoria) {
+        if (temperatura == null) {
+            throw new IllegalArgumentException("La temperatura no puede ser nula");
+        }
+        if (tensionArterial == null) {
+            throw new IllegalArgumentException("La tensión arterial no puede ser nula");
+        }
+        if (frecuenciaCardiaca == null) {
+            throw new IllegalArgumentException("La frecuencia cardíaca no puede ser nula");
+        }
+        if (frecuenciaRespiratoria == null) {
+            throw new IllegalArgumentException("La frecuencia respiratoria no puede ser nula");
+        }
+        this.temperatura = temperatura;
+        this.tensionArterial = tensionArterial;
+        this.frecuenciaCardiaca = frecuenciaCardiaca;
+        this.frecuenciaRespiratoria = frecuenciaRespiratoria;
+    }
+
+    /**
+     * Método de negocio: Actualiza la descripción del ingreso.
+     * 
+     * @param descripcion Nueva descripción
+     * @throws IllegalArgumentException si la descripción es nula o vacía
+     */
+    public void actualizarDescripcion(String descripcion) {
+        if (descripcion == null || descripcion.trim().isEmpty()) {
+            throw new IllegalArgumentException("La descripción no puede ser nula o vacía");
+        }
+        this.descripcion = descripcion.trim();
+    }
+
+    /**
+     * Método de negocio: Actualiza el nivel de emergencia del ingreso.
+     * 
+     * @param nivelEmergencia Nuevo nivel de emergencia
+     * @throws IllegalArgumentException si el nivel de emergencia es nulo
+     */
+    public void actualizarNivelEmergencia(NivelEmergencia nivelEmergencia) {
+        if (nivelEmergencia == null) {
+            throw new IllegalArgumentException("El nivel de emergencia no puede ser nulo");
+        }
+        this.nivelEmergencia = nivelEmergencia;
+    }
+
+    /**
+     * Método de negocio: Actualiza el paciente del ingreso.
+     * 
+     * @param paciente Nuevo paciente
+     * @throws IllegalArgumentException si el paciente es nulo
+     */
+    public void actualizarPaciente(Paciente paciente) {
+        if (paciente == null) {
+            throw new IllegalArgumentException("El paciente no puede ser nulo");
+        }
+        this.paciente = paciente;
+    }
+
+    /**
+     * Método de negocio: Actualiza el enfermero del ingreso.
+     * Valida que el usuario sea un enfermero.
+     * 
+     * @param enfermero Nuevo enfermero
+     * @throws IllegalArgumentException si el enfermero es nulo o no es un enfermero
+     */
+    public void actualizarEnfermero(Usuario enfermero) {
+        if (enfermero == null) {
+            throw new IllegalArgumentException("El enfermero no puede ser nulo");
+        }
+        if (!enfermero.esEnfermero()) {
+            throw new IllegalArgumentException("El usuario debe ser un enfermero");
+        }
+        this.enfermero = enfermero;
+    }
 }

@@ -274,20 +274,14 @@ public class PacienteService {
             afiliado = new Afiliado(obraSocial, verificacion.getNumeroAfiliado());
         }
         
+        // Usar métodos de negocio de la entidad para actualizar
+        pacienteExistente.actualizarDatosPersonales(dto.getNombre(), dto.getApellido());
+        pacienteExistente.actualizarDomicilio(domicilio);
+        pacienteExistente.actualizarObraSocial(afiliado);
         
-        Paciente pacienteActualizado = Paciente.crearCompleto(
-            dto.getCuil(),
-            dto.getNombre(),
-            dto.getApellido(),
-            pacienteExistente.getEmail(), 
-            domicilio,
-            afiliado
-        );
-        pacienteActualizado.setId(pacienteExistente.getId());
+        pacientesRepository.update(pacienteExistente);
         
-        pacientesRepository.update(pacienteActualizado);
-        
-        return pacienteMapper.toResponse(pacienteActualizado);
+        return pacienteMapper.toResponse(pacienteExistente);
     }
     
     /**
