@@ -92,7 +92,7 @@ Feature: Modulo de Urgencias
     |CUIL         |Informe|Nivel de Emergencia|Temperatura|Frecuencia Cardiaca|Frecuencia Respiratoria|Tension Arterial|
     |20-20304050-5|       |Emergencia         |39         |70                 |15                     |120/80          |
 
-    Then Se emite un mensaje de error indicando que {campo} faltante es obligatorio
+    Then Se emite un mensaje de error indicando que el informe es obligatorio
 
 #  Scenario Outline: Error por datos obligatorios faltantes
 #     Given Que estan cargados los siguientes pacientes en el sistema:
