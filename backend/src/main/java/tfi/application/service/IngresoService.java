@@ -95,15 +95,15 @@ public class IngresoService {
                 
                 Paciente nuevoPaciente;
                 if (nombre != null && apellido != null && email != null && domicilio != null && afiliado != null) {
-                    nuevoPaciente = new Paciente(cuil, nombre, apellido, email, domicilio, afiliado);
+                    nuevoPaciente = Paciente.crearCompleto(cuil, nombre, apellido, email, domicilio, afiliado);
                 } else if (nombre != null && apellido != null && domicilio != null && afiliado != null) {
-                    nuevoPaciente = new Paciente(cuil, nombre, apellido, null, domicilio, afiliado);
+                    nuevoPaciente = Paciente.crearCompleto(cuil, nombre, apellido, null, domicilio, afiliado);
                 } else if (nombre != null && apellido != null) {
-                    nuevoPaciente = new Paciente(cuil, nombre, apellido);
+                    nuevoPaciente = Paciente.crearConDatosBasicos(cuil, nombre, apellido);
                 } else if (domicilio != null && afiliado != null) {
-                    nuevoPaciente = new Paciente(cuil, domicilio, afiliado);
+                    nuevoPaciente = Paciente.crearConDomicilioYObraSocial(cuil, domicilio, afiliado);
                 } else {
-                    nuevoPaciente = new Paciente(cuil, "Desconocido", "Desconocido");
+                    nuevoPaciente = Paciente.crearConDatosBasicos(cuil, "Desconocido", "Desconocido");
                 }
                 
                 return pacientesRepository.add(nuevoPaciente);

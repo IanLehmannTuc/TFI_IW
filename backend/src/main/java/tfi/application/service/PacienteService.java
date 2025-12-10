@@ -108,7 +108,7 @@ public class PacienteService {
             afiliado = new Afiliado(obraSocial, verificacion.getNumeroAfiliado());
         }
         
-        Paciente paciente = new Paciente(
+        Paciente paciente = Paciente.crearCompleto(
             dto.getCuil(),
             dto.getNombre(),
             dto.getApellido(),
@@ -222,7 +222,7 @@ public class PacienteService {
         }
         
         
-        Paciente pacienteActualizado = new Paciente(
+        Paciente pacienteActualizado = Paciente.crearCompleto(
             dto.getCuil(),
             dto.getNombre(),
             dto.getApellido(),

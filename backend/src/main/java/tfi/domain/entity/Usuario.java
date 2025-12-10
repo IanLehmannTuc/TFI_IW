@@ -103,33 +103,13 @@ public class Usuario {
         return email;
     }
 
-    public void setEmail(Email email) {
-        if (email == null) {
-            throw new IllegalArgumentException("El email no puede ser nulo");
-        }
-        this.email = email;
-    }
-
+    // Getters
     public String getPasswordHash() {
         return passwordHash;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        if (passwordHash == null || passwordHash.isEmpty()) {
-            throw new IllegalArgumentException("El hash de contraseña no puede ser nulo o vacío");
-        }
-        this.passwordHash = passwordHash;
-    }
-
     public Autoridad getAutoridad() {
         return autoridad;
-    }
-
-    public void setAutoridad(Autoridad autoridad) {
-        if (autoridad == null) {
-            throw new IllegalArgumentException("La autoridad no puede ser nula");
-        }
-        this.autoridad = autoridad;
     }
     
     public Cuil getCuilVO() {
@@ -140,6 +120,60 @@ public class Usuario {
         return cuil != null ? cuil.getValor() : null;
     }
 
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    // Setters deprecated - solo para uso del repositorio
+    /**
+     * Setter para email - SOLO para uso interno del repositorio al recuperar desde BD.
+     * @deprecated Usar actualizarEmail() en su lugar.
+     */
+    @Deprecated
+    public void setEmail(Email email) {
+        if (email == null) {
+            throw new IllegalArgumentException("El email no puede ser nulo");
+        }
+        this.email = email;
+    }
+
+    /**
+     * Setter para password hash - SOLO para uso interno del repositorio al recuperar desde BD.
+     * @deprecated Este método solo debe usarse en el mapeo desde base de datos.
+     */
+    @Deprecated
+    public void setPasswordHash(String passwordHash) {
+        if (passwordHash == null || passwordHash.isEmpty()) {
+            throw new IllegalArgumentException("El hash de contraseña no puede ser nulo o vacío");
+        }
+        this.passwordHash = passwordHash;
+    }
+
+    /**
+     * Setter para autoridad - SOLO para uso interno del repositorio al recuperar desde BD.
+     * @deprecated La autoridad no debería cambiarse después de la creación.
+     */
+    @Deprecated
+    public void setAutoridad(Autoridad autoridad) {
+        if (autoridad == null) {
+            throw new IllegalArgumentException("La autoridad no puede ser nula");
+        }
+        this.autoridad = autoridad;
+    }
+
+    /**
+     * Setter para CUIL - SOLO para uso interno del repositorio al recuperar desde BD.
+     * @deprecated El CUIL no debería cambiarse después de la creación.
+     */
+    @Deprecated
     public void setCuil(Cuil cuil) {
         if (cuil == null) {
             throw new IllegalArgumentException("El CUIL no puede ser nulo");
@@ -147,26 +181,29 @@ public class Usuario {
         this.cuil = cuil;
     }
 
-    public String getNombre() {
-        return nombre;
-    }
-
+    /**
+     * Setter para nombre - SOLO para uso interno del repositorio al recuperar desde BD.
+     * @deprecated Usar actualizarDatosPersonales() en su lugar.
+     */
+    @Deprecated
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
-    public String getApellido() {
-        return apellido;
-    }
-
+    /**
+     * Setter para apellido - SOLO para uso interno del repositorio al recuperar desde BD.
+     * @deprecated Usar actualizarDatosPersonales() en su lugar.
+     */
+    @Deprecated
     public void setApellido(String apellido) {
         this.apellido = apellido;
     }
 
-    public String getMatricula() {
-        return matricula;
-    }
-
+    /**
+     * Setter para matrícula - SOLO para uso interno del repositorio al recuperar desde BD.
+     * @deprecated La matrícula no debería cambiarse después de la creación.
+     */
+    @Deprecated
     public void setMatricula(String matricula) {
         if (matricula == null || matricula.isEmpty()) {
             throw new IllegalArgumentException("La matrícula no puede ser nula o vacía");
@@ -174,6 +211,57 @@ public class Usuario {
         this.matricula = matricula;
     }
     
+    /**
+     * Método de negocio: Verifica si el usuario tiene datos personales completos.
+     * 
+     * @return true si tiene nombre, apellido, CUIL y matrícula, false en caso contrario
+     */
+    public boolean tieneDatosCompletos() {
+        return nombre != null && apellido != null && cuil != null && matricula != null;
+    }
+
+    /**
+     * Método de negocio: Verifica si el usuario es médico.
+     * 
+     * @return true si la autoridad es MEDICO, false en caso contrario
+     */
+    public boolean esMedico() {
+        return autoridad == Autoridad.MEDICO;
+    }
+
+    /**
+     * Método de negocio: Verifica si el usuario es enfermero.
+     * 
+     * @return true si la autoridad es ENFERMERO, false en caso contrario
+     */
+    public boolean esEnfermero() {
+        return autoridad == Autoridad.ENFERMERO;
+    }
+
+    /**
+     * Método de negocio: Actualiza los datos personales del usuario.
+     * 
+     * @param nombre Nuevo nombre (puede ser null)
+     * @param apellido Nuevo apellido (puede ser null)
+     */
+    public void actualizarDatosPersonales(String nombre, String apellido) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+    }
+
+    /**
+     * Método de negocio: Actualiza el email del usuario.
+     * 
+     * @param nuevoEmail Nuevo email (no puede ser null)
+     * @throws IllegalArgumentException si el email es null
+     */
+    public void actualizarEmail(Email nuevoEmail) {
+        if (nuevoEmail == null) {
+            throw new IllegalArgumentException("El email no puede ser nulo");
+        }
+        this.email = nuevoEmail;
+    }
+
     /**
      * Helper method para obtener el nombre completo del usuario.
      * 

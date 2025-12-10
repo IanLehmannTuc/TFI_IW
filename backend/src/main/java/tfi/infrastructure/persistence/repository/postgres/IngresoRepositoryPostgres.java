@@ -143,9 +143,9 @@ public class IngresoRepositoryPostgres implements IngresoRepository {
 
             Paciente paciente;
             if (nombre == null) {
-                paciente = new Paciente(cuil, domicilio, afiliado);
+                paciente = Paciente.crearConDomicilioYObraSocial(cuil, domicilio, afiliado);
             } else {
-                paciente = new Paciente(cuil, nombre, apellido, email, domicilio, afiliado);
+                paciente = Paciente.crearCompleto(cuil, nombre, apellido, email, domicilio, afiliado);
             }
             
             paciente.setId(id);
