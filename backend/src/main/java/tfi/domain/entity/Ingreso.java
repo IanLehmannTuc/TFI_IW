@@ -262,6 +262,25 @@ public class Ingreso {
     }
 
     /**
+     * Método de negocio: Valida que el ingreso puede recibir una atención médica.
+     * Un ingreso puede recibir atención si:
+     * - Está en estado EN_PROCESO
+     * - No tiene ya una atención asignada
+     * 
+     * @throws IllegalStateException si el ingreso no puede recibir atención
+     */
+    public void puedeRecibirAtencion() {
+        if (this.estado != Estado.EN_PROCESO) {
+            throw new IllegalStateException(
+                String.format("El ingreso debe estar en estado EN_PROCESO para recibir atención. Estado actual: %s", this.estado)
+            );
+        }
+        if (this.atencion != null) {
+            throw new IllegalStateException("El ingreso ya tiene una atención asignada");
+        }
+    }
+
+    /**
      * Setter para estado - SOLO para uso interno del repositorio al recuperar desde BD.
      * NO debe usarse para cambiar el estado del negocio. Usar métodos de negocio en su lugar.
      * 

@@ -3,7 +3,6 @@ package tfi.application.service;
 import org.springframework.stereotype.Service;
 import tfi.domain.entity.Atencion;
 import tfi.domain.entity.Ingreso;
-import tfi.domain.enums.Estado;
 import tfi.domain.repository.AtencionRepository;
 import tfi.domain.repository.IngresoRepository;
 import tfi.exception.AtencionException;
@@ -59,22 +58,24 @@ public class AtencionService {
 
         Ingreso ingreso = ingresoOpt.get();
 
-        
-        if (ingreso.getEstado() != Estado.EN_PROCESO) {
-            throw new AtencionException("El ingreso debe estar en estado EN_PROCESO para registrar una atención. Estado actual: " + ingreso.getEstado());
+        // Validación en el dominio - encapsula las reglas de negocio
+        try {
+            ingreso.puedeRecibirAtencion();
+        } catch (IllegalStateException e) {
+            throw new AtencionException(e.getMessage());
         }
 
-        
+        // Verificar que no exista una atención ya persistida (validación de infraestructura)
         Optional<Atencion> atencionExistente = atencionRepository.findByIngresoId(ingresoId);
         if (atencionExistente.isPresent()) {
             throw new AtencionException("Ya existe una atención registrada para este ingreso");
         }
 
-        
+        // Crear y persistir la atención
         Atencion atencion = new Atencion(ingresoId, medicoId, informe);
         Atencion atencionGuardada = atencionRepository.add(atencion);
 
-        // Usar método de negocio en lugar de setter directo
+        // Usar método de negocio para finalizar el ingreso
         ingreso.finalizar(atencionGuardada);
         ingresoRepository.update(ingreso);
 

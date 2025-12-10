@@ -1,10 +1,6 @@
 package tfi.infrastructure.persistence.repository.postgres;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -13,6 +9,9 @@ import tfi.domain.entity.ObraSocial;
 import tfi.domain.entity.Paciente;
 import tfi.domain.repository.PacientesRepository;
 import tfi.domain.valueObject.Domicilio;
+import tfi.domain.valueObject.PaginatedResult;
+import tfi.domain.valueObject.PaginationRequest;
+import tfi.domain.valueObject.SortOrder;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -86,7 +85,7 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
     }
 
     @Override
-    public Page<Paciente> findAll(Pageable pageable) {
+    public PaginatedResult<Paciente> findAll(PaginationRequest request) {
         
         StringBuilder sql = new StringBuilder(
             "SELECT p.id, p.cuil, p.nombre, p.apellido, p.email, " +
@@ -96,14 +95,13 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
         );
 
         
-        if (pageable.getSort().isSorted()) {
+        if (request.hasSorting()) {
             sql.append(" ORDER BY ");
-            List<String> orderByClauses = pageable.getSort().stream()
-                .map(order -> {
-                    String property = order.getProperty();
-                    
+            List<String> orderByClauses = request.getSortOrders().stream()
+                .map(sortOrder -> {
+                    String property = sortOrder.getProperty();
                     String column = mapPropertyToColumn(property);
-                    String direction = order.getDirection() == Sort.Direction.ASC ? "ASC" : "DESC";
+                    String direction = sortOrder.isAscending() ? "ASC" : "DESC";
                     return column + " " + direction;
                 })
                 .toList();
@@ -117,15 +115,20 @@ public class PacientesRepositoryPostgres implements PacientesRepository {
         sql.append(" LIMIT ? OFFSET ?");
 
         
-        int pageSize = pageable.getPageSize();
-        int offset = (int) pageable.getOffset();
+        int pageSize = request.getSize();
+        int offset = request.getOffset();
         List<Paciente> content = jdbcTemplate.query(sql.toString(), new PacienteRowMapper(), pageSize, offset);
 
         
         String countSql = "SELECT COUNT(*) FROM pacientes p";
         Long total = jdbcTemplate.queryForObject(countSql, Long.class);
 
-        return new PageImpl<>(content, pageable, total != null ? total : 0);
+        return new PaginatedResult<>(
+            content, 
+            total != null ? total.intValue() : 0, 
+            request.getPage(), 
+            request.getSize()
+        );
     }
 
     /**

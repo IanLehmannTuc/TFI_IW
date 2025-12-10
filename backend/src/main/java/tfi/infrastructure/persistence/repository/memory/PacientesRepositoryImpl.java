@@ -1,13 +1,12 @@
 package tfi.infrastructure.persistence.repository.memory;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import tfi.domain.entity.Paciente;
 import tfi.domain.repository.PacientesRepository;
+import tfi.domain.valueObject.PaginatedResult;
+import tfi.domain.valueObject.PaginationRequest;
+import tfi.domain.valueObject.SortOrder;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,14 +33,14 @@ public class PacientesRepositoryImpl implements PacientesRepository {
     }
 
     @Override
-    public Page<Paciente> findAll(Pageable pageable) {
+    public PaginatedResult<Paciente> findAll(PaginationRequest request) {
         List<Paciente> allPacientes = new ArrayList<>(store.values());
         
         
-        if (pageable.getSort().isSorted()) {
+        if (request.hasSorting()) {
             Comparator<Paciente> comparator = null;
-            for (Sort.Order order : pageable.getSort()) {
-                Comparator<Paciente> orderComparator = getComparator(order);
+            for (SortOrder sortOrder : request.getSortOrders()) {
+                Comparator<Paciente> orderComparator = getComparator(sortOrder);
                 if (comparator == null) {
                     comparator = orderComparator;
                 } else {
@@ -61,20 +60,25 @@ public class PacientesRepositoryImpl implements PacientesRepository {
         }
         
         
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), allPacientes.size());
+        int start = request.getOffset();
+        int end = Math.min((start + request.getSize()), allPacientes.size());
         List<Paciente> pageContent = start < allPacientes.size() 
             ? allPacientes.subList(start, end)
             : new ArrayList<>();
         
-        return new PageImpl<>(pageContent, pageable, allPacientes.size());
+        return new PaginatedResult<>(
+            pageContent, 
+            allPacientes.size(), 
+            request.getPage(), 
+            request.getSize()
+        );
     }
     
     /**
      * Obtiene un Comparator para ordenar pacientes según una propiedad.
      */
-    private Comparator<Paciente> getComparator(Sort.Order order) {
-        Comparator<Paciente> comparator = switch (order.getProperty().toLowerCase()) {
+    private Comparator<Paciente> getComparator(SortOrder sortOrder) {
+        Comparator<Paciente> comparator = switch (sortOrder.getProperty().toLowerCase()) {
             case "cuil" -> Comparator.comparing(p -> p.getCuil() != null ? p.getCuil() : "");
             case "nombre" -> Comparator.comparing(p -> p.getNombre() != null ? p.getNombre() : "");
             case "apellido" -> Comparator.comparing(p -> p.getApellido() != null ? p.getApellido() : "");
@@ -83,7 +87,7 @@ public class PacientesRepositoryImpl implements PacientesRepository {
             default -> Comparator.comparing(p -> p.getCuil() != null ? p.getCuil() : "");
         };
         
-        if (order.getDirection() == Sort.Direction.DESC) {
+        if (sortOrder.isDescending()) {
             comparator = comparator.reversed();
         }
         

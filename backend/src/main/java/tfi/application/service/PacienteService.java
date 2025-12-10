@@ -1,7 +1,9 @@
 package tfi.application.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import tfi.exception.PacienteException;
@@ -15,10 +17,16 @@ import tfi.domain.entity.ObraSocial;
 import tfi.domain.entity.Paciente;
 import tfi.domain.port.ObraSocialPort;
 import tfi.domain.valueObject.Domicilio;
+import tfi.domain.valueObject.PaginatedResult;
+import tfi.domain.valueObject.PaginationRequest;
+import tfi.domain.valueObject.SortOrder;
 import tfi.domain.repository.PacientesRepository;
 import tfi.util.MensajesError;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Servicio para gestionar operaciones de registro y consulta de pacientes.
@@ -145,11 +153,43 @@ public class PacienteService {
     /**
      * Obtiene todos los pacientes con paginación.
      * 
-     * @param pageable información de paginación (página, tamaño, ordenamiento)
-     * @return página de pacientes con metadatos de paginación
+     * Adaptador que convierte Pageable de Spring a PaginationRequest del dominio
+     * y luego convierte PaginatedResult del dominio a Page de Spring.
+     * Esto mantiene la compatibilidad con los controladores mientras el dominio
+     * permanece independiente de frameworks.
+     * 
+     * @param pageable información de paginación de Spring (página, tamaño, ordenamiento)
+     * @return página de pacientes con metadatos de paginación (Spring Page)
      */
     public Page<Paciente> findAll(Pageable pageable) {
-        return pacientesRepository.findAll(pageable);
+        // Convertir Pageable de Spring a PaginationRequest del dominio
+        List<SortOrder> sortOrders = new ArrayList<>();
+        if (pageable.getSort().isSorted()) {
+            sortOrders = pageable.getSort().stream()
+                .map(order -> new SortOrder(
+                    order.getProperty(),
+                    order.getDirection() == Sort.Direction.ASC 
+                        ? SortOrder.Direction.ASC 
+                        : SortOrder.Direction.DESC
+                ))
+                .collect(Collectors.toList());
+        }
+        
+        PaginationRequest request = new PaginationRequest(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            sortOrders
+        );
+        
+        // Usar el repositorio del dominio (independiente de Spring)
+        PaginatedResult<Paciente> result = pacientesRepository.findAll(request);
+        
+        // Convertir PaginatedResult del dominio a Page de Spring (solo en capa de aplicación)
+        return new PageImpl<>(
+            result.getContent(),
+            pageable,
+            result.getTotalElements()
+        );
     }
     
     /**

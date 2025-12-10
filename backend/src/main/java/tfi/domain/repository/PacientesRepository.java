@@ -1,23 +1,28 @@
 package tfi.domain.repository;
 
 import tfi.domain.entity.Paciente;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import tfi.domain.valueObject.PaginatedResult;
+import tfi.domain.valueObject.PaginationRequest;
 import java.util.List;
 import java.util.Optional;
 
 /**
  * Repositorio para gestionar la persistencia de pacientes.
+ * 
+ * Siguiendo Clean Architecture:
+ * - No depende de frameworks externos (Spring)
+ * - Usa abstracciones propias del dominio (PaginationRequest, PaginatedResult)
  */
 public interface PacientesRepository {
     
     
     /**
      * Obtiene todos los pacientes registrados con paginación.
-     * @param pageable información de paginación (página, tamaño, ordenamiento)
-     * @return página de pacientes con metadatos de paginación
+     * 
+     * @param request información de paginación (página, tamaño, ordenamiento)
+     * @return resultado paginado de pacientes con metadatos de paginación
      */
-    Page<Paciente> findAll(Pageable pageable);
+    PaginatedResult<Paciente> findAll(PaginationRequest request);
     
     /**
      * Busca un paciente por su CUIL.
